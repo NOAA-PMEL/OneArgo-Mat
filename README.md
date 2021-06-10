@@ -1,4 +1,4 @@
-# BGC-Argo Toolbox for MATLAB
+# BGC-Argo Toolbox for MATLAB (BGC-Argo-Mat)
 
 ## ABOUT
 
@@ -60,7 +60,7 @@ Please cite this toolbox as:
 
 BGC-Argo-Mat: A MATLAB toolbox for accessing and visualizing Biogeochemical Argo data
 H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer, Y. Takeshita, D. Nicholson, and A. Gray; 2021
-## doi:
+doi:
 *These authors contributed equally to the code.
 
 ## LEGAL DISCLAIMER
