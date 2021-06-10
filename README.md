@@ -1,4 +1,4 @@
-# GO-BGC toolbox for MATLAB
+# BGC-Argo Toolbox for MATLAB
 
 ## ABOUT
 
@@ -47,7 +47,6 @@ MATLAB R2016b is needed to use these functions without modifications.<br/>
 An Internet connection is needed to get the latest versions of index and Sprof files; but the repository includes versions of these files so that it can be run offline.<br/>
 Memory requirements depend on the number of profiles and variables that are simultaneously loaded into memory.
 
-
 ## COMMENTS, BUGS etc.?
 Please feel free to use the GitHub Issues and Pull Requests features to report any problems with this code and to suggest bug fixes.
 
@@ -61,8 +60,9 @@ Please cite this toolbox as:
 
 BGC-Argo-Mat: A MATLAB toolbox for accessing and visualizing Biogeochemical Argo data
 H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer, Y. Takeshita, D. Nicholson, and A. Gray; 2021
-doi:
+## doi:
 *These authors contributed equally to the code.
 
 ## LEGAL DISCLAIMER
+
 This repository is a software product and is not official communication of the National Oceanic and Atmospheric Administration (NOAA), or the United States Department of Commerce (DOC). All NOAA GitHub project code is provided on an 'as is' basis and the user assumes responsibility for its use. Any claims against the DOC or DOC bureaus stemming from the use of this GitHub project will be governed by all applicable Federal law. Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer, or otherwise, does not constitute or imply their endorsement, recommendation, or favoring by the DOC. The DOC seal and logo, or the seal and logo of a DOC bureau, shall not be used in any manner to imply endorsement of any commercial product or activity by the DOC or the United States Government.
