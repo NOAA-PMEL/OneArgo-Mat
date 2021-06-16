@@ -6,9 +6,9 @@ This toolbox contains a variety of functions for accessing, processing, and visu
 
 ## INSTALLATION AND USE
 
-This repository can be cloned using the command line or GitHub Desktop. Or the files can be directly downloaded in zipped format.
+This repository can be cloned using the command line or the GitHub Desktop application. The files can also be downloaded directly in zipped format.
 
-Before use, make sure the files are placed in a directory that is in the MATLAB search path. Or add the directory where they are located to the search path (https://www.mathworks.com/help/matlab/matlab_env/add-remove-or-reorder-folders-on-the-search-path.html). Or run it in the directory where the main_workshop script was placed.
+Before use, make sure the files from this repository are placed in a directory that is in the MATLAB search path. Or add the directory where they are located to the search path (https://www.mathworks.com/help/matlab/matlab_env/add-remove-or-reorder-folders-on-the-search-path.html). Or run it in the directory where the main_workshop script was placed.
 
 For an overview of how to use this toolbox, step through the 'main_workshop' script (using the "Run and Advance" button of the MATLAB editor window), a tutorial that was developed for the [2021 GO-BGC Scientific Workshop](https://www.us-ocb.org/joint-gobgc-workshop/) (6/30/21).
 
