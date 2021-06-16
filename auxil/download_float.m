@@ -1,0 +1,72 @@
+function success = download_float(floatid)
+% download_float  This function is part of the
+% MATLAB toolbox for accessing BGC Argo float data.
+%
+% USAGE:
+%   success = download_float(floatid)
+%
+% DESCRIPTION:
+%   It downloads the Sprof file for one float with a given floatid.
+%
+% PREREQUISITE:
+%   The Sprof index file must have been downloaded already. 
+%
+% INPUT:
+%   floatid  : WMO ID of a float (integer)
+%
+% OUTPUT:
+%   success  : 1 for success, 0 for failure
+%
+% AUTHORS: 
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
+%   and A. Gray (UW)
+%
+% CITATION:
+%   BGC-Argo-Mat: A MATLAB toolbox for accessing and visualizing
+%   Biogeochemical Argo data,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer, 
+%   Y. Takeshita, D. Nicholson, and A. Gray; 2021
+%   (*These authors contributed equally to the code.)
+%
+% LICENSE: bgc_argo_mat_license.m
+%
+% DATE: June 15, 2021
+
+global Settings Float;
+
+if nargin < 1
+    disp('Usage: download_float(WMO_ID)')
+    return
+end
+
+success = 0; % set to 1 after successful download
+
+ind = 1:Float.nfloats;
+float_idx = ind(strcmp(Float.wmoid, num2str(floatid)));
+
+if isempty(float_idx)
+    warning('Float %d was not found!', floatid)
+    return
+end
+
+local_path = [Settings.prof_dir, Float.file_name{float_idx}];
+% now check if the Sprof file exists locally already,
+% and if so, if it is up-to-date
+if exist(local_path, 'file') == 2
+    try
+        sprof_date = ncread(local_path, 'DATE_UPDATE')';
+        sprof_date = datenum(sprof_date, 'yyyymmddHHMMSS');
+        % allow a small tolerance value for numerical imprecision
+        if sprof_date > Float.update(float_idx) - 1
+            % existing file has all profiles, no need to download again
+            success = 1;
+            return;
+        end
+    catch
+        warning('something went wrong, try downloading the file again')
+    end
+end
+
+success = try_download(['dac/',Float.file_path{float_idx}], ...
+    local_path);
