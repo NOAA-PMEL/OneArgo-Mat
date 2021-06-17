@@ -1,9 +1,0 @@
-- all variables are lowercase using snake_case, except...
-- structures (Sprof, Settings, etc.) start with an uppercase letter
-- no indentation at the function level, no "end" at its end
-- smart indent from Matlab IDE
-- one statement/expression per line
-- one function per file
-- line length limit ~75-80 characters
-- "function" line at the beginning, then the big comment block
-- only "useful" comments
