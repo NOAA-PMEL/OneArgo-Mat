@@ -1,4 +1,5 @@
 # BGC-Argo Toolbox for MATLAB (BGC-Argo-Mat)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4971319.svg)](https://doi.org/10.5281/zenodo.4971319)
 
 ## ABOUT
 
@@ -52,15 +53,14 @@ Please feel free to use the GitHub Issues and Pull Requests features to report a
 
 ## BGC-ARGO GUIDE
 More detailed information about quality control flags, raw and adjusted modes, etc., can be found in
-H. C. Bittig et al., Front. Mar. Sci., 2019, https://doi.org/10.3389/fmars.2019.00502
+H. C. Bittig et al., 2019. Front. Mar. Sci. https://doi.org/10.3389/fmars.2019.00502.
 
 ## CITATION
 
 Please cite this toolbox as:
 
-BGC-Argo-Mat: A MATLAB toolbox for accessing and visualizing Biogeochemical Argo data
-H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer, Y. Takeshita, D. Nicholson, and A. Gray; 2021
-doi:
+H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer, Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB toolbox for accessing and visualizing Biogeochemical Argo data. Zenodo. https://doi.org/10.5281/zenodo.4971318.
+
 *These authors contributed equally to the code.
 
 ## LEGAL DISCLAIMER
