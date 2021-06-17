@@ -38,10 +38,10 @@ function Datai = depth_interp(Data, qc_flags, varargin)
 %   and A. Gray (UW)
 %
 % CITATION:
-%   BGC-Argo-Mat: A MATLAB toolbox for accessing and visualizing
-%   Biogeochemical Argo data,
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer, 
-%   Y. Takeshita, D. Nicholson, and A. Gray; 2021
+%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
+%   toolbox for accessing and visualizing Biogeochemical Argo data.
+%   Zenodo. https://doi.org/10.5281/zenodo.4971318.
 %   (*These authors contributed equally to the code.)
 %
 % LICENSE: bgc_argo_mat_license.m
