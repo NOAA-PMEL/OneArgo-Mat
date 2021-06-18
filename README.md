@@ -44,7 +44,7 @@ try_download.m           : attempts to download a file from any of the specified
 Use "help function_name" in the MATLAB command window to see a full description of input and output parameters for these functions.
 
 ## REQUIREMENTS
-MATLAB R2016b is needed to use these functions without modifications.<br/>
+At least MATLAB R2016b (or any newer release) is needed to use these functions without modifications.<br/>
 An Internet connection is needed to get the latest versions of index and Sprof files; but the repository includes versions of these files so that it can be run offline.<br/>
 Memory requirements depend on the number of profiles and variables that are simultaneously loaded into memory.
 
