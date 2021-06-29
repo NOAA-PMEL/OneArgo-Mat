@@ -104,7 +104,7 @@ show_sections(5904859, {'NITRATE'},...
     'raw','yes'); % tells the function to plot raw data
 
 show_sections(5904859, {'NITRATE'},...
-    'mld', 1,...  % tells the function to plot mixed layer depth
+    'mld', 2,...  % tells the function to plot mixed layer depth
     'raw','no'); % tells the function to plot adjusted data (that is the
 % default and could be left out in this call)
 

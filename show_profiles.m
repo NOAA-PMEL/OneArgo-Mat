@@ -21,8 +21,8 @@ function good_float_ids = show_profiles(profile_ids, variables, varargin)
 %  'obs',on/off  : by default (obs='off') only lines are shown for each
 %                  profile; 'obs','on' shows points on the profile at which
 %                  each measurement was made
-%  'raw',raw     : plot raw, i.e., unadjusted data if set to 1;
-%                  default: 0 (i.e., plot adjusted data if available)
+%  'raw',raw     : plot raw, i.e., unadjusted data if set to 'yes';
+%                  default: 'no' (i.e., plot adjusted data if available)
 %  'qc',flags    : show only values with the given QC flags (as an array)
 %                  0: no QC was performed; 
 %                  1: good data; 

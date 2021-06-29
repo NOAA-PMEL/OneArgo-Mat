@@ -29,8 +29,8 @@ function plot_profiles(Data, Mdata, variables, varargin)
 %                           'mean' methods
 %   'obs',obs             : plot markers at depths of observations (1);
 %                           default: 0 (=off)
-%   'raw',raw             : plot raw, i.e., unadjusted data if set to 1;
-%                           default: 0 (i.e., plot adjusted data if 
+%   'raw',raw             : plot raw, i.e., unadjusted data if set to 'yes';
+%                           default: 'no' (i.e., plot adjusted data if 
 %                           available)
 %  'qc',flags             : show only values with the given QC flags (array)
 %                           0: no QC was performed; 

@@ -22,6 +22,8 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %                        criterion (mld=2); default: 0=off
 %   'time_label',label : use either years ('y', by default) or months ('m')
 %   'max_depth',depth  : maximum depth to be plotted (default: all)
+%   'raw',raw          : plot raw, i.e., unadjusted data if set to 'yes';
+%                        default: 'no' (i.e., plot adjusted data if available)
 %   'qc',flags         : show only values with the given QC flags (as an array)
 %                        0: no QC was performed; 
 %                        1: good data; 
