@@ -113,6 +113,7 @@ elseif strcmp(Settings.mapping, 'm_map')
                 Data.(floats{i}).LATITUDE(1,:),10,color,'filled');
         end
         m_grid('box','fancy');
+        m_coast('patch', [0.7 0.7 0.7]);
     end
     % neither legend() nor m_legend() works for m_scatter plots
 else % "plain" plot
