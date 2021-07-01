@@ -15,29 +15,36 @@ function good_float_ids = show_profiles(profile_ids, variables, varargin)
 %                  (if not set: {'DOXY'} (=O2) is used)
 %
 % OPTIONAL INPUTS:
-%  'type',type   : by default (type='profiles'), the given IDs refer to
-%                  profile IDs (obtained with select_profiles); use
-%                  'type','floats' to show the profiles of a given float
-%  'obs',on/off  : by default (obs='off') only lines are shown for each
-%                  profile; 'obs','on' shows points on the profile at which
-%                  each measurement was made
-%  'raw',raw     : plot raw, i.e., unadjusted data if set to 'yes';
-%                  default: 'no' (i.e., plot adjusted data if available)
-%  'qc',flags    : show only values with the given QC flags (as an array)
-%                  0: no QC was performed; 
-%                  1: good data; 
-%                  2: probably good data;
-%                  3: probably bad data that are potentially correctable;
-%                  4: bad data; 
-%                  5: value changed; 
-%                  6,7: not used;
-%                  8: estimated value; 
-%                  9: missing value
-%                  default setting: 
-%                  [1,2] for adjusted data; [0:9] for raw data
-%                  See Table 7 in Bittig et al.:
-%                  https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
-%  'title_add',text : add the given text to all titles
+%   'type',type   : by default (type='profiles'), the given IDs refer to
+%                   profile IDs (obtained with select_profiles); use
+%                   'type','floats' to show the profiles of a given float
+%   'method',method : by default (method='all') all profiles from each float
+%                   are shown in one plot per variable;
+%                   use method='mean' to plot mean and standard deviation
+%                   across profiles instead
+%   'obs',on/off  : by default (same as: 'obs','off') only lines are shown
+%                   for each profile; 'obs','on' shows points on the profile
+%                   at which each measurement was made
+%   'per_float',per_float : show profiles separately for each float (1)
+%                   or all in one plot (0); default: 1
+%                   either option can be used with 'all' and 'mean' methods
+%   'raw',raw     : plot raw, i.e., unadjusted data if set to 'yes';
+%                   default: 'no' (i.e., plot adjusted data if available)
+%   'qc',flags    : show only values with the given QC flags (as an array)
+%                   0: no QC was performed; 
+%                   1: good data; 
+%                   2: probably good data;
+%                   3: probably bad data that are potentially correctable;
+%                   4: bad data; 
+%                   5: value changed; 
+%                   6,7: not used;
+%                   8: estimated value; 
+%                   9: missing value
+%                   default setting: 
+%                   [1,2] for adjusted data; [0:9] for raw data
+%                   See Table 7 in Bittig et al.:
+%                   https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
+%   'title_add',text : add the given text to all titles
 %
 % OUTPUT:
 %   good_float_ids : array of the float IDs whose Sprof files were
