@@ -128,7 +128,7 @@ Sprof.ocean = H{5};
 % column 7: institution
 Sprof.sens = H{8};
 Sprof.data_mode = H{9};
-sprof_update = H{10};
+Sprof.date_update = datenum(H{10}, 'yyyymmddHHMMSS');
 Sprof.nprofs = length(H{1});
 
 % Extract unique floats
@@ -145,12 +145,13 @@ Float.file_path = Sprof_fp;
 Float.file_name = Sprof_fnames;
 Float.dac = dacs;
 Float.wmoid = uwmo;
-Float.update = datenum(sprof_update(ia), 'yyyymmddHHMMSS');
 Float.nfloats = length(uwmo);
 % range of profile indices per float
 ia(end+1) = length(sprof_urls) + 1;
 Float.prof_idx1 = ia(1:end-1);
 Float.prof_idx2 = ia(2:end) - 1;
+% use the update date of the last profile
+Float.update = Sprof.date_update(Float.prof_idx2);
 
 % Set up float/profile conversion matrix and profile-per-float IDs
 %
