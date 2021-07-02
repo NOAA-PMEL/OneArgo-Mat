@@ -68,6 +68,8 @@ if nargin < 3
     float_profs = [];
 end
 
+fields_mdata = {'PROJECT_NAME';'PI_NAME';'DATA_CENTRE'};
+
 % INITIALIZE STRUCTURES FOR Data OUTPUT
 Data = struct();
 Mdata = struct();
@@ -227,6 +229,13 @@ for n = 1:length(good_float_ids)
         rmfield(Mdata.(strcat('F',num2str(floatnum))),...
         {'PARAMETER','PARAMETER_DATA_MODE'});
     
+    % add information about deploying organization and PI to meta data
+    for f = 1:length(fields_mdata)
+        this_field = ncread(filename, fields_mdata{f});
+        Mdata.(strcat('F',num2str(floatnum))).(fields_mdata{f}) = ...
+            strcat(this_field(:,end)');
+    end
+
     % CONVERT JULD VARIABLE TO SERIAL DATE (SINCE YEAR 1950)
     % AND SAVE AS 'TIME'
     Data.(strcat('F',num2str(floatnum))).('TIME') = ...
