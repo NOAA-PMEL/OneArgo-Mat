@@ -122,6 +122,11 @@ if calc_mld_temp || calc_mld_dens
 end
     
 if calc_mld_temp
+    try % Try with adjusted values first
+        sal = Data.PSAL_ADJUSTED;
+    catch % Then try with unadjusted values
+        sal = Data.PSAL;
+    end
     % Pre-allocate mixed layer
     Data.MLD_TEMP = nan(1,size(temp,2));
     % Calculate density based on temperature threshold
@@ -130,19 +135,20 @@ if calc_mld_temp
         % determine pressure closest to 10
         [~,ref_idx] = min(abs(pressure_prof-10));
         temperature_prof = temp(:,n); % extract temperature profile
-        % define reference temperature as closest to P = 10
-        temperature_ref = temperature_prof(ref_idx);
-        under_ref = pressure_prof > ref_idx; % index temp. below reference
+        sal_prof = sal(:,n); % same for salinity
+        ptemp_prof = gsw_pt0_from_t(sal_prof,temperature_prof,pressure_prof);
+        % define reference potential temperature as closest to P = 10
+        ptemp_ref = ptemp_prof(ref_idx);
+        under_ref = pressure_prof > ref_idx; % index below reference
         % truncate pressure profile to below reference
         pressure_prof = pressure_prof(under_ref);
-        % truncate temperature profile to below reference
-        temperature_prof = temperature_prof(under_ref);
-        MLDt_idx = find(temperature_prof < temperature_ref-temp_thresh);
+        % truncate pot. temperature profile to below reference
+        ptemp_prof = ptemp_prof(under_ref);
+        MLDt_idx = find(ptemp_prof < ptemp_ref-temp_thresh, 1);
         if ~isempty(MLDt_idx)
-            Data.MLD_TEMP(1,n) = pressure_prof(MLDt_idx(1));
+            Data.MLD_TEMP(1,n) = pressure_prof(MLDt_idx);
         end
     end
-    
 end
 
 if calc_mld_dens
