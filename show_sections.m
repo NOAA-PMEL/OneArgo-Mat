@@ -16,7 +16,14 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %                (if not set: {'DOXY'} (=O2) is used)
 %
 % OPTIONAL INPUTS:
-%   'isopyc',isopyc    : plot isopycnal lines if set (default: 1=on)
+%   'isopyc',isopyc    : plot isopycnal lines if non-zero (default: 1=on)
+%                        using a value of 1 will result in plotting
+%                        isopycnal lines at default values (24:27);
+%                        specific sigma levels can be specified as well, e.g.:
+%                        'isopyc',25
+%                        'isopyc',[25.5, 26.3]
+%                        'isopyc',25.5:0.1:26
+%                        if set to 0, no isopycnal lines will be plotted
 %   'mld',mld          : plot mixed layer depth, using either a 
 %                        temperature criterion (mld=1) or a density
 %                        criterion (mld=2); default: 0=off
@@ -117,7 +124,7 @@ if isempty(good_float_ids)
 else
     nvars = length(variables);
     % add the necessary variables now, but don't plot their profiles
-    if plot_isopyc || plot_mld
+    if ~isequal(plot_isopyc, 0) || plot_mld
         if ~any(strcmp(variables,'TEMP'))
             variables{end+1} = 'TEMP';            
         end

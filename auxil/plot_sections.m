@@ -23,7 +23,13 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %                 will be plotted (if plotting isopycnal lines and/or
 %                 mixed layer depth is requested, TEMP and PSAL may have
 %                 been added to the "variables" cell array)
-%   plot_isopyc : if set to 1, isopycnal lines will be plotted
+%   plot_isopyc : if set to 1, isopycnal lines will be plotted at default
+%                 values (24:27); specific sigma levels can be specified
+%                 as well, e.g.:
+%                 25
+%                 [25.5, 26.3]
+%                 25.5:0.1:26
+%                 if set to 0, no isopycnal lines will be plotted
 %   plot_mld    : if set to 1 or 2, mixed layer depth will be plotted,
 %                 using either a temperature (1) or density (2) criterion
 %   time_label  : either 'year' or 'month' - type of time labeling on
@@ -100,7 +106,7 @@ if nplots > Settings.max_plots
     return
 end
 
-calc_dens = plot_isopyc;
+calc_dens = ~isequal(plot_isopyc, 0);
 
 % unless 'raw' is specified, plot adjusted data
 if strncmpi(raw,'y',1)
@@ -152,15 +158,22 @@ for f = 1:nfloats
             scatter(Data.(floats{f}).TIME(index), Data.(floats{f}).PRES(index),...
                 1,'.k','MarkerFaceAlpha',0.2,'MarkerEdgeAlpha',0.2);
         end
-        if plot_isopyc
+        if ~isequal(plot_isopyc, 0)
             try
                 dens = Datai.DENS_ADJUSTED;
             catch
                 dens = Datai.DENS;
             end
+            if isequal(plot_isopyc, 1)
+                iso_levels = 24:27;
+            elseif length(plot_isopyc) == 1
+                iso_levels = [plot_isopyc plot_isopyc];
+            else
+                iso_levels = plot_isopyc;
+            end
             [C,h]=contour(Datai.TIME,Datai.PRES,dens-1000,...
-                24:27,'black','LineWidth',1);
-            clabel(C,h,24:27);
+                iso_levels,'black','LineWidth',1);
+            clabel(C,h,iso_levels);
         end
         if plot_mld == 1
             plot(Datai.TIME,Datai.MLD_TEMP(1,:),'k','LineWidth',2);
