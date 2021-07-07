@@ -11,7 +11,7 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %
 % INPUTS:
 %   float_ids  : WMO ID(s) of one or more floats 
-%                (if not set: 5904021 is used as a demo)
+%                (if not set: Settings.demo_float is used)
 %   variables  : cell array of variable(s) (i.e., sensor(s)) to show 
 %                (if not set: {'DOXY'} (=O2) is used)
 %
@@ -41,7 +41,7 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %                        6,7: not used;
 %                        8: estimated value; 
 %                        9: missing value
-%                        default setting: [1,2]
+%                        default setting: 0:9 (all flags)
 %                        See Table 7 in Bittig et al.:
 %                        https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
 %

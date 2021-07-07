@@ -129,17 +129,18 @@ if calc_mld_temp
     end
     % Pre-allocate mixed layer
     Data.MLD_TEMP = nan(1,size(temp,2));
-    % Calculate density based on temperature threshold
+    % Calculate mixed layer depth based on temperature threshold
     for n=1:size(temp,2)
         pressure_prof = pres(:,n); % extract pressure profile
         % determine pressure closest to 10
         [~,ref_idx] = min(abs(pressure_prof-10));
         temperature_prof = temp(:,n); % extract temperature profile
         sal_prof = sal(:,n); % same for salinity
+        % compute potential temperature
         ptemp_prof = gsw_pt0_from_t(sal_prof,temperature_prof,pressure_prof);
         % define reference potential temperature as closest to P = 10
         ptemp_ref = ptemp_prof(ref_idx);
-        under_ref = pressure_prof > ref_idx; % index below reference
+        under_ref = pressure_prof > pressure_prof(ref_idx); % index below reference
         % truncate pressure profile to below reference
         pressure_prof = pressure_prof(under_ref);
         % truncate pot. temperature profile to below reference
@@ -171,11 +172,11 @@ if calc_mld_dens
         % define reference density as closest to P = 10 dbar
         density_ref = density_prof(ref_idx);
         if ~isfinite(density_ref)
-            % this can happen if there salinity is NaN at 10 dbar
+            % this can happen if the salinity is NaN at 10 dbar
             density_ref = find(isfinite(density_prof(:,1)), 1);
         end
         if isfinite(density_ref) % make sure that a valid density was found
-            under_ref = pressure_prof>ref_idx; % index to dens. below reference
+            under_ref = pressure_prof > pressure_prof(ref_idx);
             pressure_prof = pressure_prof(under_ref);
             % truncate pressure profile to below reference
             density_prof = density_prof(under_ref);
