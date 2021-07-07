@@ -1,9 +1,11 @@
-function plot_profiles(Data, Mdata, variables, varargin)
+function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
+    variables, varargin)
 % plot_profiles  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   plot_profiles(Data, Mdata, variables, varargin)
+%   [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
+%       variables, varargin)
 %
 % DESCRIPTION:
 %   This function plots profiles of one or more specified float(s) for 
@@ -19,34 +21,42 @@ function plot_profiles(Data, Mdata, variables, varargin)
 %   variables : cell array with names of the measured fields (e.g., DOXY)
 %
 % OPTIONAL INPUTS:
-%   'method',method       : either 'all' (all profiles from each float are
-%                           shown in one plot per variable) or 'mean'
-%                           (mean and standard deviation across profiles);
-%                           default is 'all'
+%   'method',method : either 'all' (all profiles from each float are
+%                     shown in one plot per variable) or 'mean'
+%                     (mean and standard deviation across profiles);
+%                     default is 'all'
 %   'per_float',per_float : show profiles separately for each float (1)
-%                           or all in one plot (0); default: 1 --
-%                           either option can be used with 'all' and
-%                           'mean' methods
-%   'obs',obs             : plot markers at depths of observations (1);
-%                           default: 0 (=off)
-%   'raw',raw             : plot raw, i.e., unadjusted data if set to 'yes';
-%                           default: 'no' (i.e., plot adjusted data if 
-%                           available)
-%  'qc',flags             : show only values with the given QC flags (array)
-%                           0: no QC was performed; 
-%                           1: good data; 
-%                           2: probably good data;
-%                           3: probably bad data that are 
-%                              potentially correctable;
-%                           4: bad data; 
-%                           5: value changed; 
-%                           6,7: not used;
-%                           8: estimated value; 
-%                           9: missing value
-%                           defaults:
-%                           [1,2] for adjusted data; [0:9] for raw data
-%                           See Table 7 in Bittig et al.:
-%                           https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
+%                     or all in one plot (0); default: 1 --
+%                     either option can be used with 'all' and
+%                     'mean' methods
+%   'obs',obs       : plot markers at depths of observations (1);
+%                     default: 0 (=off)
+%   'raw',raw       : plot raw, i.e., unadjusted data if set to 'yes';
+%                     default: 'no' (i.e., plot adjusted data if 
+%                     available)
+%   'qc',flags      : show only values with the given QC flags (array)
+%                     0: no QC was performed; 
+%                     1: good data; 
+%                     2: probably good data;
+%                     3: probably bad data that are potentially correctable;
+%                     4: bad data; 
+%                     5: value changed; 
+%                     6,7: not used;
+%                     8: estimated value; 
+%                     9: missing value
+%                     default setting: 0:9 (all flags)
+%                     See Table 7 in Bittig et al.:
+%                     https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
+%
+% OUTPUTS:
+%   mean_prof : mean across profiles (cell array of cell arrays of column 
+%               vectors ({variable}{float}) if per_float is set to 1, 
+%               cell array of column vectors ({variable}) if per_float
+%               is set to 0)
+%   std_prof  : standard deviation across profiles (same type as mean_prof)
+%   mean_pres : mean pressure across profiles (cell array of column
+%               vectors if per_float is set to 1,
+%               column vector if per_float is 0)
 %
 % AUTHORS: 
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL),
@@ -77,7 +87,7 @@ per_float = 1; % show profiles for each float in a separate plot
 obs = 'off'; % don't show observation points on each profile by default
 raw = 'no'; % plot adjusted data by default
 title_add = ''; % nothing added to title
-qc_flags = []; % if not changed, actual defaults will be assigned below
+qc_flags = 0:9; % use all data
 
 % parse optional arguments
 for i = 1:2:length(varargin)
@@ -93,14 +103,6 @@ for i = 1:2:length(varargin)
         title_add = varargin{i+1};
     elseif strcmpi(varargin{i}, 'qc')
         qc_flags = varargin{i+1};
-    end
-end
-
-if isempty(qc_flags)
-    if strncmpi(raw,'y',1)
-        qc_flags = 0:9; % use everything
-    else % adjusted data
-        qc_flags = 0:9; % use everything
     end
 end
 
@@ -127,9 +129,8 @@ end
 
 % unless 'raw' is specified, plot adjusted data
 if strncmpi(raw,'y',1)
-    xlabel_add = ' [raw values]';
+    title_add = ' [raw values]';
 else
-    xlabel_add = '';
     for v = 1:nvars
         % if all floats have adjusted values available for a variable,
         % they will be used instead of raw values
@@ -158,96 +159,78 @@ for f = 1:nfloats
     Datai.(floats{f}) = depth_interp(Data.(floats{f}), qc_flags);
 end
 
-% mean over multiple floats is treated separately below
-if per_float || nfloats == 1 || strcmp(method, 'all')
-    for v = 1:nvars
-        if ~per_float && nfloats > 1
-            figure;
-            [mean_prof, ~, mean_pres] = ...
-                get_multi_profile_mean(Datai, variables{v});
-        end
-        for f = 1:nfloats
-            try
-                PRES = Data.(floats{f}).PRES_ADJUSTED;
-            catch
-                PRES = Data.(floats{f}).PRES;
-            end
-            nprofs = size(Data.(floats{f}).PRES,2);
-            if per_float || nfloats == 1
-                figure;
-                mean_prof = mean(Datai.(floats{f}).(variables{v}),2,...
-                    'omitnan');
-            end
-            hold on
-            if strcmp(method, 'all')
-                for p = 1:nprofs
-                    idx = isfinite(Data.(floats{f}).(variables{v})(:,p)) & ...
-                        isfinite(PRES(:,p)) & ...
-                        ismember(Data.(floats{f}).([variables{v},'_QC'])(:,p),...
-                        qc_flags);
-                    if sum(idx)
-                        plot(Data.(floats{f}).(variables{v})(idx,p), ...
-                            PRES(idx,p),'k-');
-                        if strcmp(obs,'on')
-                            scatter(Data.(floats{f}).(variables{v})(idx,p), ...
-                                PRES(idx,p),'k.');
-                        end
-                    else
-                        warning(['no valid observations matching selected',...
-                            ' QC flags found for profile %d of float %s'], ...
-                            p, floats{f});
-                    end
-                end
-                if per_float || nfloats == 1
-                    plot(mean_prof,Datai.(floats{f}).PRES(:,1),'r-',...
-                        'linewidth',2);
-                else
-                    plot(mean_prof,mean_pres(:,1),'r-','linewidth',2);
-                end
-            elseif strcmp(method, 'mean')
-                std_prof = std(Datai.(floats{f}).(variables{v}),[],2,'omitnan');
-                plot(mean_prof,Datai.(floats{f}).PRES(:,1),'k-','linewidth',2);
-                plot(mean_prof - std_prof,Datai.(floats{f}).PRES(:,1),...
-                    'b-','linewidth',2);
-                plot(mean_prof + std_prof,Datai.(floats{f}).PRES(:,1),...
-                    'b-','linewidth',2);
-            end
-            hold off
-            set(gca,'Ydir','reverse');
-            [long_name, units] = get_var_name_units(variables{v});
-            xlabel([long_name, ' ', units, xlabel_add])
-            ylabel('Pressure (dbar)')
-            if per_float
-                title(sprintf('Float %d %s', ...
-                    Mdata.(float_ids{f}).WMO_NUMBER, title_add));
-            else
-                if nfloats < 4
-                    ttitle = 'Floats';
-                    for ff = 1:nfloats
-                        ttitle = sprintf('%s %d', ttitle, ...
-                            Mdata.(float_ids{ff}).WMO_NUMBER);
-                    end
-                else
-                    ttitle = 'All selected floats';
-                end
-                title([ttitle, title_add]);
-            end
-        end
+if per_float
+    for f = 1:nfloats
+        mean_pres{f} = Datai.(floats{f}).PRES(:,1);
     end
-else % mean over multiple floats
-    for v = 1:nvars
-        [mean_prof, std_prof, mean_pres] = ...
+end
+for v = 1:nvars
+    if ~per_float
+        [mean_prof{v}, std_prof{v}, mean_pres] = ...
             get_multi_profile_mean(Datai, variables{v});
-        figure;
+        this_mean_prof = mean_prof{v};
+        this_std_prof = std_prof{v};
+        this_mean_pres = mean_pres;
+        figure; % one figure per variable for all floats
         hold on
-        plot(mean_prof,mean_pres,'k-');
-        plot(mean_prof - std_prof,mean_pres,'b-');
-        plot(mean_prof + std_prof,mean_pres,'b-');        
-        hold off
+    end
+    for f = 1:nfloats
+        try
+            PRES = Data.(floats{f}).PRES_ADJUSTED;
+        catch
+            PRES = Data.(floats{f}).PRES;
+        end
+        nprofs = size(Data.(floats{f}).PRES,2);
+        if per_float
+            mean_prof{v}{f} = mean(Datai.(floats{f}).(variables{v}),2,...
+                'omitnan');
+            std_prof{v}{f} = std(Datai.(floats{f}).(variables{v}),[],2,...
+                'omitnan');
+            this_mean_prof = mean_prof{v}{f};
+            this_std_prof = std_prof{v}{f};
+            this_mean_pres = mean_pres{f};
+            figure; % one figure per variable for each float
+            hold on
+        end
+        if strcmp(method, 'all')
+            for p = 1:nprofs
+                idx = isfinite(Data.(floats{f}).(variables{v})(:,p)) & ...
+                    isfinite(PRES(:,p)) & ...
+                    ismember(Data.(floats{f}).([variables{v},'_QC'])(:,p),...
+                    qc_flags);
+                if sum(idx)
+                    plot(Data.(floats{f}).(variables{v})(idx,p), ...
+                        PRES(idx,p),'k-');
+                    if strcmp(obs,'on')
+                        scatter(Data.(floats{f}).(variables{v})(idx,p), ...
+                            PRES(idx,p),'k.');
+                    end
+                else
+                    warning(['no valid observations matching selected',...
+                        ' QC flags found for profile %d of float %s'], ...
+                        p, floats{f});
+                end
+            end
+            plot(this_mean_prof,this_mean_pres,'r-','linewidth',2);
+        else
+            plot(this_mean_prof,this_mean_pres,'k-','linewidth',2);
+            plot(this_mean_prof - this_std_prof,this_mean_pres,...
+                'b-','linewidth',2);
+            plot(this_mean_prof + this_std_prof,this_mean_pres,...
+                'b-','linewidth',2);
+        end
         set(gca,'Ydir','reverse');
         [long_name, units] = get_var_name_units(variables{v});
-        xlabel([long_name, ' ', units, xlabel_add])
+        xlabel([long_name, ' ', units])
         ylabel('Pressure (dbar)')
+        if per_float
+            hold off
+            title(sprintf('Float %d %s', ...
+                Mdata.(float_ids{f}).WMO_NUMBER, title_add));
+        end 
+    end
+    if ~per_float
+        hold off
         if nfloats < 4
             ttitle = 'Floats';
             for f = 1:nfloats

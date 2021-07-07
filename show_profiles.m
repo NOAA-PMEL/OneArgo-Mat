@@ -1,9 +1,11 @@
-function good_float_ids = show_profiles(profile_ids, variables, varargin)
+function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
+    show_profiles(profile_ids, variables, varargin)
 % show_profiles  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   good_float_ids = show_profiles(profile_ids, variables, varargin)
+%   [good_float_ids, mean_prof, std_prof, mean_pres] = ...
+%       show_profiles(profile_ids, variables, varargin)
 %
 % DESCRIPTION:
 %   This an intermediary function that downloads profile(s) for the given
@@ -40,15 +42,23 @@ function good_float_ids = show_profiles(profile_ids, variables, varargin)
 %                   6,7: not used;
 %                   8: estimated value; 
 %                   9: missing value
-%                   default setting: 
-%                   [1,2] for adjusted data; [0:9] for raw data
+%                   default setting: 0:9 (all flags)
 %                   See Table 7 in Bittig et al.:
 %                   https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
 %   'title_add',text : add the given text to all titles
 %
-% OUTPUT:
+% OUTPUTS:
 %   good_float_ids : array of the float IDs whose Sprof files were
-%                    successfully downloaded or existed already
+%                   successfully downloaded or existed already
+%   mean_prof :     mean across profiles (cell array of cell arrays
+%                   ({variable}{float}) of column vectors if per_float
+%                   is set to 1,
+%                   cell array ({variable}) of column vectors if per_float
+%                   is set to 0)
+%   std_prof  :     standard deviation across profiles (same type as mean_prof)
+%   mean_pres :     mean pressure across profiles (cell array of column
+%                   vectors if per_float is set to 1,
+%                   column vector if per_float is 0)
 %
 % AUTHORS: 
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
@@ -66,10 +76,17 @@ function good_float_ids = show_profiles(profile_ids, variables, varargin)
 %
 % DATE: June 15, 2021
 
-global Settings Sprof;
+global Sprof;
+
+% assign empty arrays to all return values in case of early return
+good_float_ids = [];
+mean_prof = {};
+std_prof = {};
+mean_pres = {};
 
 if nargin < 2
     warning('Usage: show_profiles(profile_ids, variables, varargin)')
+    return
 end
 
 if isempty(profile_ids)
@@ -80,9 +97,6 @@ end
 % set defaults
 if nargin < 2
     variables = {'DOXY'};
-end
-if ~nargin
-    profile_ids = Settings.demo_float;
 end
 type = 'profiles';
 varargpass= {};
@@ -130,6 +144,7 @@ else
     else
         [Data, Mdata] = load_float_data(good_float_ids, variables);
     end
-    plot_profiles(Data, Mdata, variables, varargpass{:});
+    [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
+        variables, varargpass{:});
 end
 

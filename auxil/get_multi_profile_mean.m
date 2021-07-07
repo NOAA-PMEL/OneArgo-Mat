@@ -17,9 +17,9 @@ function [mean_prof,std_prof,mean_pres] = get_multi_profile_mean(Datai, ...
 %   variable  : string with the name of the variable (e.g., DOXY)
 %
 % OUTPUTS:
-%   mean_prof : mean value of the variable across floats
-%   std_prof  : standard variation of the variable across floats
-%   mean_pres : mean pressure across floats
+%   mean_prof : mean value of the variable across floats (column vector)
+%   std_prof  : standard variation of the variable across floats (column vector)
+%   mean_pres : mean pressure across floats (column vector)
 %
 % AUTHORS: 
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
@@ -52,7 +52,8 @@ for f = 1:nfloats
         max_npres = this_npres(f);
     end
 end
-mean_pres = Datai.(floats{imax}).PRES; % this is PRES_ADJUSTED if available
+ % this is PRES_ADJUSTED if available:
+mean_pres = Datai.(floats{imax}).PRES(:,1); % values are the same in 2nd dim
 ndepths = size(mean_pres,1);
 total_nprofs = 0;
 this_nprofs = nan(nfloats,1);
