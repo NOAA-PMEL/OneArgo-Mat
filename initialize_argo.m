@@ -24,13 +24,15 @@ function initialize_argo()
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: October 15, 2021 (Version 1.1)
 
 global Settings Sprof Float;
 
-addpath('auxil')
-addpath(genpath('m_map'))
-addpath(genpath('gsw'))
+% add subdirectories with auxiliary functions to the path
+filepath = fileparts(mfilename('fullpath'));
+addpath([filepath, '/auxil'])
+addpath(genpath([filepath, '/m_map']))
+addpath(genpath([filepath, '/gsw']))
 
 % The do_pause() function can be used in a driver script to
 % halt the execution until the user presses ENTER.
