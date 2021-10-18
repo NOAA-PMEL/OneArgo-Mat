@@ -10,6 +10,7 @@ function [profiles,floats] = select_profiles(lon_lim,lat_lim,...
 % DESCRIPTION:
 %   This function returns the indices of profiles and floats that match
 %   the given criteria (spatial, temporal, sensor availability).
+%   It does not download any files.
 %
 % INPUTS:
 % lon_lim    : Longitude limits
