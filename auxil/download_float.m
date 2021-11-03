@@ -58,7 +58,8 @@ if exist(local_path, 'file') == 2
         sprof_date = ncread(local_path, 'DATE_UPDATE')';
         sprof_date = datenum(sprof_date, 'yyyymmddHHMMSS');
         % allow a small tolerance value for numerical imprecision
-        if sprof_date > Float.update(float_idx) - 1
+        if sprof_date > ...
+                datenum(Float.update(float_idx), 'yyyymmddHHMMSS') - 1
             % existing file has all profiles, no need to download again
             success = 1;
             return;

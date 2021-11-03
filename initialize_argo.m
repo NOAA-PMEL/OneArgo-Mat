@@ -130,7 +130,7 @@ Sprof.ocean = H{5};
 % column 7: institution
 Sprof.sens = H{8};
 Sprof.data_mode = H{9};
-Sprof.date_update = datenum(H{10}, 'yyyymmddHHMMSS');
+Sprof.date_update = H{10};
 Sprof.nprofs = length(H{1});
 
 % Extract unique floats
