@@ -113,23 +113,9 @@ for n = 1:length(good_float_ids)
     str_floatnum = ['F', num2str(floatnum)];
     filename = sprintf('%s%d_Sprof.nc', Settings.prof_dir, floatnum);
     
-    % LOAD VARIABLES FROM FILE
-    info = ncinfo(filename); % Read netcdf information
-    dims = info.Dimensions; % Extract dimensional information
-    % Determine names of dimensional properties
-    dimensions = cell(numel(dims),1);
-    for h = 1:numel(dims)
-        dimensions(h) = {dims(h).Name};
-    end
     % Find 'number of profiles', 'number of parameters', and 'number of
     % depth levels'
-    profidx  = find(strcmp(dimensions,'N_PROF'));
-    n_prof = dims(profidx).Length;
-    paramidx = find(strcmp(dimensions,'N_PARAM'));
-    n_param = dims(paramidx).Length;
-    levidx   = find(strcmp(dimensions,'N_LEVELS'));
-    n_levels = dims(levidx).Length;
-    clear info dims;
+    [n_prof, n_param, n_levels] = get_dims(filename);
     n_vars = length(all_vars);
     % Extract data from netcdf file and save data in proper structures
     for l = 1:n_vars
