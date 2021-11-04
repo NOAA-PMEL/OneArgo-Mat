@@ -122,7 +122,7 @@ end
 
 if strncmpi(type, 'prof', 4)
     % profile IDs need to be converted to float IDs
-    all_float_ids = str2num(cell2mat(Sprof.wmo(profile_ids)));
+    all_float_ids = Sprof.wmo(profile_ids);
 else
     all_float_ids = profile_ids;
 end

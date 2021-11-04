@@ -136,12 +136,13 @@ Sprof.nprofs = length(H{1});
 % Extract unique floats
 Sprof.wmo = regexp(sprof_urls,'\d{7}','once','match');
 [uwmo,ia] = unique(Sprof.wmo,'stable'); % keep list order
+
 ulist = sprof_urls(ia);
 dacs = regexp(ulist(:,1),'^\w+','once','match');
 Sprof_fnames = regexprep(uwmo,'\d{7}','$0_Sprof.nc');
 tmp = regexprep(ulist(:,1),'profiles.+','');
 Sprof_fp = strcat(tmp,Sprof_fnames);
-
+Sprof.wmo = str2double(Sprof.wmo);
 % Put per-float information into global struct Float
 Float.file_path = Sprof_fp;
 Float.file_name = Sprof_fnames;

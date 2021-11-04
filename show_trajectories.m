@@ -69,7 +69,7 @@ if isempty(prof_ids)
 else
     % convert global profile IDs to individual (per float) profile IDs
     float_profs = cell(length(float_ids),1); % pre-allocate
-    all_float_ids = str2num(cell2mat(Sprof.wmo(prof_ids))); % get all float ids
+    all_float_ids = Sprof.wmo(prof_ids); % get all float ids
     for i = 1:length(float_ids)
         idx = (all_float_ids == float_ids(i)); % index based on float id
         % obtain profiles of that float to plot

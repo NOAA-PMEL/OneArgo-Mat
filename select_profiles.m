@@ -160,5 +160,5 @@ else
 end
 
 if ~isempty(profiles)
-    floats = str2num(cell2mat(unique(Sprof.wmo(profiles))));
+    floats = unique(Sprof.wmo(profiles));
 end
