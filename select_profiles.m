@@ -1,11 +1,11 @@
-function [profiles,floats] = select_profiles(lon_lim,lat_lim,...
+function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
     start_date,end_date,varargin)
 % select_profiles  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   [profiles,floats] = select_profiles(lon_lim,lat_lim,...
-%                                       start_date,end_date,varargin)
+%   [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
+%       start_date,end_date,varargin)
 %
 % DESCRIPTION:
 %   This function returns the indices of profiles and floats that match
@@ -42,8 +42,8 @@ function [profiles,floats] = select_profiles(lon_lim,lat_lim,...
 %           (Currently, only one sensor type can be selected.)
 %
 % OUTPUTS:
-%   profiles : array with the global indices of all matching profiles
-%   floats   : array with the global indices of all matching floats
+%   float_ids   : array with the WMO IDs of all matching floats
+%   float_profs : cell array with the per-float indices of all matching profiles
 %
 % AUTHORS: 
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL),
@@ -61,13 +61,11 @@ function [profiles,floats] = select_profiles(lon_lim,lat_lim,...
 %
 % DATE: June 15, 2021
 
-global Settings Sprof;
+global Float Settings Sprof;
 
 % set defaults
 outside = 'none'; % if set, removes profiles outside time/space constraints
 sensor = []; % default: use all available profiles
-profiles = []; % will be assigned if successful
-floats = []; % will be assigned if successful
 
 % parse optional arguments
 for i = 1:2:length(varargin)
@@ -82,6 +80,8 @@ end
 if ~isempty(sensor)
     if ~any(strcmp(sensor, Settings.avail_vars))
         warning('unknown sensor: %s', sensor)
+        pause(3)
+        sensor = [];
     end
 end
 
@@ -129,7 +129,14 @@ else
 end
 
 % Find index of dates that are within the time window
-indate   = Sprof.date >= dn1 & Sprof.date <= dn2;
+date_inpoly = datenum(Sprof.date(inpoly), 'yyyymmddHHMMSS');
+indate_poly = date_inpoly >= dn1 & date_inpoly <= dn2;
+% now create an indate array of 0s/1s that has the same 
+% size as inpoly so that it can be used in the & operations below
+indate = zeros(size(inpoly));
+all_floats = 1:length(inpoly);
+sel_floats_space = all_floats(inpoly);
+indate(sel_floats_space(indate_poly)) = 1;
 
 % SELECT BY SENSOR
 if isempty(sensor)
@@ -137,28 +144,78 @@ if isempty(sensor)
 else
     has_sensor = contains(Sprof.sens, sensor);
 end
-all_prof = 1:length(indate);
-
 if ~sum(has_sensor)
-    warning('no data found for sensor %s', sensor);   
-elseif strcmp(outside, 'none')
-    profiles = all_prof(inpoly & indate & has_sensor);
-else
-    % identify all profiles of all those floats that have at least
-    % one profile within given time and space constraints
-    use_idx = ((inpoly' & indate') * Sprof.p2f) * Sprof.p2f';
+    warning('no data found for sensor %s', sensor);
+end
+
+all_prof = 1:length(indate);
+profiles = all_prof(inpoly & indate & has_sensor);
+float_ids = unique(Sprof.wmo(profiles));
+
+% download Sprof files if necessary
+good_float_ids = download_multi_floats(float_ids);
+ 
+% the information from the index file is only used for an initial
+% filtering of floats, the actual information from the Sprof files
+% is used in a second step
+float_ids = good_float_ids;
+float_profs = cell(length(good_float_ids), 1);
+
+for fl = 1:length(good_float_ids)
+    filename = sprintf('%s%d_Sprof.nc', Settings.prof_dir, ...
+        good_float_ids(fl));
+    n_prof = get_dims(filename);
+    fl_idx = find(str2num(cell2mat(Float.wmoid)) == good_float_ids(fl));
+    n_prof_exp = Float.prof_idx2(fl_idx) - Float.prof_idx1(fl_idx) + 1;
+    if n_prof_exp > n_prof
+        warning(['The index file lists %d profiles for float %d, ', ...
+            'but the Sprof file has only %d profiles.'], ...
+            n_prof_exp, good_float_ids(fl), n_prof)
+    end
+    lon = ncread(filename, 'LONGITUDE');
+    lat = ncread(filename, 'LATITUDE');
+    juld = ncread(filename, 'JULD');
+    date = datenum(juld) + datenum([1950 1 1]);
+
+    if lonv(1) > lonv(2)
+        lonv1 = [lonv(1) 180 180 lonv(1)];
+        lonv2 = [-180 lonv(2) lonv(2) -180];
+        inpoly = inpolygon(lon,lat,lonv1,latv) | ...
+            inpolygon(lon,lat,lonv2,latv);
+    else
+        inpoly = inpolygon(lon,lat,lonv,latv);
+    end
+    indate = date >= dn1 & date <= dn2;
+
+    if isempty(sensor)
+        has_sensor = ones(size(inpoly));
+    else
+        param = ncread(filename, 'PARAMETER');
+        has_sensor = zeros(size(inpoly));
+        for p = 1:n_prof
+           has_sensor(p) = any(strcmp(cellstr(param(:,:,1,p)'), sensor));
+        end
+    end
+ 
     % now apply the given constraints
-    if strcmp(outside, 'time') % must meet space constraint
-        profiles = all_prof(inpoly & use_idx' & has_sensor);
+    all_prof = 1:length(inpoly);
+    if strcmp(outside, 'none')
+        float_profs{fl} = all_prof(inpoly & indate & has_sensor);
+    elseif strcmp(outside, 'time') % must meet space constraint
+        float_profs{fl} = all_prof(inpoly & has_sensor);
     elseif strcmp(outside, 'space') % must meet time constraint
-        profiles = all_prof(indate & use_idx' & has_sensor);
+        float_profs{fl} = all_prof(indate & has_sensor);
     elseif strcmp(outside, 'both') % no time or space constraint
-        profiles = all_prof(use_idx' & has_sensor);
+        float_profs{fl} = all_prof(has_sensor);
     else
         warning('no such setting for "outside": %s', outside)
+        float_profs{fl} = [];
+    end
+ 
+    if isempty(float_profs{fl})
+        warning('no matching profiles found for float %d', good_float_ids(fl))
+        float_ids(float_ids == good_float_ids(fl)) = [];
     end
 end
 
-if ~isempty(profiles)
-    floats = unique(Sprof.wmo(profiles));
-end
+float_profs(cellfun(@isempty, float_profs)) = [];

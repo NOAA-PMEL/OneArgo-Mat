@@ -18,12 +18,13 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   colors for different floats), or any standard Matlab
 %                   color descriptor ('r', 'k', 'b', 'g' etc.)
 %                   (all trajectories will be plotted in the same color)
-%  'prof_ids',ids : ids is an array with the global indices of the
+%                   default value is 'r' (red)
+%  'float_profs',fp : fp is an array with the per-float indices of the
 %                   selected profiles, as returned by function
 %                   select_profiles - use this optional argument if you
 %                   don't want to plot the full trajectories of the
-%                   given floats, but only those that match spatial
-%                   and/or temporal constraints
+%                   given floats, but only those locations that match
+%                   spatial and/or temporal constraints
 %
 % OUTPUT:
 %   good_float_ids : array of the float IDs whose Sprof files were
@@ -45,35 +46,22 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %
 % DATE: June 15, 2021
 
-global Settings Sprof;
+global Settings;
 
 if ~nargin
     float_ids = Settings.demo_float;
 end
 
 % set defaults
-color = 'r'; % if set, removes profiles outside time/space constraints
-prof_ids = {};
+color = 'r'; % red
+float_profs = [];
 
 % parse optional arguments
 for i = 1:2:length(varargin)
     if strcmpi(varargin{i}, 'color')
         color = varargin{i+1};
-    elseif strcmpi(varargin{i}, 'prof_ids')
-        prof_ids = varargin{i+1};
-    end
-end
-
-if isempty(prof_ids)
-    float_profs = {};
-else
-    % convert global profile IDs to individual (per float) profile IDs
-    float_profs = cell(length(float_ids),1); % pre-allocate
-    all_float_ids = Sprof.wmo(prof_ids); % get all float ids
-    for i = 1:length(float_ids)
-        idx = (all_float_ids == float_ids(i)); % index based on float id
-        % obtain profiles of that float to plot
-        float_profs{i} = Sprof.fprofid(prof_ids(idx));
+    elseif strcmpi(varargin{i}, 'float_profs')
+        float_profs = varargin{i+1};
     end
 end
 
