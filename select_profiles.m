@@ -13,15 +13,17 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %   It does not download any files.
 %
 % INPUTS:
-% lon_lim    : Longitude limits
-% lat_lim    : Latitude limits
-%            * Latitude and longitude limits can each be input as either a
-%            two element vector (e.g., [LAT1 LAT2]) for maximum and minimum
-%            limits or a four element vector (e.g., [LAT1 LAT2 LAT3 LAT4])
-%            for quadrilateral vertices
+% lon_lim    : longitude limits
+% lat_lim    : latitude limits
+%            * Latitude and longitude limits can be input as either
+%            two element vectors ([LON1 LON2], [LAT1 LAT2]) for maximum
+%            and minimum limits, or as same-sized vectors with at least
+%            3 elements for vertices of a polygon
 %            * Longitude can be input in either the -180 to 180 degrees
-%            format or 0 to 360 degrees format
-%            * Both values can be '[]' to indicate the full range
+%            format or 0 to 360 degrees format (or even in any other
+%            360 degree range that encloses all the desired longitude
+%            values, e.g., [-20 200])
+%            * Either or both values can be '[]' to indicate the full range
 % start_date : start date
 % end_date   : end date
 %            * Dates should be in one of the following formats:
@@ -99,33 +101,17 @@ if isempty(end_date)
     end_date = [2038, 1, 19];
 end
 
-% FORMAT LATITUDE AND LONGITUDE LIMITS
-lon_lim(lon_lim>180) = lon_lim(lon_lim>180)-360; % Wrap lon to -180..180 deg
-lon_lim(lon_lim<-180) = lon_lim(lon_lim<-180)+360;
-% If only two elements are input, extend to obtain four vertices
-if numel(lat_lim)==2
-    latv = [lat_lim(1) lat_lim(1) lat_lim(2) lat_lim(2)];
-else
-    latv = lat_lim;
-end
-if numel(lon_lim)==2
-    lonv = [lon_lim(1) lon_lim(2) lon_lim(2) lon_lim(1)];
-else
-    lonv = lon_lim;
-end
-
 % ADJUST INPUT DATES TO DATENUM FORMAT
 dn1 = datenum(start_date); 
 dn2 = datenum(end_date);
 
 % GET INDEX OF PROFILES WITHIN USER-SPECIFIED GEOGRAPHIC POLYGON
-if lonv(1) > lonv(2)
-    lonv1 = [lonv(1) 180 180 lonv(1)];
-    lonv2 = [-180 lonv(2) lonv(2) -180];
-    inpoly = inpolygon(Sprof.lon,Sprof.lat,lonv1,latv) | ...
-             inpolygon(Sprof.lon,Sprof.lat,lonv2,latv);
-else
-    inpoly = inpolygon(Sprof.lon,Sprof.lat,lonv,latv);
+inpoly = get_inpolygon(Sprof.lon,Sprof.lat,lon_lim,lat_lim);
+if isempty(inpoly)
+    warning('no matching profiles found')
+    float_ids = [];
+    float_profs = [];
+    return
 end
 
 % Find index of dates that are within the time window
@@ -177,14 +163,7 @@ for fl = 1:length(good_float_ids)
     juld = ncread(filename, 'JULD');
     date = datenum(juld) + datenum([1950 1 1]);
 
-    if lonv(1) > lonv(2)
-        lonv1 = [lonv(1) 180 180 lonv(1)];
-        lonv2 = [-180 lonv(2) lonv(2) -180];
-        inpoly = inpolygon(lon,lat,lonv1,latv) | ...
-            inpolygon(lon,lat,lonv2,latv);
-    else
-        inpoly = inpolygon(lon,lat,lonv,latv);
-    end
+    inpoly = get_inpolygon(lon,lat,lon_lim,lat_lim);
     indate = date >= dn1 & date <= dn2;
 
     if isempty(sensor)
