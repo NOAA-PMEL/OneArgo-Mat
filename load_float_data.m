@@ -10,11 +10,11 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 %   of at least one specified float.
 %
 % INPUTS:
-%   float_ids   : WMO ID of one or more floats
+%   float_ids   : WMO ID(s) of one or more floats
 %
 % OPTIONAL INPUTS:
 %   variables   : cell array with variable names to be loaded
-%   float_profs : cell array with IDs of selected profiles (per float,
+%   float_profs : cell array with indices of selected profiles (per float,
 %                 not global)
 %
 % OUTPUT:
@@ -119,7 +119,12 @@ for n = 1:length(good_float_ids)
     n_vars = length(all_vars);
     % Extract data from netcdf file and save data in proper structures
     for l = 1:n_vars
-        tmp = ncread(filename,all_vars{l});
+        try
+            tmp = ncread(filename,all_vars{l});
+        catch
+            warning('%s not found in %s', all_vars{l}, filename)
+            continue; % skip this variable for this float
+        end
         % CONVERT QUALITY FLAGS TO NUMERIC FORMAT
         if endsWith(all_vars{l},'_QC') && ... % Check for QC identifier
                 ~startsWith(all_vars{l},'PROFILE') % But not a profile QC
