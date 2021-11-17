@@ -17,11 +17,11 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 %   float_profs : cell array with indices of selected profiles (per float,
 %                 not global)
 %
-% OUTPUT:
+% OUTPUTS:
 %   Data        : struct with the requested variables (including QC flags.
 %                 adjusted values if available) and general ones
 %                 (LONGITUDE,LATITUDE,JULD etc.)
-%   Mdata       : struct with meta data (WMO_NUMBER)
+%   Mdata       : struct with meta data (WMO_NUMBER, PI_NAME, etc.)
 %
 % AUTHORS: 
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL),
@@ -41,6 +41,8 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 
 global Settings;
 
+add_pres = 0; % default: do not add 'PRES' to list of variables
+
 if nargin < 1
     warning('Usage: load_float_data(float_ids [, variables, float_profs])')
     return
@@ -50,10 +52,11 @@ if nargin >= 2
     if ischar(variables)
         variables = cellstr(variables);
     end
-    add_pres = 1;
+    if ~sum(ismember('PRES', variables))
+        add_pres = 1;
+    end
 else
     variables = {};
-    add_pres = 0;
 end
 if nargin < 3
     % by default, all profiles of the given floats are loaded
@@ -63,45 +66,28 @@ end
 % INITIALIZE STRUCTURES FOR OUTPUT
 Data = struct();
 Mdata = struct();
-
-% pre-allocate all_vars cell array
-nvars = 9 + 6*(length(variables) + add_pres);
-all_vars = cell(nvars, 1);
-
-% only some variables are always loaded, others only by request
-all_vars(1:9) = {'CYCLE_NUMBER'; 'DIRECTION'; 'JULD'; 'JULD_QC'; ...
-    'JULD_LOCATION'; 'LATITUDE'; 'LONGITUDE'; 'PARAMETER_DATA_MODE'; ...
-    'PARAMETER'};
-
-if add_pres
-    % if no variables are specified (e.g., to plot trajectories only),
-    % loading pressure and associated variables is not needed
-    variables{end+1} = 'PRES';
-    all_vars{10} = 'PROFILE_PRES_QC';
-end
-cnt_vars = 9 + add_pres;
-
 fields_mdata = {'PROJECT_NAME';'PI_NAME';'DATA_CENTRE'};
 
-add_vars = ismember(Settings.avail_vars, variables);
-new_vars = Settings.avail_vars(add_vars);
+% only some variables are always loaded, others only by request
+base_vars = {'CYCLE_NUMBER'; 'DIRECTION'; 'JULD'; 'JULD_QC'; ...
+    'JULD_LOCATION'; 'LATITUDE'; 'LONGITUDE'; 'POSITION_QC'; ...
+    'PARAMETER_DATA_MODE'; 'PARAMETER'};
 
-% always include all associated variables
-for i = 1:length(new_vars)
-    cnt_vars = cnt_vars+1;
-    all_vars{cnt_vars} = new_vars{i}; 
-    cnt_vars = cnt_vars+1;
-    all_vars{cnt_vars} = [new_vars{i}, '_QC'];
-    if ~strcmp(new_vars{i}, 'PRES')
-        cnt_vars = cnt_vars+1;
-        all_vars{cnt_vars} = [new_vars{i}, '_dPRES'];
+if strcmp(variables{1}, 'ALL')
+    use_all_vars = 1;
+    base_vars{end+1} = 'PROFILE_PRES_QC';
+else
+    use_all_vars = 0;
+    if add_pres
+        % if no variables are specified (e.g., to plot trajectories only),
+        % loading pressure and associated variables is not needed
+        variables{end+1} = 'PRES';
+        base_vars{end+1} = 'PROFILE_PRES_QC';
     end
-    cnt_vars = cnt_vars+1;
-    all_vars{cnt_vars} = [new_vars{i}, '_ADJUSTED'];
-    cnt_vars = cnt_vars+1;
-    all_vars{cnt_vars} = [new_vars{i}, '_ADJUSTED_QC'];
-    cnt_vars = cnt_vars+1;
-    all_vars{cnt_vars} = [new_vars{i}, '_ADJUSTED_ERROR'];
+
+    add_vars = ismember(Settings.avail_vars, variables);
+    new_vars = Settings.avail_vars(add_vars);
+    all_vars = combine_variables(base_vars, new_vars);
 end
 
 % download Sprof files if necessary
@@ -112,7 +98,13 @@ for n = 1:length(good_float_ids)
     floatnum = good_float_ids(n);
     str_floatnum = ['F', num2str(floatnum)];
     filename = sprintf('%s%d_Sprof.nc', Settings.prof_dir, floatnum);
-    
+    if use_all_vars
+        info = ncinfo(filename); % Read netcdf information
+        these_vars = extractfield(info.Variables, 'Name');
+        add_vars = ismember(Settings.avail_vars, these_vars);
+        new_vars = Settings.avail_vars(add_vars);
+        all_vars = combine_variables(base_vars, new_vars);
+    end
     % Find 'number of profiles', 'number of parameters', and 'number of
     % depth levels'
     [n_prof, n_param, n_levels] = get_dims(filename);
@@ -202,4 +194,3 @@ for n = 1:length(good_float_ids)
         end
     end
 end
-
