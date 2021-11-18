@@ -73,7 +73,7 @@ base_vars = {'CYCLE_NUMBER'; 'DIRECTION'; 'JULD'; 'JULD_QC'; ...
     'JULD_LOCATION'; 'LATITUDE'; 'LONGITUDE'; 'POSITION_QC'; ...
     'PARAMETER_DATA_MODE'; 'PARAMETER'};
 
-if strcmp(variables{1}, 'ALL')
+if ~isempty(variables) && strcmp(variables{1}, 'ALL')
     use_all_vars = 1;
     base_vars{end+1} = 'PROFILE_PRES_QC';
 else
