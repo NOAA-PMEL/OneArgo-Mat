@@ -68,6 +68,7 @@ global Float Settings Sprof;
 % set defaults
 outside = 'none'; % if set, removes profiles outside time/space constraints
 sensor = []; % default: use all available profiles
+ocean = []; % default: any ocean basin
 
 % parse optional arguments
 for i = 1:2:length(varargin)
@@ -75,6 +76,8 @@ for i = 1:2:length(varargin)
         outside = varargin{i+1};
     elseif strcmpi(varargin{i}, 'sensor')
         sensor = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'ocean')
+        ocean = upper(varargin{i+1}(1));
     end
 end
 
@@ -87,6 +90,12 @@ if ~isempty(sensor)
     end
 end
 
+% check if specified ocean is correct
+if ~isempty(ocean) && ~contains('API', ocean)
+    warning('no such ocean: %s', ocean)
+    ocean = [];
+end
+    
 % fill in the blanks if needed
 if isempty(lon_lim)
     lon_lim = [-180, 180];
@@ -134,8 +143,14 @@ if ~sum(has_sensor)
     warning('no data found for sensor %s', sensor);
 end
 
+% select by ocean basin
+if isempty(ocean)
+    is_ocean = ones(size(indate)); % no ocean was selected
+else
+    is_ocean = strcmp(Sprof.ocean, ocean);
+end
 all_prof = 1:length(indate);
-profiles = all_prof(inpoly & indate & has_sensor);
+profiles = all_prof(inpoly & indate & has_sensor & is_ocean);
 float_ids = unique(Sprof.wmo(profiles));
 
 % download Sprof files if necessary
@@ -175,17 +190,25 @@ for fl = 1:length(good_float_ids)
            has_sensor(p) = any(strcmp(cellstr(param(:,:,1,p)'), sensor));
         end
     end
- 
+    if isempty(ocean)
+        is_ocean = ones(size(inpoly));
+    else
+        sprof_loc = Sprof.lon + 1i * Sprof.lat;
+        this_loc = lon + 1i * lat;
+        [~,idx] = min(abs(bsxfun(@minus,sprof_loc(:),this_loc(:).')));
+        is_ocean = strcmp(Sprof.ocean(idx),ocean);
+        is_ocean(isnan(this_loc)) = 0;
+    end
     % now apply the given constraints
     all_prof = 1:length(inpoly);
     if strcmp(outside, 'none')
-        float_profs{fl} = all_prof(inpoly & indate & has_sensor);
+        float_profs{fl} = all_prof(inpoly & indate & has_sensor & is_ocean);
     elseif strcmp(outside, 'time') % must meet space constraint
-        float_profs{fl} = all_prof(inpoly & has_sensor);
+        float_profs{fl} = all_prof(inpoly & has_sensor & is_ocean);
     elseif strcmp(outside, 'space') % must meet time constraint
-        float_profs{fl} = all_prof(indate & has_sensor);
+        float_profs{fl} = all_prof(indate & has_sensor & is_ocean);
     elseif strcmp(outside, 'both') % no time or space constraint
-        float_profs{fl} = all_prof(has_sensor);
+        float_profs{fl} = all_prof(has_sensor & is_ocean);
     else
         warning('no such setting for "outside": %s', outside)
         float_profs{fl} = [];
