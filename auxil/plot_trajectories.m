@@ -1,4 +1,4 @@
-function plot_trajectories(Data, color)
+function plot_trajectories(Data, color, title1, fn_png)
 % plot_trajectories  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
@@ -16,6 +16,8 @@ function plot_trajectories(Data, color)
 %   color : either 'multiple' (different colors for different floats),
 %           or any standard Matlab color descriptor ('r', 'k', 'b',
 %           'g' etc.; all trajectories will be plotted in the same color)
+%   title1: title of the plot
+%   fn_png: if not empty, create a png image of the plot with this file name
 %
 % AUTHORS: 
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
@@ -35,8 +37,8 @@ function plot_trajectories(Data, color)
 
 global Settings;
 
-if nargin < 2
-    warning('Usage: plot_trajectories(Data, color)')
+if nargin < 4
+    warning('Usage: plot_trajectories(Data, color, title1, fn_png)')
     return;
 end
 
@@ -62,7 +64,7 @@ else % using a range of -180..180
     use_alt_lon = 0;
 end
 
-figure;
+f1 = figure;
 
 % determine colormap for multiple floats
 if strcmp(color, 'multiple') && ~strcmp(Settings.mapping, 'native')
@@ -134,4 +136,7 @@ else % "plain" plot
     legend(floats,'location','eastoutside','AutoUpdate','off')
 end
 hold off
-title('Float trajectories')
+title(title1)
+if ~isempty(fn_png)
+    print(f1, '-dpng', fn_png);
+end

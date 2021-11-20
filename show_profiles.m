@@ -45,6 +45,11 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %                   See Table 7 in Bittig et al.:
 %                   https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
 %   'title_add',text : add the given text to all titles
+%   'png',basename: if basename is not empty, png files will be created
+%                   for all plots; if per_float is used, the file
+%                   names will be <basename>_<WMOID>_<variable>.png,
+%                   if per_float is not used, the file names will be
+%                   <basename>_<variable>.png
 %
 % OUTPUTS:
 %   good_float_ids : array of the float IDs whose Sprof files were
@@ -96,12 +101,15 @@ if nargin < 2
     variables = {'DOXY'};
 end
 float_profs = [];
+basename = [];
 varargpass= {};
 
 % parse optional arguments
-for i = 1:2:length(varargin)
+for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'float_profs')
         float_profs = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'png')
+        basename = varargin{i+1};
     else
         varargpass = [varargpass, varargin{i:i+1}];
         if strcmpi(varargin{i}, 'qc')
@@ -125,6 +133,6 @@ if isempty(good_float_ids)
 else
     [Data, Mdata] = load_float_data(good_float_ids, variables, float_profs);
     [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
-        variables, varargpass{:});
+        variables, basename, varargpass{:});
 end
 

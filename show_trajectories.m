@@ -25,6 +25,9 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   don't want to plot the full trajectories of the
 %                   given floats, but only those locations that match
 %                   spatial and/or temporal constraints
+%  'png',fn_png   : save the plot to a png file with the given 
+%                   file name (fn_png)
+%  'title',title  : title for the plot (default: "Float trajectories")
 %
 % OUTPUT:
 %   good_float_ids : array of the float IDs whose Sprof files were
@@ -55,13 +58,19 @@ end
 % set defaults
 color = 'r'; % red
 float_profs = [];
+fn_png = [];
+title1 = 'Float trajectories';
 
 % parse optional arguments
-for i = 1:2:length(varargin)
+for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'color')
         color = varargin{i+1};
     elseif strcmpi(varargin{i}, 'float_profs')
         float_profs = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'png')
+        fn_png = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'title')
+        title1 = varargin{i+1};
     end
 end
 
@@ -73,5 +82,5 @@ if isempty(good_float_ids)
 else
     % meta data return values and observations are not needed here
     Data = load_float_data(good_float_ids,{},float_profs);   
-    plot_trajectories(Data,color);
+    plot_trajectories(Data, color, title1, fn_png);
 end

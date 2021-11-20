@@ -44,6 +44,9 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %                        default setting: 0:9 (all flags)
 %                        See Table 7 in Bittig et al.:
 %                        https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
+%   'png',basename     : if basename is not empty, png files will be created
+%                        for all plots, the file names will be
+%                        <basename>_<variable>.png
 %
 % OUTPUT:
 %   good_float_ids : array of the float IDs whose Sprof files were
@@ -85,10 +88,11 @@ time_label = 'y';
 max_depth = []; % used as flag: plot all available depths
 raw = 'no'; % plot adjusted data by default
 obs = 'on'; % plot observations on section by default
+basename = [];
 varargpass= {};
 
 % parse optional arguments
-for i = 1:2:length(varargin)
+for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'isopyc')
         plot_isopyc = varargin{i+1};
     elseif strcmpi(varargin{i}, 'mld')
@@ -101,6 +105,8 @@ for i = 1:2:length(varargin)
         raw = varargin{i+1};
     elseif (strcmpi(varargin{i}, 'obs'))
         obs = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'png')
+        basename = varargin{i+1};
     else
         varargpass = [varargpass, varargin{i:i+1}];
         if strcmpi(varargin{i}, 'qc')
@@ -134,6 +140,6 @@ else
     end
     [Data, Mdata] = load_float_data(good_float_ids, variables);    
     plot_sections(Data, Mdata, variables, nvars, plot_isopyc, plot_mld, ...
-        time_label, max_depth, raw, obs, varargpass{:})
+        time_label, max_depth, raw, obs, basename, varargpass{:})
 end
 
