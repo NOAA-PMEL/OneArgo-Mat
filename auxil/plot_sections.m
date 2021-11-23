@@ -32,7 +32,7 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %                 if set to 0, no isopycnal lines will be plotted
 %   plot_mld    : if set to 1 or 2, mixed layer depth will be plotted,
 %                 using either a temperature (1) or density (2) criterion
-%   time_label  : either 'year' or 'month' - type of time labeling on
+%   time_label  : either 'y' (year) or 'm' (month) - type of time labeling on
 %                 the x-axis
 %   max_depth   : maximum depth to plot (an empty array signals the
 %                 plotting of all available depths)
