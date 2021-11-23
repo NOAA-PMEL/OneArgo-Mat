@@ -116,7 +116,7 @@ dn2 = datenum(end_date);
 
 % GET INDEX OF PROFILES WITHIN USER-SPECIFIED GEOGRAPHIC POLYGON
 inpoly = get_inpolygon(Sprof.lon,Sprof.lat,lon_lim,lat_lim);
-if isempty(inpoly)
+if isempty(inpoly) || ~sum(inpoly)
     warning('no matching profiles found')
     float_ids = [];
     float_profs = [];
