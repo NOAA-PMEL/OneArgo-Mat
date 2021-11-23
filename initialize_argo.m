@@ -157,7 +157,7 @@ Sprof_fp = strcat(tmp,Sprof_fnames);
 Float.file_path = Sprof_fp;
 Float.file_name = Sprof_fnames;
 Float.dac = dacs;
-Float.wmoid = uwmo;
+Float.wmoid = str2double(uwmo);
 Float.nfloats = length(uwmo);
 % range of profile indices per float
 ia(end+1) = length(sprof_urls) + 1;

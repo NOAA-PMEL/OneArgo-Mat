@@ -166,7 +166,7 @@ for fl = 1:length(good_float_ids)
     filename = sprintf('%s%d_Sprof.nc', Settings.prof_dir, ...
         good_float_ids(fl));
     n_prof = get_dims(filename);
-    fl_idx = find(str2num(cell2mat(Float.wmoid)) == good_float_ids(fl));
+    fl_idx = find(Float.wmoid == good_float_ids(fl), 1);
     n_prof_exp = Float.prof_idx2(fl_idx) - Float.prof_idx1(fl_idx) + 1;
     if n_prof_exp > n_prof
         warning(['The index file lists %d profiles for float %d, ', ...

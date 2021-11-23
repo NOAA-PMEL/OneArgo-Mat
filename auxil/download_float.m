@@ -43,7 +43,7 @@ end
 success = 0; % set to 1 after successful download
 
 ind = 1:Float.nfloats;
-float_idx = ind(strcmp(Float.wmoid, num2str(floatid)));
+float_idx = ind(Float.wmoid == floatid);
 
 if isempty(float_idx)
     warning('Float %d was not found!', floatid)

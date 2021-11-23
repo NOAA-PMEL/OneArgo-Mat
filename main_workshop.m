@@ -47,7 +47,7 @@ global Sprof Float Settings;
 
 % Example: Look at the profile ID numbers and available sensors for the
 % profiles that have been executed by new GO-BGC float #5906439.
-float_idx = strcmp(Float.wmoid,'5906439'); % index for float #5906439
+float_idx = (Float.wmoid == 5906439); % index for float #5906439
 prof_ids = Float.prof_idx1(float_idx):Float.prof_idx2(float_idx) % profile IDs for float #5906439
 dates = datestr(datenum(Sprof.date(prof_ids), 'yyyymmddHHMMSS')) % dates of each profile from float #5906439
 sensors = unique(Sprof.sens(prof_ids)) % sensors available for float #5906439
