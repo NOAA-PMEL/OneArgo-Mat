@@ -28,11 +28,10 @@ function initialize_argo()
 
 global Settings Sprof Float;
 
-% add subdirectories with auxiliary functions to the path
-filepath = fileparts(mfilename('fullpath'));
-addpath([filepath, '/auxil'])
-addpath(genpath([filepath, '/m_map']))
-addpath(genpath([filepath, '/gsw']))
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BEGINNING OF SECTION WITH USER SPECIFIC OPTIONS
+% this part of the function can be modified to meet specific needs
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % The do_pause() function can be used in a driver script to
 % halt the execution until the user presses ENTER.
@@ -57,16 +56,6 @@ Settings.prof_dir = './Profiles/';
 % Index files are stored in subdirectory 'Index'
 Settings.index_dir = './Index/'; 
 
-% Create Index directory if needed
-if ~check_dir(Settings.index_dir)
-    error('Index directory could not be created')
-end
-
-% Create Profile directory if needed
-if ~check_dir(Settings.prof_dir)
-    error('Profile directory could not be created')
-end
-
 Settings.demo_float = 5904021;
 
 % By default, don't update if files are less than 1 hour old
@@ -82,8 +71,29 @@ Settings.dens_thresh = 0.03;
 host_ifremer = 'https://data-argo.ifremer.fr/';
 host_godae = 'https://usgodae.org/ftp/outgoing/argo/';
 % Additional hosts could be added here
-% Settings.hosts = {host_ifremer;host_godae}; % alternate order of hosts
 Settings.hosts = {host_godae;host_ifremer};
+% Settings.hosts = {host_ifremer;host_godae}; % alternate order of hosts
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% END OF SECTION WITH USER SPECIFIC OPTIONS
+% the rest of this function should not be modified
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% add subdirectories with auxiliary functions to the path
+filepath = fileparts(mfilename('fullpath'));
+addpath([filepath, '/auxil'])
+addpath(genpath([filepath, '/m_map']))
+addpath(genpath([filepath, '/gsw']))
+
+% Create Index directory if needed
+if ~check_dir(Settings.index_dir)
+    error('Index directory could not be created')
+end
+
+% Create Profile directory if needed
+if ~check_dir(Settings.prof_dir)
+    error('Profile directory could not be created')
+end
 
 % Full set of available variables (but not all floats have all sensors)
 Settings.avail_vars = {'PRES';'PSAL';'TEMP';'DOXY';'BBP';'BBP470';'BBP532';...
