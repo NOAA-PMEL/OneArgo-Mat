@@ -16,6 +16,8 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %                (if not set: {'DOXY'} (=O2) is used)
 %
 % OPTIONAL INPUTS:
+%   'float_profs',fp   : per-float indices of the profiles to be shown,
+%                        as returned by select_profiles
 %   'isopyc',isopyc    : plot isopycnal lines if non-zero (default: 1=on)
 %                        using a value of 1 will result in plotting
 %                        isopycnal lines at default values (24:27);
@@ -82,6 +84,7 @@ end
 if ~nargin
     float_ids = Settings.demo_float;
 end
+float_profs = [];
 plot_isopyc = 1;
 plot_mld = 0;
 time_label = 'y';
@@ -93,7 +96,9 @@ varargpass= {};
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
-    if strcmpi(varargin{i}, 'isopyc')
+    if strcmpi(varargin{i}, 'float_profs')
+        float_profs = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'isopyc')
         plot_isopyc = varargin{i+1};
     elseif strcmpi(varargin{i}, 'mld')
         plot_mld = varargin{i+1};
@@ -138,7 +143,7 @@ else
             variables{end+1} = 'PSAL';            
         end
     end
-    [Data, Mdata] = load_float_data(good_float_ids, variables);    
+    [Data, Mdata] = load_float_data(good_float_ids, variables, float_profs);    
     plot_sections(Data, Mdata, variables, nvars, plot_isopyc, plot_mld, ...
         time_label, max_depth, raw, obs, basename, varargpass{:})
 end
