@@ -42,6 +42,10 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           PH_IN_SITU_TOTAL, NITRATE, DOWN_IRRADIANCE380,
 %           DOWN_IRRADIANCE412, DOWN_IRRADIANCE490, DOWNWELLING_PAR
 %           (Currently, only one sensor type can be selected.)
+% 'mode',mode: Valid modes are 'R' (real-time), 'A' (adjusted), and
+%           'D', in any combination. Only profiles with the selected
+%           mode(s) appear in float_profs. Default is 'RAD' (all modes).
+%           If 'sensor' option is not used, the 'mode' option is ignored.
 %
 % OUTPUTS:
 %   float_ids   : array with the WMO IDs of all matching floats
@@ -69,15 +73,18 @@ global Float Settings Sprof;
 outside = 'none'; % if set, removes profiles outside time/space constraints
 sensor = []; % default: use all available profiles
 ocean = []; % default: any ocean basin
+mode = 'RAD';
 
 % parse optional arguments
-for i = 1:2:length(varargin)
+for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'outside')
         outside = varargin{i+1};
     elseif strcmpi(varargin{i}, 'sensor')
         sensor = varargin{i+1};
     elseif strcmpi(varargin{i}, 'ocean')
         ocean = upper(varargin{i+1}(1));
+    elseif strcmpi(varargin{i}, 'mode')
+        mode = varargin{i+1};
     end
 end
 
@@ -94,6 +101,21 @@ end
 if ~isempty(ocean) && ~contains('API', ocean)
     warning('no such ocean: %s', ocean)
     ocean = [];
+end
+
+% check if specified data modes are correct
+new_mode= '';
+for i = 1:length(mode)
+    if contains('RAD', mode(i))
+        new_mode = strcat(new_mode, mode(i));
+    else
+        warning('no such mode: %s', mode(i))
+    end
+end
+if isempty(new_mode)
+    mode = 'ADR';
+else
+    mode = sort(new_mode); % standard order enables strcmp later
 end
     
 % fill in the blanks if needed
@@ -165,7 +187,7 @@ float_profs = cell(length(good_float_ids), 1);
 for fl = 1:length(good_float_ids)
     filename = sprintf('%s%d_Sprof.nc', Settings.prof_dir, ...
         good_float_ids(fl));
-    n_prof = get_dims(filename);
+    [n_prof, n_param] = get_dims(filename);
     fl_idx = find(Float.wmoid == good_float_ids(fl), 1);
     n_prof_exp = Float.prof_idx2(fl_idx) - Float.prof_idx1(fl_idx) + 1;
     if n_prof_exp > n_prof
@@ -176,6 +198,15 @@ for fl = 1:length(good_float_ids)
     lon = ncread(filename, 'LONGITUDE');
     lat = ncread(filename, 'LATITUDE');
     juld = ncread(filename, 'JULD');
+    if ~isempty(sensor) && ~strcmp(mode, 'ADR')
+        params = ncread(filename, 'PARAMETER');
+        param_names = cell(n_param, 1);
+        for p = 1:n_param
+            param_names{p} = strtrim(params(:,p,1,1)');
+        end
+        param_idx = find(strcmp(param_names, sensor), 1);
+        data_mode = ncread(filename, 'PARAMETER_DATA_MODE');
+    end
     date = datenum(juld) + datenum([1950 1 1]);
 
     inpoly = get_inpolygon(lon,lat,lon_lim,lat_lim);
@@ -199,16 +230,25 @@ for fl = 1:length(good_float_ids)
         is_ocean = strcmp(Sprof.ocean(idx),ocean);
         is_ocean(isnan(this_loc)) = 0;
     end
+    if isempty(sensor) || strcmp(mode, 'ADR')
+        has_mode = ones(size(inpoly));
+    else
+        has_mode = zeros(size(inpoly));
+        for m = 1:length(mode)
+            has_mode = has_mode + (data_mode(param_idx,:)' == mode(m));
+        end
+    end
     % now apply the given constraints
     all_prof = 1:length(inpoly);
     if strcmp(outside, 'none')
-        float_profs{fl} = all_prof(inpoly & indate & has_sensor & is_ocean);
+        float_profs{fl} = all_prof(inpoly & indate & has_sensor & ...
+            is_ocean & has_mode);
     elseif strcmp(outside, 'time') % must meet space constraint
-        float_profs{fl} = all_prof(inpoly & has_sensor & is_ocean);
+        float_profs{fl} = all_prof(inpoly & has_sensor & is_ocean & has_mode);
     elseif strcmp(outside, 'space') % must meet time constraint
-        float_profs{fl} = all_prof(indate & has_sensor & is_ocean);
+        float_profs{fl} = all_prof(indate & has_sensor & is_ocean & has_mode);
     elseif strcmp(outside, 'both') % no time or space constraint
-        float_profs{fl} = all_prof(has_sensor & is_ocean);
+        float_profs{fl} = all_prof(has_sensor & is_ocean & has_mode);
     else
         warning('no such setting for "outside": %s', outside)
         float_profs{fl} = [];
