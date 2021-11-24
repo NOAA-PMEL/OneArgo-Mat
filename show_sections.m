@@ -72,6 +72,11 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 
 global Settings;
 
+% make sure Settings is initialized
+if isempty(Settings)
+    initialize_argo();
+end
+
 if isempty(float_ids)
     warning('no floats specified')
     return

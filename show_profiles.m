@@ -80,6 +80,13 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %
 % DATE: June 15, 2021
 
+global Settings;
+
+% make sure Settings is initialized
+if isempty(Settings)
+    initialize_argo();
+end
+
 % assign empty arrays to all return values in case of early return
 good_float_ids = [];
 mean_prof = {};

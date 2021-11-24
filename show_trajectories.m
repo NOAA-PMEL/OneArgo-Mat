@@ -51,6 +51,11 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 
 global Settings;
 
+% make sure Settings is initialized
+if isempty(Settings)
+    initialize_argo();
+end
+
 if ~nargin
     float_ids = Settings.demo_float;
 end
