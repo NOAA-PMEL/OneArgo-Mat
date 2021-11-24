@@ -117,7 +117,12 @@ if isempty(new_mode)
 else
     mode = sort(new_mode); % standard order enables strcmp later
 end
-    
+
+% make sure Sprof is initialized
+if isempty(Sprof)
+    initialize_argo();
+end
+
 % fill in the blanks if needed
 if isempty(lon_lim)
     lon_lim = [-180, 180];
