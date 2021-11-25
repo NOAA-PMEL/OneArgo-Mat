@@ -82,6 +82,11 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 
 global Settings;
 
+% empty return values in case of warnings
+mean_prof = [];
+std_prof = [];
+mean_pres = [];
+
 if nargin < 4
     warning(['Usage: plot_profiles(Data, Mdata, variables, basename, ', ...
         '[, varargin])'])
@@ -129,8 +134,8 @@ float_ids = fieldnames(Mdata);
 nvars = length(variables);
 nplots = nfloats * nvars;
 if nplots > Settings.max_plots
-    warning(['too many plots requested - use fewer profiles and/or ', ...
-        'variables\nor increase Settings.max_plots if possible'])
+    warning(['too many plots requested - use fewer profiles and/or variables', ...
+        newline, 'or increase Settings.max_plots if possible'])
     return
 end
 

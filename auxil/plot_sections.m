@@ -208,7 +208,7 @@ for f = 1:nfloats
         end
         if ~isempty(basename)
             fn_png = sprintf('%s_%d_%s.png', basename, ...
-                Mdata.(float_ids{f}).WMO_NUMBER, variables{v})
+                Mdata.(float_ids{f}).WMO_NUMBER, variables{v});
             print(f1, '-dpng', fn_png);
         end
     end

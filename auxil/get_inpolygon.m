@@ -21,7 +21,7 @@ function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 %            * Longitude can be input in either the -180 to 180 degrees
 %            format or 0 to 360 degrees format
 %
-% OUTPUTS:
+% OUTPUT:
 %   inpoly   : vector of 0s and 1s (same length as lon and lat)
 %
 % AUTHORS: 
