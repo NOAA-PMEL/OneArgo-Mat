@@ -64,7 +64,7 @@ if exist(local_path, 'file') == 2
         sprof_date = datenum(sprof_date, 'yyyymmddHHMMSS');
         % allow a small tolerance value for numerical imprecision
         if sprof_date > ...
-                datenum(Float.update(float_idx), 'yyyymmddHHMMSS') - 1
+                datenum(Float.update(float_idx), 'yyyymmddHHMMSS') - 0.01
             % existing file has all profiles, no need to download again
             success = 1;
             return;
