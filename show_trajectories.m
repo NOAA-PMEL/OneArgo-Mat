@@ -25,6 +25,8 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   don't want to plot the full trajectories of the
 %                   given floats, but only those locations that match
 %                   spatial and/or temporal constraints
+%  'position', pos: show only the selected position (either 'first' or
+%                   'last')
 %  'png',fn_png   : save the plot to a png file with the given 
 %                   file name (fn_png)
 %  'title',title  : title for the plot (default: "Float trajectories")
@@ -63,6 +65,7 @@ end
 % set defaults
 color = 'r'; % red
 float_profs = [];
+pos = [];
 fn_png = [];
 title1 = 'Float trajectories';
 
@@ -72,6 +75,8 @@ for i = 1:2:length(varargin)-1
         color = varargin{i+1};
     elseif strcmpi(varargin{i}, 'float_profs')
         float_profs = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'position')
+        pos = varargin{i+1};
     elseif strcmpi(varargin{i}, 'png')
         fn_png = varargin{i+1};
     elseif strcmpi(varargin{i}, 'title')
@@ -86,6 +91,26 @@ if isempty(good_float_ids)
     warning('no valid floats found')
 else
     % meta data return values and observations are not needed here
-    Data = load_float_data(good_float_ids,{},float_profs);   
+    Data = load_float_data(good_float_ids,{},float_profs);
+    if ~isempty(pos)
+        floats = fieldnames(Data);
+        nfloats = length(floats);
+        if strcmp(pos, 'first')
+            for f = 1:nfloats
+               % only lon/lat fields are used by plot_trajectories
+               Data.(floats{f}).LONGITUDE = ...
+                   Data.(floats{f}).LONGITUDE(:,1);
+               Data.(floats{f}).LATITUDE = ...
+                   Data.(floats{f}).LATITUDE(:,1);
+            end
+        elseif strcmp(pos, 'last')
+            for f = 1:nfloats
+               Data.(floats{f}).LONGITUDE = ...
+                   Data.(floats{f}).LONGITUDE(:,end);
+               Data.(floats{f}).LATITUDE = ...
+                   Data.(floats{f}).LATITUDE(:,end);
+            end            
+        end
+    end
     plot_trajectories(Data, color, title1, fn_png);
 end
