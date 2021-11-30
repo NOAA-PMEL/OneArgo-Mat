@@ -13,7 +13,9 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 %   float_ids   : WMO ID(s) of one or more floats
 %
 % OPTIONAL INPUTS:
-%   variables   : cell array with variable names to be loaded
+%   variables   : cell array with variable names to be loaded (use 'ALL'
+%                 to load all available variables, which may differ by
+%                 float)
 %   float_profs : cell array with indices of selected profiles (per float,
 %                 not global)
 %
@@ -40,6 +42,11 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 % DATE: October 15, 2021 (Version 1.1)
 
 global Settings;
+
+% make sure Settings is initialized
+if isempty(Settings)
+    initialize_argo();
+end
 
 add_pres = 0; % default: do not add 'PRES' to list of variables
 
@@ -133,7 +140,9 @@ for n = 1:length(good_float_ids)
         elseif isequal(size(tmp), [n_prof 1])
             Data.(str_floatnum).(all_vars{l}) = repmat(tmp', n_levels, 1);
         else
-            Mdata.(str_floatnum).(all_vars{l}) = tmp;          
+            chars = sum(sum(tmp));
+            idx = find(max(chars) == chars, 1);
+            Mdata.(str_floatnum).(all_vars{l}) = tmp(:,:,1,idx);
         end
         clear tmp;
     end
@@ -146,7 +155,7 @@ for n = 1:length(good_float_ids)
     % extract parameter names as coherent strings
     for m = 1:n_param
         temp{m} = ...
-            strrep(Mdata.(str_floatnum).('PARAMETER')(:,m,1,1)',' ','');
+            strrep(Mdata.(str_floatnum).('PARAMETER')(:,m)', ' ', '');
     end
     params_keep = ismember(temp,new_vars);
     Mdata.(str_floatnum).('PARAMETER') = temp(params_keep);
