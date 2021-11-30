@@ -42,6 +42,11 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           PH_IN_SITU_TOTAL, NITRATE, DOWN_IRRADIANCE380,
 %           DOWN_IRRADIANCE412, DOWN_IRRADIANCE490, DOWNWELLING_PAR
 %           (Currently, only one sensor type can be selected.)
+% 'ocean', ocean: Valid choices are 'A' (Atlantic), 'P' (Pacific), and
+%           'I' (Indian). This selection is in addition to the specified
+%           longitude and latitude limits. (To select all floats and 
+%           profiles from one ocean basin, leave lon_lim and lat_lim
+%           empty.)
 % 'mode',mode: Valid modes are 'R' (real-time), 'A' (adjusted), and
 %           'D', in any combination. Only profiles with the selected
 %           mode(s) appear in float_profs. Default is 'RAD' (all modes).
@@ -68,6 +73,11 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 % DATE: June 15, 2021
 
 global Float Settings Sprof;
+
+% make sure Settings is initialized
+if isempty(Settings)
+    initialize_argo();
+end
 
 % set defaults
 outside = 'none'; % if set, removes profiles outside time/space constraints
@@ -143,7 +153,7 @@ dn2 = datenum(end_date);
 
 % GET INDEX OF PROFILES WITHIN USER-SPECIFIED GEOGRAPHIC POLYGON
 inpoly = get_inpolygon(Sprof.lon,Sprof.lat,lon_lim,lat_lim);
-if isempty(inpoly) || ~sum(inpoly)
+if isempty(inpoly) || ~any(inpoly)
     warning('no matching profiles found')
     float_ids = [];
     float_profs = [];
@@ -166,7 +176,7 @@ if isempty(sensor)
 else
     has_sensor = contains(Sprof.sens, sensor);
 end
-if ~sum(has_sensor)
+if ~any(has_sensor)
     warning('no data found for sensor %s', sensor);
 end
 
@@ -176,8 +186,26 @@ if isempty(ocean)
 else
     is_ocean = strcmp(Sprof.ocean, ocean);
 end
+
+% select by data mode
+if isempty(sensor) || strcmp(mode, 'ADR')
+    has_mode = ones(size(inpoly));
+else
+    has_mode = zeros(size(inpoly));
+    is_good = inpoly & indate & has_sensor & is_ocean;
+    idx = all_floats(is_good);
+    for i = 1:length(idx)
+        pos = strcmp(split(Sprof.sens(idx(i))), sensor);
+        if any(pos)
+            str = cell2mat(Sprof.data_mode(idx(i)));
+            has_mode(idx(i)) = contains(mode, str(pos));
+        end
+    end
+end
+
+% perform selection
 all_prof = 1:length(indate);
-profiles = all_prof(inpoly & indate & has_sensor & is_ocean);
+profiles = all_prof(inpoly & indate & has_sensor & is_ocean & has_mode);
 float_ids = unique(Sprof.wmo(profiles));
 
 % download Sprof files if necessary
