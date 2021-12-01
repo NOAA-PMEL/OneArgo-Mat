@@ -3,7 +3,7 @@ function all_vars = combine_variables(base_vars, new_vars)
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   all_vars = combine_variables(base_vars, new_vars)4902549
+%   all_vars = combine_variables(base_vars, new_vars)
 %
 % DESCRIPTION:
 %   This function combines the given variables along with all
@@ -18,12 +18,12 @@ function all_vars = combine_variables(base_vars, new_vars)
 %  all_vars   : cell array with names of all variables
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -31,7 +31,7 @@ function all_vars = combine_variables(base_vars, new_vars)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: October 15, 2021 (Version 1.1)
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 cnt_vars = length(base_vars);
 

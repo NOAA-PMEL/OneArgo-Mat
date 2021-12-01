@@ -25,13 +25,17 @@ function [Data_good] = qc_filter(Data, variables, qc_flags, varargin)
 %     Data_good = qc_filter(Data, 'DOXY',[1:3,8], {'NITRATE';'CHLA'},[1,2]...
 %         {'BBP532';'BBP470'},[1,2,8], 'DOWNWELLING_PAR',1);
 %
+% OUTPUT:
+%   Data_good: struct that contains all the data from the input Data struct
+%              that match the given QC flags
+%
 % AUTHORS:
 %   N. Buzby (UW), H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, N. Buzby, A. Gray, 2021.
 %   BGC-Argo-Mat: A MATLAB toolbox for accessing and
 %   visualizing Biogeochemical Argo data.
@@ -40,7 +44,7 @@ function [Data_good] = qc_filter(Data, variables, qc_flags, varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: October 15, 2021 (Version 1.1)
+% DATE: December 1, 2021 (Version 1.1)
 
 % assign default qc_flags if none provided as input
 if nargin < 3
@@ -58,7 +62,7 @@ for v = 1:nvar
 end
 
 % parse optional arguments
-for i = 1:2:length(varargin)
+for i = 1:2:length(varargin)-1
     if ischar(varargin{i})
         qc_by_var.(varargin{i}) = varargin{i+1};
     else

@@ -12,7 +12,7 @@ function [lon_lim, lat_lim, Data] = get_lon_lat_lims(Data)
 % PREREQUISITE: 
 %   Sprof file(s) for the specified float(s) must exist locally.
 %
-% INPUTS:
+% INPUT:
 %   Data     : a struct that must contain at least LONGITUDE and LATITUDE
 %              fields
 %
@@ -22,25 +22,25 @@ function [lon_lim, lat_lim, Data] = get_lon_lat_lims(Data)
 %   lat_lim  : a 2-element vector with minimum,maximum latitudes
 %   Data     : if using a range of 0..360 degrees instead of the default
 %              range of -180..180 degrees results in a shorter range to
-%              cover all trajectories, a field ALT_LON is added, it uses
+%              cover all trajectories, a field ALT_LON is added, which uses
 %              a range of 0..360 degrees;
 %              it is unchanged from the input otherwise
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
 %   (*These authors contributed equally to the code.)
 %
-% LICENSE: bgc_argo_mat_license.m  
+% LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 floats = fieldnames(Data);
 nfloats = length(floats);

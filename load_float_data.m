@@ -9,7 +9,7 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 %   This function loads data (at least one variable)
 %   of at least one specified float.
 %
-% INPUTS:
+% INPUT:
 %   float_ids   : WMO ID(s) of one or more floats
 %
 % OPTIONAL INPUTS:
@@ -26,12 +26,12 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 %   Mdata       : struct with meta data (WMO_NUMBER, PI_NAME, etc.)
 %
 % AUTHORS: 
-%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL),
+%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -39,7 +39,7 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: October 15, 2021 (Version 1.1)
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Settings;
 

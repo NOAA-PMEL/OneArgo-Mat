@@ -17,12 +17,12 @@ function success = check_dir(ddir)
 %             otherwise
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -30,7 +30,7 @@ function success = check_dir(ddir)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 if nargin < 1
     warning('Usage: check_dir(ddir)')

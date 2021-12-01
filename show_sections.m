@@ -33,6 +33,8 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %   'max_depth',depth  : maximum depth to be plotted (default: all)
 %   'raw',raw          : plot raw, i.e., unadjusted data if set to 'yes';
 %                        default: 'no' (i.e., plot adjusted data if available)
+%   'obs',obs          : if 'on', add dots at the depths of observations
+%                        default: 'on'; use 'off' to turn off this behavior
 %   'qc',flags         : show only values with the given QC flags (as an array)
 %                        0: no QC was performed; 
 %                        1: good data; 
@@ -55,12 +57,12 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %                    successfully downloaded or existed already
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -68,7 +70,7 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Settings;
 

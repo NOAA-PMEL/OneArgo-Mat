@@ -9,7 +9,7 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %  This is an intermediary function that downloads profiles for at least
 %   one given float and calls plot_trajectories to create the plot.
 %
-% INPUTS:
+% INPUT:
 %   float_ids : WMO ID(s) of one or more floats 
 %               (if not set: Settings.demo_float is used as a demo)
 %
@@ -17,7 +17,7 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %   'color',color : color (string) can be either 'multiple' (different
 %                   colors for different floats), or any standard Matlab
 %                   color descriptor ('r', 'k', 'b', 'g' etc.)
-%                   (all trajectories will be plotted in the same color)
+%                   (all trajectories will be plotted in the same color);
 %                   default value is 'r' (red)
 %  'float_profs',fp : fp is an array with the per-float indices of the
 %                   selected profiles, as returned by function
@@ -36,12 +36,12 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                    successfully downloaded or existed already
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -49,7 +49,7 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Settings;
 

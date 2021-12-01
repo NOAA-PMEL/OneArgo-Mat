@@ -44,7 +44,7 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %                   default setting: 0:9 (all flags)
 %                   See Table 7 in Bittig et al.:
 %                   https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
-%   'title_add',text : add the given text to all titles
+%   'title_add',text : add the given text to the end of all titles
 %   'png',basename: if basename is not empty, png files will be created
 %                   for all plots; if per_float is used, the file
 %                   names will be <basename>_<WMOID>_<variable>.png,
@@ -65,12 +65,12 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %                   column vector if per_float is 0)
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -78,7 +78,7 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Settings;
 

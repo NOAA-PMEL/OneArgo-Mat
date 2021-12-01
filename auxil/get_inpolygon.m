@@ -1,5 +1,5 @@
 function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
-% get_inpoly  This function is part of the
+% get_inpolygon  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
@@ -12,8 +12,8 @@ function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 % INPUTS:
 %   lon      : vector of longitude values
 %   lat      : vector of latitude values (must have same length as lon)
-%   lon_lim  : Longitude limits
-%   lat_lim  :
+%   lon_lim  : longitude limits
+%   lat_lim  : latitude limits
 %            * Latitude and longitude limits can be input as either
 %            two element vectors (e.g., [LAT1 LAT2]) for maximum and minimum
 %            limits, or as same-sized vectors with at least 3 elements
@@ -25,12 +25,12 @@ function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 %   inpoly   : vector of 0s and 1s (same length as lon and lat)
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -38,7 +38,7 @@ function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 % longitude limits can be specified in -180..180 or 0..360 degree formats,
 % or any other 360 degree range that encloses all the desired longitude

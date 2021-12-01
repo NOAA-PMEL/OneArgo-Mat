@@ -8,15 +8,17 @@ function initialize_argo()
 % DESCRIPTION:
 %   This function defines standard settings and paths and downloads 
 %   index files. It must be called once before any other functions
-%   can be used.
+%   can be used, either directly or indirectly by calling any of
+%   the functions load_float_data, select_profiles, show_profiles,
+%   show_sections, or show_trajectories.
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -24,7 +26,7 @@ function initialize_argo()
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: October 15, 2021 (Version 1.1)
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Settings Sprof Float;
 

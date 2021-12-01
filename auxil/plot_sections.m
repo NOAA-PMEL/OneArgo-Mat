@@ -59,12 +59,12 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %                 https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
 %
 % AUTHORS: 
-%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL),
+%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -72,14 +72,14 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Settings;
 
 if nargin < 11
     warning(['Usage: plot_sections(Data, Mdata, variables, nvars, ', ...
         'plot_isopyc, plot_mld, time_label, max_depth, raw, obs, ', ...
-        'basename, varargin)']);
+        'basename [, varargin])']);
     return
 end
 
@@ -87,7 +87,7 @@ end
 qc_flags = []; % if not changed, actual defaults will be assigned below
 
 % parse optional arguments
-for i = 1:2:length(varargin)
+for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'qc')
         qc_flags = varargin{i+1};
     end

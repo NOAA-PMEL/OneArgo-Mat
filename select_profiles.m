@@ -38,9 +38,13 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           ('space'), or both constraints ('both')
 % 'sensor', 'SENSOR_TYPE': By default, all floats within the lon/lat/time
 %           limits are considered. This option allows the selection by 
-%           sensor type. Available are: DOXY, CHLA, BBP700, 
-%           PH_IN_SITU_TOTAL, NITRATE, DOWN_IRRADIANCE380,
-%           DOWN_IRRADIANCE412, DOWN_IRRADIANCE490, DOWNWELLING_PAR
+%           sensor type. Available are: PRES, PSAL, TEMP, DOXY, BBP,
+%           BBP470, BBP532, BBP700, TURBIDITY, CP, CP660, CHLA, CDOM,
+%           NITRATE, BISULFIDE, PH_IN_SITU_TOTAL, DOWN_IRRADIANCE,
+%           DOWN_IRRADIANCE380, DOWN_IRRADIANCE412, DOWN_IRRADIANCE443, 
+%           DOWN_IRRADIANCE490, DOWN_IRRADIANCE555, DOWN_IRRADIANCE670, 
+%           UP_RADIANCE, UP_RADIANCE412, UP_RADIANCE443, UP_RADIANCE490,
+%           UP_RADIANCE555, DOWNWELLING_PAR, DOXY2, DOXY3
 %           (Currently, only one sensor type can be selected.)
 % 'ocean', ocean: Valid choices are 'A' (Atlantic), 'P' (Pacific), and
 %           'I' (Indian). This selection is in addition to the specified
@@ -49,7 +53,8 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           empty.)
 % 'mode',mode: Valid modes are 'R' (real-time), 'A' (adjusted), and
 %           'D', in any combination. Only profiles with the selected
-%           mode(s) appear in float_profs. Default is 'RAD' (all modes).
+%           mode(s) will be listed in float_profs.
+%           Default is 'RAD' (all modes).
 %           If 'sensor' option is not used, the 'mode' option is ignored.
 %
 % OUTPUTS:
@@ -57,12 +62,12 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %   float_profs : cell array with the per-float indices of all matching profiles
 %
 % AUTHORS: 
-%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL),
+%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -70,7 +75,7 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Float Settings Sprof;
 
