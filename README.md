@@ -60,6 +60,16 @@ Please feel free to use the GitHub Issues and Pull Requests features to report a
 More detailed information about quality control flags, raw and adjusted modes, etc., can be found in
 H. C. Bittig et al., 2019. Front. Mar. Sci. https://doi.org/10.3389/fmars.2019.00502.
 
+
+## TOOLBOX IN OTHER LANGUAGES
+This toolbox has been translated to R:<br/>
+[R toolbox](https://github.com/euroargodev/BGC-ARGO_R_WORKSHOP)
+
+A similar toolbox in Python:<br/>
+[Python toolbox](https://github.com/go-bgc/workshop-python)
+
+[Video tutorials for the toolbox](https://www.go-bgc.org/getting-started-with-go-bgc-data)
+
 ## CITATION
 
 Please cite this toolbox as:
