@@ -29,7 +29,7 @@ The p2f and fprofid members of global Sprof were deleted.
 
 The Float.wmoid array is now stored as numbers instead of strings.
 
-The Sprof.date array is now stored as the orginal date strings, so
+The Sprof.date array is now stored as the original date strings, so
 to get the previous format (Matlab datenum, i.e., days since 1/1/0000),
 the values need to be converted with the datenum function, e.g.:
 datenum(Sprof.date(profile_ids), 'yyyymmddHHMMSS')
@@ -43,7 +43,7 @@ settings are at the beginning of the function in a clearly delineated block.
 
 show_profiles, show_sections, show_trajectories:
 The first argument must always be an array of float IDs.
-Variable optione 'type' is obsolete and will be ignored. Subsets of
+Variable option 'type' is obsolete and will be ignored. Subsets of
 profiles can be specified with the 'float_profs',float_profs key/value option.
 main_workshop.m was updated to show the revised way of calling these functions.
 The 'png' option can be used to create png files of all plots.
