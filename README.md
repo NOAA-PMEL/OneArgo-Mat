@@ -74,7 +74,7 @@ A similar toolbox in Python:<br/>
 
 Please cite this toolbox as:
 
-H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer, Y. Takeshita, D. Nicholson, N. Buzby, A. Gray, 2021. BGC-Argo-Mat: A MATLAB toolbox for accessing and visualizing Biogeochemical Argo data. Zenodo. https://doi.org/10.5281/zenodo.4971318.
+H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer, Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB toolbox for accessing and visualizing Biogeochemical Argo data. Zenodo. https://doi.org/10.5281/zenodo.4971318.
 
 *These authors contributed equally to the code.
 
