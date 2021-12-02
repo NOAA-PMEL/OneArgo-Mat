@@ -8,12 +8,12 @@
 % a discussion of available data, quality control flags etc.
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -21,7 +21,7 @@
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 %% Close figures, clean up workspace, clear command window
 close all; clear; clc
@@ -47,9 +47,9 @@ global Sprof Float Settings;
 
 % Example: Look at the profile ID numbers and available sensors for the
 % profiles that have been executed by new GO-BGC float #5906439.
-float_idx = strcmp(Float.wmoid,'5906439'); % index for float #5906439
+float_idx = (Float.wmoid == 5906439); % index for float #5906439
 prof_ids = Float.prof_idx1(float_idx):Float.prof_idx2(float_idx) % profile IDs for float #5906439
-dates = datestr(Sprof.date(prof_ids)) % dates of each profile from float #5906439
+dates = datestr(datenum(Sprof.date(prof_ids), 'yyyymmddHHMMSS')) % dates of each profile from float #5906439
 sensors = unique(Sprof.sens(prof_ids)) % sensors available for float #5906439
 do_pause();
 
@@ -88,27 +88,27 @@ do_pause();
 %% Show all profiles for salinity and nitrate from the downloaded float
 % this plots the raw, unadjusted data, and includes multiple profiles 
 % compromised by biofouling that has affected the optics.
-show_profiles(WMO, {'PSAL';'NITRATE'},'type','floats','obs','on','raw','yes');
+show_profiles(WMO, {'PSAL';'NITRATE'},'obs','on','raw','yes');
 % this plots the adjusted data.
-show_profiles(WMO, {'PSAL';'NITRATE'},'type','floats','obs','on');
+show_profiles(WMO, {'PSAL';'NITRATE'},'obs','on');
 % this plots the adjusted, good (qc flag 1) and probably-good (qc flag 2) data.
-show_profiles(WMO, {'PSAL';'NITRATE'},'type','floats','obs','on','qc',[1 2]);
+show_profiles(WMO, {'PSAL';'NITRATE'},'obs','on','qc',[1 2]);
 do_pause();
 
 %% Show sections for nitrate
 % this shows the raw, unadjusted data (pcolor plot)
 % mixed layer depth is shown based on the temperature threshold
 % (set the value to 2 after 'mld' to use the density threshold instead)
-show_sections(5904859, {'NITRATE'},...
-    'mld', 1,...  % tells the function to plot mixed layer depth
+show_sections(WMO, {'NITRATE'},...
+    'mld', 1,...  % tells the function to plot mixed layer depth using T
     'raw','yes'); % tells the function to plot raw data
 
-show_sections(5904859, {'NITRATE'},...
-    'mld', 2,...  % tells the function to plot mixed layer depth
+show_sections(WMO, {'NITRATE'},...
+    'mld', 2,...  % tells the function to plot mixed layer depth using rho
     'raw','no'); % tells the function to plot adjusted data (that is the
 % default and could be left out in this call)
 
-show_sections(5904859, {'NITRATE'}, 'mld', 1,...
+show_sections(WMO, {'NITRATE'}, 'mld', 2,...
     'qc',[1 2]); % tells the function to plot good and probably-good data
 do_pause();
 
@@ -130,7 +130,7 @@ t1=[2008 1 1];
 t2=[2018 12 31];
 
 %% select profiles based on those limits with specified sensor (NITRATE)
-[OSP_profiles,OSP_floats] = select_profiles(lonlim,latlim,t1,t2,...
+[OSP_floats,OSP_float_profs] = select_profiles(lonlim,latlim,t1,t2,...
     'sensor','NITRATE',... % this selects only floats with nitrate sensors
     'outside','both'); % All floats that cross into the time/space limits
                        % are identified from the Sprof index. The optional 
@@ -143,7 +143,8 @@ t2=[2018 12 31];
 
 % display the number of matching floats and profiles
 disp(' ');
-disp(['# of matching profiles: ' num2str(length(OSP_profiles))]);
+disp(['# of matching profiles: ' num2str(sum(cellfun('length',...
+    OSP_float_profs)))]);
 disp(['# of matching floats: ' num2str(length(OSP_floats))]);
 disp(' ');
 
@@ -158,10 +159,9 @@ do_pause();
 
 %% Show profile plots for the first of these matching floats
 % Case #1: all profiles from one float (1)
-show_profiles(OSP_floats(1), {'PSAL';'DOXY'},...
-    'type', 'floats'); % this tell the function that the input is a float number
+show_profiles(OSP_floats(1), {'PSAL';'DOXY'});
 % Case #2: mean and standard deviation of all profiles from one float (1)
-show_profiles(OSP_floats(1), {'PSAL';'DOXY'},'type','floats',...
+show_profiles(OSP_floats(1), {'PSAL';'DOXY'},...
     'method','mean'); % this tells the function to just plot the mean profile
 do_pause();
 
@@ -183,13 +183,14 @@ lonlim=[-160 -155];
 t1=[2017 1 1];
 t2=[2019 12 31];
 
-%% Select profiles based on those limits
-[HW_profiles,HW_floats] = select_profiles(lonlim,latlim,t1,t2,...
+%% Select floats and profiles based on those limits
+[HW_floats,HW_float_profs] = select_profiles(lonlim,latlim,t1,t2,...
     'outside','none'); % exclude profiles outside the time and space limits
 
 % display the number of matching floats and profiles
 disp(' ');
-disp(['# of matching profiles: ' num2str(length(HW_profiles))]);
+disp(['# of matching profiles: ' num2str(sum(cellfun('length',...
+    HW_float_profs)))]);
 disp(['# of matching floats: ' num2str(length(HW_floats))]);
 disp(' ');
 
@@ -215,13 +216,14 @@ else
         [latlim(1) latlim(2) latlim(2) latlim(1) latlim(1)],...
         'k','linewidth',2);
 end
+hold off;
 do_pause();
 
 %% Show trajectories for the matching profiles from each float, along with the geo limits
-% Adding the optional input of 'prof_ids' with the profile numbers given by
+% Adding the optional input of 'float_profs' with the per-float profile numbers given by
 % the select_profiles function will plot only the locations of those
 % specified profiles from the specified floats
-show_trajectories(HW_floats,'color','multiple','prof_ids',HW_profiles);
+show_trajectories(HW_floats,'color','multiple','float_profs',HW_float_profs);
 
 % show domain of interest
 hold on; 
@@ -238,22 +240,32 @@ else
         [latlim(1) latlim(2) latlim(2) latlim(1) latlim(1)],...
         'k','linewidth',2);
 end
+hold off;
 do_pause();
 
 %% Show matching profiles from all floats
 % show profiles (from all floats) within specified domain and times
-show_profiles(HW_profiles, {'PSAL';'DOXY'},'per_float',0,...
+show_profiles(HW_floats, {'PSAL';'DOXY'},'float_profs',HW_float_profs,...
+    'per_float',0,...
     'qc',[1 2]);  % tells the function to plot good and probably-good data
 
 do_pause();
 
 %% Show only matching profiles from September
-month = datevec(Sprof.date); month = month(:,2); % extract month from Sprof variable
-HW_profiles_Sep = HW_profiles(month(HW_profiles)==9); % determine profiles that occur in September
-show_profiles(HW_profiles_Sep, {'PSAL';'DOXY'},'per_float',0,...
+[~, ~, date] = get_lon_lat_time(HW_floats, HW_float_profs);
+
+% determine profiles that occur in September for each float separately
+for f = 1:length(HW_floats)
+    dvec = datevec(date{f});
+    month = dvec(:,2);
+    HW_float_profs_Sep{f} = HW_float_profs{f}(month == 9);
+end
+
+show_profiles(HW_floats, {'PSAL';'DOXY'}, 'per_float', 0, ...
+    'float_profs', HW_float_profs_Sep, ...
     'obs', 'on', ... % plot a marker at each observation
     'title_add', ' (September)',...  % add this to the title
-    'qc',[1 2]); % apply QC flags
+    'qc', [1 2]); % apply QC flags
 do_pause();
 
 %% Show sections for pH and oxygen for the fifth float in the list of Hawaii floats
@@ -261,7 +273,7 @@ do_pause();
 % mixed layer depth is shown based on the temperature threshold
 % (set the value to 2 after 'mld' to use the density threshold instead)
 show_sections(HW_floats(5), {'PH_IN_SITU_TOTAL';'DOXY'},...
-    'mld', 1,...   % tells the function to plot mixed layer depth
+    'mld', 1,...   % tells the function to plot mixed layer depth using T
     'raw', 'yes'); % tells the function to plot raw (unadjusted) data
 do_pause();
 
@@ -270,5 +282,5 @@ do_pause();
 show_sections(HW_floats(5), {'PH_IN_SITU_TOTAL';'DOXY'}, 'mld', 1,'raw', 'no');
 
 %% clean up the workspace
-clear HW_floats HW_profiles HW_profiles_Sep latlim lonlim t1 t2 month ans
+clear all;
 clc;close all

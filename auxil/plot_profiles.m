@@ -1,5 +1,5 @@
 function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
-    variables, varargin)
+    variables, basename, varargin)
 % plot_profiles  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
@@ -19,6 +19,11 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %               variables (_ADJUSTED fields are used if available)
 %   Mdata     : struct that must contain the WMO_ID field
 %   variables : cell array with names of the measured fields (e.g., DOXY)
+%   basename  : if not empty, create png files of all plots;
+%               if per_float is used, the file names will be 
+%               <basename>_<WMOID>_<variable>.png,
+%               if per_float is not used, the file names will be 
+%               <basename>_<variable>.png
 %
 % OPTIONAL INPUTS:
 %   'method',method : either 'all' (all profiles from each float are
@@ -47,6 +52,7 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %                     default setting: 0:9 (all flags)
 %                     See Table 7 in Bittig et al.:
 %                     https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
+%   'title_add',text: add the given text to the end of the title
 %
 % OUTPUTS:
 %   mean_prof : mean across profiles (cell array of cell arrays of column 
@@ -59,12 +65,12 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %               column vector if per_float is 0)
 %
 % AUTHORS: 
-%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL),
+%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -72,12 +78,18 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Settings;
 
-if nargin < 3
-    warning('Usage: plot_profiles(Data, Mdata, variables[, varargin])')
+% empty return values in case of warnings
+mean_prof = [];
+std_prof = [];
+mean_pres = [];
+
+if nargin < 4
+    warning(['Usage: plot_profiles(Data, Mdata, variables, basename, ', ...
+        '[, varargin])'])
     return;
 end
 
@@ -90,7 +102,7 @@ title_add = ''; % nothing added to title
 qc_flags = 0:9; % use all data
 
 % parse optional arguments
-for i = 1:2:length(varargin)
+for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'method')
         method = varargin{i+1};
     elseif strcmpi(varargin{i}, 'per_float')
@@ -122,8 +134,8 @@ float_ids = fieldnames(Mdata);
 nvars = length(variables);
 nplots = nfloats * nvars;
 if nplots > Settings.max_plots
-    warning(['too many plots requested - use fewer profiles and/or ', ...
-        'variables\nor increase Settings.max_plots if possible'])
+    warning(['too many plots requested - use fewer profiles and/or variables', ...
+        newline, 'or increase Settings.max_plots if possible'])
     return
 end
 
@@ -171,7 +183,7 @@ for v = 1:nvars
         this_mean_prof = mean_prof{v};
         this_std_prof = std_prof{v};
         this_mean_pres = mean_pres;
-        figure; % one figure per variable for all floats
+        f1 = figure; % one figure per variable for all floats
         hold on
     end
     for f = 1:nfloats
@@ -189,7 +201,7 @@ for v = 1:nvars
             this_mean_prof = mean_prof{v}{f};
             this_std_prof = std_prof{v}{f};
             this_mean_pres = mean_pres{f};
-            figure; % one figure per variable for each float
+            f1 = figure; % one figure per variable for each float
             hold on
         end
         if strcmp(method, 'all')
@@ -227,7 +239,12 @@ for v = 1:nvars
             hold off
             title(sprintf('Float %d %s', ...
                 Mdata.(float_ids{f}).WMO_NUMBER, title_add));
-        end 
+            if ~isempty(basename)
+                fn_png = sprintf('%s_%d_%s.png', basename, ...
+                    Mdata.(float_ids{f}).WMO_NUMBER, variables{v});
+                print(f1, '-dpng', fn_png);
+            end
+        end
     end
     if ~per_float
         hold off
@@ -241,5 +258,9 @@ for v = 1:nvars
             ttitle = 'All selected floats';
         end
         title([ttitle, title_add]);
+        if ~isempty(basename)
+            fn_png = sprintf('%s_%s.png', basename, variables{v});
+            print(f1, '-dpng', fn_png);
+        end
     end
 end

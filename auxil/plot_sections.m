@@ -1,5 +1,5 @@
 function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
-    plot_mld, time_label, max_depth, raw, obs, varargin)
+    plot_mld, time_label, max_depth, raw, obs, basename, varargin)
 % plot_sections  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
@@ -32,13 +32,15 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %                 if set to 0, no isopycnal lines will be plotted
 %   plot_mld    : if set to 1 or 2, mixed layer depth will be plotted,
 %                 using either a temperature (1) or density (2) criterion
-%   time_label  : either 'year' or 'month' - type of time labeling on
+%   time_label  : either 'y' (year) or 'm' (month) - type of time labeling on
 %                 the x-axis
 %   max_depth   : maximum depth to plot (an empty array signals the
 %                 plotting of all available depths)
 %   raw         : if 'no', use adjusted variables if available;
 %                 if 'yes', always use raw values
 %   obs         : if 'on', add dots at the depths of observations
+%   basename    : if not empty, create png files of all plots;
+%                 the file names will be <basename>_<variable>.png
 %
 % OPTIONAL INPUT:
 %  'qc',flags   : show only values with the given QC flags (array)
@@ -57,12 +59,12 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %                 https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
 %
 % AUTHORS: 
-%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL),
+%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -70,20 +72,22 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Settings;
 
-if nargin < 10
-    warning(['usage: plot_sections(Data, Mdata, variables, nvars, ', ...
-        'plot_isopyc, plot_mld, time_label, max_depth, raw, obs, varargin)']);
+if nargin < 11
+    warning(['Usage: plot_sections(Data, Mdata, variables, nvars, ', ...
+        'plot_isopyc, plot_mld, time_label, max_depth, raw, obs, ', ...
+        'basename [, varargin])']);
+    return
 end
 
 % set defaults
 qc_flags = []; % if not changed, actual defaults will be assigned below
 
 % parse optional arguments
-for i = 1:2:length(varargin)
+for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'qc')
         qc_flags = varargin{i+1};
     end
@@ -148,7 +152,7 @@ for f = 1:nfloats
         'calc_dens', calc_dens, varargs{:});
     for v = 1:nvars
         [long_name, units] = get_var_name_units(variables{v});
-        figure('Renderer', 'painters', 'Position', [10*f 10*f 800 400])
+        f1 = figure('Renderer', 'painters', 'Position', [10*f 10*f 800 400]);
         set(gca,'fontsize',16);
         pcolor(Datai.TIME, Datai.PRES, Datai.(variables{v}));
         shading('flat');
@@ -201,6 +205,11 @@ for f = 1:nfloats
                 repmat((1:12)',31, 1) ones(31*12,1)]));
             datetick('x','mm-yyyy','keeplimits','keepticks');
             xlabel('Month','FontSize',14);
+        end
+        if ~isempty(basename)
+            fn_png = sprintf('%s_%d_%s.png', basename, ...
+                Mdata.(float_ids{f}).WMO_NUMBER, variables{v});
+            print(f1, '-dpng', fn_png);
         end
     end
 end

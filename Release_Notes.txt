@@ -1,0 +1,63 @@
+RELEASE NOTES FOR USERS OF THE BGC_ARGO_MAT TOOLBOX
+
+Version 1.1 (December 1, 2021)
+
+The most important change since version 1.0 regards the evaluation of
+the index file (argo_synthetic-profile_index.txt). Previously, its
+information was used to determine the number of profiles for each float
+and the availability of sensors. Now it is only used for an initial
+selection of potential floats. Then the matching Sprof files are
+downloaded (if necessary), and the indices of matching profiles are
+determined from the Sprof file.
+This required a change in all functions and scripts that call function
+select_profiles. The previous call signature was
+function [profiles,floats] = select_profiles(lon_lim,lat_lim,...
+    start_date,end_date,varargin)
+The new call signature is
+function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
+    start_date,end_date,varargin)
+That is, the previous second return value is now the first return value.
+Instead of a global profile index (the previous first return value) there
+is now a cell array with per-float profile indices as the second return
+value. This cell array can be used directly as value for the
+'float_profs' key in variable arguments in calls to functions
+show_trajectories, show_profiles, show_sections, load_float_data and
+get_lon_lat_time.
+The total number of matching profiles can be computed with, e.g.:
+num2str(sum(cellfun('length',float_profs)))
+The p2f and fprofid members of global Sprof were deleted.
+
+The Float.wmoid array is now stored as numbers instead of strings.
+
+The Sprof.date array is now stored as the original date strings, so
+to get the previous format (Matlab datenum, i.e., days since 1/1/0000),
+the values need to be converted with the datenum function, e.g.:
+datenum(Sprof.date(profile_ids), 'yyyymmddHHMMSS')
+This call can be used to retrieve the datenum values for selected floats:
+[~, ~, date] = get_lon_lat_time(floats, float_profs);
+An example for finding profiles for a specific month can be found in
+main_workshop.m
+
+initialize_argo.m has some sections rearranged, so that all user-specific
+settings are at the beginning of the function in a clearly delineated block.
+
+show_profiles, show_sections, show_trajectories:
+The first argument must always be an array of float IDs.
+Variable option 'type' is obsolete and will be ignored. Subsets of
+profiles can be specified with the 'float_profs',float_profs key/value option.
+main_workshop.m was updated to show the revised way of calling these functions.
+The 'png' option can be used to create png files of all plots.
+
+show_trajectories has a new option 'position' with possible values 'first' or
+'last' to show only the first or last position of each specified float.
+It also has a new option 'title' that allows the user to specify a custom
+title for the plot (default is "Float trajectories").
+
+select_profiles now allows the selection of floats and profiles (in addition
+to lon/lat/time and sensor) by 'ocean' ('A', 'P', or 'I') and 'mode'
+('R' = real time, 'A' = adjusted, 'D' = delayed mode; any combination
+of these can be used).
+
+qc_filter is a new function that can be used to filter variables by their
+QC flags. It takes the Data structure that was returned from load_float_data
+and returns an equivalent Data structure with the QC flags applied.

@@ -1,25 +1,24 @@
 function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
-    show_profiles(profile_ids, variables, varargin)
+    show_profiles(float_ids, variables, varargin)
 % show_profiles  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
 %   [good_float_ids, mean_prof, std_prof, mean_pres] = ...
-%       show_profiles(profile_ids, variables, varargin)
+%       show_profiles(float_ids, variables, varargin)
 %
 % DESCRIPTION:
 %   This an intermediary function that downloads profile(s) for the given
 %   float(s) and calls plot_profile to create the plot(s).
 %
 % INPUTS:
-%   profile_ids  : internally used indices of individual profiles
-%   variables    : cell array of variable(s) (i.e., sensor(s)) to show 
-%                  (if not set: {'DOXY'} (=O2) is used)
+%   float_ids  : WMO ID(s) of the float(s)
+%   variables  : cell array of variable(s) (i.e., sensor(s)) to show
+%                (if not set: {'DOXY'} (=O2) is used)
 %
 % OPTIONAL INPUTS:
-%   'type',type   : by default (type='profiles'), the given IDs refer to
-%                   profile IDs (obtained with select_profiles); use
-%                   'type','floats' to show the profiles of a given float
+%   'float_profs',fp : per-float indices of the profiles to be shown,
+%                   as returned by select_profiles
 %   'method',method : by default (method='all') all profiles from each float
 %                   are shown in one plot per variable;
 %                   use method='mean' to plot mean and standard deviation
@@ -45,7 +44,12 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %                   default setting: 0:9 (all flags)
 %                   See Table 7 in Bittig et al.:
 %                   https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
-%   'title_add',text : add the given text to all titles
+%   'title_add',text : add the given text to the end of all titles
+%   'png',basename: if basename is not empty, png files will be created
+%                   for all plots; if per_float is used, the file
+%                   names will be <basename>_<WMOID>_<variable>.png,
+%                   if per_float is not used, the file names will be
+%                   <basename>_<variable>.png
 %
 % OUTPUTS:
 %   good_float_ids : array of the float IDs whose Sprof files were
@@ -61,12 +65,12 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %                   column vector if per_float is 0)
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -74,9 +78,14 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
-global Sprof;
+global Settings;
+
+% make sure Settings is initialized
+if isempty(Settings)
+    initialize_argo();
+end
 
 % assign empty arrays to all return values in case of early return
 good_float_ids = [];
@@ -85,12 +94,12 @@ std_prof = {};
 mean_pres = {};
 
 if nargin < 2
-    warning('Usage: show_profiles(profile_ids, variables, varargin)')
+    warning('Usage: show_profiles(float_ids, variables, varargin)')
     return
 end
 
-if isempty(profile_ids)
-    warning('no profiles specified')
+if isempty(float_ids)
+    warning('no floats specified')
     return
 end
 
@@ -98,13 +107,16 @@ end
 if nargin < 2
     variables = {'DOXY'};
 end
-type = 'profiles';
+float_profs = [];
+basename = [];
 varargpass= {};
 
 % parse optional arguments
-for i = 1:2:length(varargin)
-    if strcmpi(varargin{i}, 'type')
-        type = varargin{i+1};
+for i = 1:2:length(varargin)-1
+    if strcmpi(varargin{i}, 'float_profs')
+        float_profs = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'png')
+        basename = varargin{i+1};
     else
         varargpass = [varargpass, varargin{i:i+1}];
         if strcmpi(varargin{i}, 'qc')
@@ -120,31 +132,14 @@ if ischar(variables)
     variables = cellstr(variables);
 end
 
-if strncmpi(type, 'prof', 4)
-    % profile IDs need to be converted to float IDs
-    all_float_ids = str2num(cell2mat(Sprof.wmo(profile_ids)));
-else
-    all_float_ids = profile_ids;
-end
-uniq_float_ids = unique(all_float_ids);
-
 % download Sprof files if necessary
-good_float_ids = download_multi_floats(uniq_float_ids);
+good_float_ids = download_multi_floats(float_ids);
 
 if isempty(good_float_ids)
     warning('no valid floats found')
 else
-    if strncmpi(type, 'prof', 4)
-        for i = 1:length(good_float_ids)
-            idx = (all_float_ids == good_float_ids(i));
-            float_profs{i} = Sprof.fprofid(profile_ids(idx));
-        end
-        [Data, Mdata] = load_float_data(good_float_ids, variables, ...
-            float_profs);
-    else
-        [Data, Mdata] = load_float_data(good_float_ids, variables);
-    end
+    [Data, Mdata] = load_float_data(good_float_ids, variables, float_profs);
     [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
-        variables, varargpass{:});
+        variables, basename, varargpass{:});
 end
 

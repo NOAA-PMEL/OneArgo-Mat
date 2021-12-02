@@ -13,17 +13,17 @@ function [long_name, units] = get_var_name_units(short_name)
 %   short_name : case-sensitive name of a variable as it appears in 
 %                the Sprof index file, e.g., TEMP or DOXY
 %
-% OUTPUT:
+% OUTPUTS:
 %   long_name  : long name of the variable
 %   units      : units of the variable
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -31,7 +31,7 @@ function [long_name, units] = get_var_name_units(short_name)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 if nargin < 1
     warning('Usage: get_var_name_units(short_name)')

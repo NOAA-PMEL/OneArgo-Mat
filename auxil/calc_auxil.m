@@ -43,12 +43,12 @@ function Data = calc_auxil(Data,varargin)
 %                              density threshold)
 %
 % AUTHORS: 
-%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL),
+%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -56,7 +56,7 @@ function Data = calc_auxil(Data,varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Settings;
 
@@ -72,7 +72,7 @@ temp_thresh = Settings.temp_thresh;
 dens_thresh = Settings.dens_thresh;
 
 % parse optional arguments
-for i = 1:2:length(varargin)
+for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'calc_dens')
         calc_dens = varargin{i+1};
     elseif strcmpi(varargin{i}, 'calc_mld_temp')

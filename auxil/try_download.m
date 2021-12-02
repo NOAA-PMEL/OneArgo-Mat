@@ -18,12 +18,12 @@ function success = try_download(filename, dest_path)
 %               but the file exists locally already; 0 for failure
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -31,7 +31,7 @@ function success = try_download(filename, dest_path)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Settings;
 
@@ -51,6 +51,9 @@ for h = 1:length(Settings.hosts)
     catch
         if Settings.verbose
             fprintf('failure!\n');
+            if exist([dest_path, '.html'], 'file')
+                delete([dest_path, '.html']);
+            end
         end
         if h == length(Settings.hosts)
             if exist(dest_path, 'file') ~= 2

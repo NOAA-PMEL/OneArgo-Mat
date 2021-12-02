@@ -18,12 +18,12 @@ function success = download_float(floatid)
 %   success  : 1 for success, 0 for failure
 %
 % AUTHORS: 
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
+%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, J. Plant, T. Maurer,
+%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
 %   Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB
 %   toolbox for accessing and visualizing Biogeochemical Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.4971318.
@@ -31,7 +31,7 @@ function success = download_float(floatid)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: June 15, 2021
+% DATE: DECEMBER 1, 2021  (Version 1.1)
 
 global Settings Float;
 
@@ -42,8 +42,13 @@ end
 
 success = 0; % set to 1 after successful download
 
+% make sure Float is initialized
+if isempty(Float)
+    initialize_argo();
+end
+
 ind = 1:Float.nfloats;
-float_idx = ind(strcmp(Float.wmoid, num2str(floatid)));
+float_idx = ind(Float.wmoid == floatid);
 
 if isempty(float_idx)
     warning('Float %d was not found!', floatid)
@@ -58,7 +63,8 @@ if exist(local_path, 'file') == 2
         sprof_date = ncread(local_path, 'DATE_UPDATE')';
         sprof_date = datenum(sprof_date, 'yyyymmddHHMMSS');
         % allow a small tolerance value for numerical imprecision
-        if sprof_date > Float.update(float_idx) - 1
+        if sprof_date > ...
+                datenum(Float.update(float_idx), 'yyyymmddHHMMSS') - 0.01
             % existing file has all profiles, no need to download again
             success = 1;
             return;
