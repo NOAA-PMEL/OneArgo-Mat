@@ -7,7 +7,7 @@ function [Data_good] = qc_filter(Data, variables, qc_flags, varargin)
 %
 % DESCRIPTION:
 %   This function generates a new data structure composed of chosen variables
-%   based on provided QC flag values
+%   based on provided QC flag values.
 %
 % INPUTS:
 %   Data     : struct that must contain the given variables
