@@ -22,7 +22,7 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 % OUTPUTS:
 %   Data        : struct with the requested variables (including QC flags.
 %                 adjusted values if available) and general ones
-%                 (LONGITUDE,LATITUDE,JULD etc.)
+%                 (LONGITUDE, LATITUDE, JULD, etc.)
 %   Mdata       : struct with meta data (WMO_NUMBER, PI_NAME, etc.)
 %
 % AUTHORS: 
