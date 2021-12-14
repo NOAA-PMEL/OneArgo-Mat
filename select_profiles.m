@@ -56,6 +56,12 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           mode(s) will be listed in float_profs.
 %           Default is 'RAD' (all modes).
 %           If 'sensor' option is not used, the 'mode' option is ignored.
+% 'dac',dac: Select by Data Assimilation Center reponsible for the floats.
+%           A single DAC can be entered as a string (e.g.: 'aoml'),
+%           multiple DACs can be entered as a cell array (e.g.:
+%           {'meds';'incois'}.
+%           Valid values are any of: {'aoml'; 'bodc'; 'coriolis'; ...
+%           'csio'; 'csiro'; 'incois'; 'jma'; 'kma'; 'kordi'; 'meds'}
 %
 % OUTPUTS:
 %   float_ids   : array with the WMO IDs of all matching floats
@@ -89,6 +95,7 @@ outside = 'none'; % if set, removes profiles outside time/space constraints
 sensor = []; % default: use all available profiles
 ocean = []; % default: any ocean basin
 mode = 'RAD';
+dac = [];
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -100,6 +107,8 @@ for i = 1:2:length(varargin)-1
         ocean = upper(varargin{i+1}(1));
     elseif strcmpi(varargin{i}, 'mode')
         mode = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'dac')
+        dac = varargin{i+1};
     end
 end
 
@@ -132,6 +141,19 @@ if isempty(new_mode)
 else
     mode = sort(new_mode); % standard order enables strcmp later
 end
+
+% check if specified dac(s) are correct
+if ischar(dac)
+    dac = cellstr(dac);
+end
+bad = zeros(length(dac), 1);
+for i = 1:length(dac)
+    if ~any(strcmp(dac{i}, Settings.dacs))
+        warning('no such dac: %s', dac{i});
+        bad(i) = 1;
+    end
+end
+dac(bad == 1) = [];
 
 % make sure Sprof is initialized
 if isempty(Sprof)
@@ -212,6 +234,15 @@ end
 all_prof = 1:length(indate);
 profiles = all_prof(inpoly & indate & has_sensor & is_ocean & has_mode);
 float_ids = unique(Sprof.wmo(profiles));
+
+% check for selected DACs if applicable (DACs are stored by float,
+% not by profile)
+if ~isempty(dac)
+    idx = arrayfun(@(x) find(Float.wmoid==x, 1), float_ids);
+    found_dacs = Float.dac(idx);
+    uses_dac = ismember(found_dacs, dac);
+    float_ids = float_ids(uses_dac);
+end
 
 % download Sprof files if necessary
 good_float_ids = download_multi_floats(float_ids);

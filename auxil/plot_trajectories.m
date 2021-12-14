@@ -1,4 +1,4 @@
-function plot_trajectories(Data, color, title1, fn_png)
+function plot_trajectories(Data, color, title1, fn_png, float_ids)
 % plot_trajectories  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
@@ -16,8 +16,11 @@ function plot_trajectories(Data, color, title1, fn_png)
 %   color : either 'multiple' (different colors for different floats),
 %           or any standard Matlab color descriptor ('r', 'k', 'b',
 %           'g' etc.; all trajectories will be plotted in the same color)
+%           color can also be 'dac'; in this case, the trajectories
+%           are colored by the DAC responsible for the floats 
 %   title1: title of the plot
 %   fn_png: if not empty, create a png image of the plot with this file name
+%   float_ids: WMO IDs of the floats to be plotted
 %
 % AUTHORS: 
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
@@ -35,10 +38,10 @@ function plot_trajectories(Data, color, title1, fn_png)
 %
 % DATE: DECEMBER 1, 2021  (Version 1.1)
 
-global Settings;
+global Settings Float;
 
-if nargin < 4
-    warning('Usage: plot_trajectories(Data, color, title1, fn_png)')
+if nargin < 5
+    warning('Usage: plot_trajectories(Data, color, title1, fn_png, float_ids)')
     return;
 end
 
@@ -65,13 +68,22 @@ else % using a range of -180..180
 end
 
 f1 = figure;
+if isfield(Settings, 'colormap')
+    cmap = colormap(Settings.colormap);
+else
+    cmap = colormap;
+end
 
 % determine colormap for multiple floats
-if strcmp(color, 'multiple') && ~strcmp(Settings.mapping, 'native')
+if strcmp(color, 'dac')
+    dacs = unique(Float.dac(ismember(Float.wmoid, float_ids)));
+    indx = round(linspace(1, size(cmap, 1), length(dacs)));
+    cmap = colormap(cmap(indx,:));
+    fidx = arrayfun(@(x) find(Float.wmoid==x, 1), float_ids);
+elseif strcmp(color, 'multiple') && ~strcmp(Settings.mapping, 'native')
     if nfloats == 1
         color = 'r'; % use red for single floats
     else
-        cmap = colormap;
         ncolor = size(cmap, 1);
     end
 end
@@ -82,6 +94,20 @@ if strcmp(Settings.mapping, 'native')
     % Set geographic limits for figure
     geolimits(latlim,lonlim)
     geobasemap grayland
+    if strcmp(color, 'dac')
+        % plot one point per DAC to create the legend
+        for i = 1:length(dacs)
+            idx1 = find(strcmp(Float.dac(fidx), dacs{i}), 1);
+            if use_alt_lon
+                lon = Data.(floats{idx1}).ALT_LON(1,1);
+            else
+                lon = Data.(floats{idx1}).LONGITUDE(1,1);
+            end
+            geoscatter(Data.(floats{idx1}).LATITUDE(1,1), lon, ...
+                [], cmap(i, :), '.', 'DisplayName', dacs{i})
+        end
+    legend(dacs,'location','eastoutside','AutoUpdate','off')
+    end
     % Plot float trajectories on map
     for i=1:nfloats
         if use_alt_lon
@@ -91,12 +117,19 @@ if strcmp(Settings.mapping, 'native')
         end
         if strcmp(color, 'multiple')
             geoscatter(Data.(floats{i}).LATITUDE(1,:), lon, '.');
+        elseif strcmp(color, 'dac')
+            this_dac = Float.dac(find(Float.wmoid == float_ids(i), 1));
+            cidx = find(strcmp(dacs, this_dac), 1);
+            geoscatter(Data.(floats{i}).LATITUDE(1,:), lon, ...
+                [], repmat(cmap(cidx, :), size(lon,2), 1), '.')
         else
             geoscatter(Data.(floats{i}).LATITUDE(1,:), lon, ...
                 [color, '.']);
         end
     end
-    legend(floats,'location','eastoutside','AutoUpdate','off')
+    if ~strcmp(color, 'dac')
+        legend(floats,'location','eastoutside','AutoUpdate','off')
+    end
 elseif strcmp(Settings.mapping, 'm_map')
     if diff(latlim) > 15
         proj = 'robinson';

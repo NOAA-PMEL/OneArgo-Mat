@@ -18,7 +18,9 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   colors for different floats), or any standard Matlab
 %                   color descriptor ('r', 'k', 'b', 'g' etc.)
 %                   (all trajectories will be plotted in the same color);
-%                   default value is 'r' (red)
+%                   default value is 'r' (red);
+%                   color can also be 'dac'; in this case, the trajectories
+%                   are colored by the DAC responsible for the floats 
 %  'float_profs',fp : fp is an array with the per-float indices of the
 %                   selected profiles, as returned by function
 %                   select_profiles - use this optional argument if you
@@ -112,5 +114,5 @@ else
             end            
         end
     end
-    plot_trajectories(Data, color, title1, fn_png);
+    plot_trajectories(Data, color, title1, fn_png, float_ids);
 end

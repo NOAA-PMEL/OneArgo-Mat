@@ -69,6 +69,8 @@ Settings.update = 3600; % time is given in seconds
 Settings.temp_thresh = 0.2;
 Settings.dens_thresh = 0.03;
 
+% Settings.colormap = 'jet'; % uncomment and change as needed
+
 % Default: try US GDAC before French GDAC
 host_ifremer = 'https://data-argo.ifremer.fr/';
 host_godae = 'https://usgodae.org/ftp/outgoing/argo/';
@@ -106,6 +108,10 @@ Settings.avail_vars = {'PRES';'PSAL';'TEMP';'DOXY';'BBP';'BBP470';'BBP532';...
     'UP_RADIANCE412';'UP_RADIANCE443';'UP_RADIANCE490';'UP_RADIANCE555';...
     'UP_RADIANCE';'UP_RADIANCE412';'UP_RADIANCE443';'UP_RADIANCE490';...
     'UP_RADIANCE555';'DOWNWELLING_PAR';'DOXY2';'DOXY3'};
+
+% List of Data Assimilation Centers
+Settings.dacs = {'aoml'; 'bodc'; 'coriolis'; 'csio'; 'csiro'; 'incois'; ...
+    'jma'; 'kma'; 'kordi'; 'meds'};
 
 % Write Sprof index file from GDAC to Index directory
 sprof = 'argo_synthetic-profile_index.txt'; % file used locally
