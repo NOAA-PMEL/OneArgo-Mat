@@ -100,6 +100,8 @@ if ~check_dir(Settings.prof_dir)
 end
 
 % Full set of available variables (but not all floats have all sensors)
+% Additional sensors of existing types (e.g., DOXY2, BBP700_2) will
+% be added below if they are found in the index file
 Settings.avail_vars = {'PRES';'PSAL';'TEMP';'DOXY';'BBP';'BBP470';'BBP532';...
     'BBP700';'TURBIDITY';'CP';'CP660';'CHLA';'CDOM';'NITRATE';'BISULFIDE';...
     'PH_IN_SITU_TOTAL';'DOWN_IRRADIANCE';'DOWN_IRRADIANCE380';...
@@ -107,7 +109,7 @@ Settings.avail_vars = {'PRES';'PSAL';'TEMP';'DOXY';'BBP';'BBP470';'BBP532';...
     'DOWN_IRRADIANCE555';'DOWN_IRRADIANCE670';'UP_RADIANCE';...
     'UP_RADIANCE412';'UP_RADIANCE443';'UP_RADIANCE490';'UP_RADIANCE555';...
     'UP_RADIANCE';'UP_RADIANCE412';'UP_RADIANCE443';'UP_RADIANCE490';...
-    'UP_RADIANCE555';'DOWNWELLING_PAR';'DOXY2';'DOXY3'};
+    'UP_RADIANCE555';'DOWNWELLING_PAR';'CNDC'};
 
 % List of Data Assimilation Centers
 Settings.dacs = {'aoml'; 'bodc'; 'coriolis'; 'csio'; 'csiro'; 'incois'; ...
@@ -150,6 +152,22 @@ Sprof.ocean = H{5};
 Sprof.sens = H{8};
 Sprof.data_mode = H{9};
 Sprof.date_update = H{10};
+
+% check for additional (e.g., DOXY2) and unknown sensors
+for i = 1:length(Sprof.sens)
+    sensors = split(Sprof.sens{i});
+    if ~all(ismember(sensors, Settings.avail_vars))
+        unknown_sensors = sensors(~ismember(sensors, Settings.avail_vars));
+        for s = 1:length(unknown_sensors)
+            main_sensor = get_sensor_number(unknown_sensors{s});
+            if isempty(main_sensor)
+                warning('unknown sensor in index file: %s', unknown_sensors{s})
+            else
+                Settings.avail_vars{end+1} = unknown_sensors{s};
+            end
+        end
+    end
+end
 
 % Extract unique floats
 Sprof.wmo = regexp(sprof_urls,'\d{7}','once','match');
