@@ -193,7 +193,7 @@ else
 end
 
 % select by data mode
-if isempty(sensor) || strcmp(mode, 'ADR')
+if isempty(mode) || strcmp(mode, 'ADR')
     has_mode = ones(size(inpoly));
 else
     has_mode = zeros(size(inpoly));
