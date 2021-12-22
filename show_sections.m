@@ -129,10 +129,9 @@ for i = 1:2:length(varargin)-1
     end
 end
 
-% convert requested variable to cell array if necessary (string was used)
-if ischar(variables)
-    variables = cellstr(variables);
-end
+% convert requested variable to cell array if necessary and
+% discard unknown variables
+variables = check_variables(variables);
 
 % download Sprof files if necessary
 good_float_ids = download_multi_floats(float_ids);
