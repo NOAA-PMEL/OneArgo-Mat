@@ -36,16 +36,17 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           returned ('none'); specify to also maintain profiles outside
 %           the temporal constraints ('time'), spatial constraints
 %           ('space'), or both constraints ('both')
-% 'sensor', 'SENSOR_TYPE': By default, all floats within the lon/lat/time
-%           limits are considered. This option allows the selection by 
+% 'sensor', SENSOR_TYPE: This option allows the selection by 
 %           sensor type. Available are: PRES, PSAL, TEMP, DOXY, BBP,
 %           BBP470, BBP532, BBP700, TURBIDITY, CP, CP660, CHLA, CDOM,
 %           NITRATE, BISULFIDE, PH_IN_SITU_TOTAL, DOWN_IRRADIANCE,
 %           DOWN_IRRADIANCE380, DOWN_IRRADIANCE412, DOWN_IRRADIANCE443, 
 %           DOWN_IRRADIANCE490, DOWN_IRRADIANCE555, DOWN_IRRADIANCE670, 
 %           UP_RADIANCE, UP_RADIANCE412, UP_RADIANCE443, UP_RADIANCE490,
-%           UP_RADIANCE555, DOWNWELLING_PAR, DOXY2, DOXY3
-%           (Currently, only one sensor type can be selected.)
+%           UP_RADIANCE555, DOWNWELLING_PAR, CNDC, DOXY2, DOXY3, BBP700_2
+%           (Full list can be displayed with the list_sensors function.)
+%           Multiple sensors can be entered as a cell array, e.g.:
+%           {'DOXY';'NITRATE'}
 % 'ocean', ocean: Valid choices are 'A' (Atlantic), 'P' (Pacific), and
 %           'I' (Indian). This selection is in addition to the specified
 %           longitude and latitude limits. (To select all floats and 
@@ -91,8 +92,10 @@ if isempty(Settings)
 end
 
 % set defaults
+float_ids = [];
+float_profs = [];
 outside = 'none'; % if set, removes profiles outside time/space constraints
-sensor = []; % default: use all available profiles
+sensor = []; % default: use all profiles that match other criteria
 ocean = []; % default: any ocean basin
 mode = 'RAD';
 dac = [];
@@ -109,17 +112,15 @@ for i = 1:2:length(varargin)-1
         mode = varargin{i+1};
     elseif strcmpi(varargin{i}, 'dac')
         dac = varargin{i+1};
+    else
+        warning('unknown option: %s', varargin{i});
     end
 end
 
-% check if specified sensor exists
-if ~isempty(sensor)
-    if ~any(strcmp(sensor, Settings.avail_vars))
-        warning('unknown sensor: %s', sensor)
-        pause(3)
-        sensor = [];
-    end
-end
+% convert requested sensor(s) to cell array if necessary and
+% discard unknown sensors
+sensor = check_variables(sensor, 'warning', ...
+    'unknown sensor will be ignored');
 
 % check if specified ocean is correct
 if ~isempty(ocean) && ~contains('API', ocean)
@@ -182,8 +183,6 @@ dn2 = datenum(end_date);
 inpoly = get_inpolygon(Sprof.lon,Sprof.lat,lon_lim,lat_lim);
 if isempty(inpoly) || ~any(inpoly)
     warning('no matching profiles found')
-    float_ids = [];
-    float_profs = [];
     return
 end
 
@@ -198,13 +197,17 @@ sel_floats_space = all_floats(inpoly);
 indate(sel_floats_space(indate_poly)) = 1;
 
 % SELECT BY SENSOR
-if isempty(sensor)
-    has_sensor = ones(size(indate)); % no sensor was selected
-else
-    has_sensor = contains(Sprof.sens, sensor);
+has_sensor = ones(size(indate));
+if ~isempty(sensor)
+    sprof_sens = cellfun(@split, Sprof.sens, 'UniformOutput', false);
+    for i = 1:length(sensor)
+        has_sensor = has_sensor & cellfun(@(x) ...
+            any(strcmp(x, sensor{i})), sprof_sens);
+    end
 end
 if ~any(has_sensor)
-    warning('no data found for sensor %s', sensor);
+    warning('no profiles found that have all specified sensors')
+    return
 end
 
 % select by ocean basin
@@ -281,13 +284,14 @@ for fl = 1:length(good_float_ids)
     inpoly = get_inpolygon(lon,lat,lon_lim,lat_lim);
     indate = date >= dn1 & date <= dn2;
 
-    if isempty(sensor)
-        has_sensor = ones(size(inpoly));
-    else
+    has_sensor = ones(size(inpoly));
+    if ~isempty(sensor)
         param = ncread(filename, 'PARAMETER');
-        has_sensor = zeros(size(inpoly));
         for p = 1:n_prof
-           has_sensor(p) = any(strcmp(cellstr(param(:,:,1,p)'), sensor));
+           for s = 1:length(sensor)
+               has_sensor(p) = has_sensor(p) & ...
+                   any(strcmp(cellstr(param(:,:,1,p)'), sensor{s}));
+           end
         end
     end
     if isempty(ocean)
@@ -299,7 +303,7 @@ for fl = 1:length(good_float_ids)
         is_ocean = strcmp(Sprof.ocean(idx),ocean);
         is_ocean(isnan(this_loc)) = 0;
     end
-    if isempty(sensor) || strcmp(mode, 'ADR')
+    if isempty(mode) || strcmp(mode, 'ADR')
         has_mode = ones(size(inpoly));
     else
         has_mode = zeros(size(inpoly));
