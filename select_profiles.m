@@ -268,7 +268,7 @@ for fl = 1:length(good_float_ids)
         is_ocean = strcmp(Sprof.ocean(idx),ocean);
         is_ocean(isnan(this_loc)) = 0;
     end
-    if isempty(sensor) || strcmp(mode, 'ADR')
+    if isempty(mode) || strcmp(mode, 'ADR')
         has_mode = ones(size(inpoly));
     else
         has_mode = zeros(size(inpoly));
