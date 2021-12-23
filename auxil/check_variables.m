@@ -1,4 +1,4 @@
-function good_variables = check_variables(variables)
+function good_variables = check_variables(variables, varargin)
 % check_variables  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
@@ -11,6 +11,11 @@ function good_variables = check_variables(variables)
 %
 % INPUTS:
 %   variables : cell array of variable(s) (or one variable as a string)
+%
+% OPTIONAL INPUTS:
+%   'warning', warning : if warning is not empty, this string will be
+%               displayed with each name of a variable that is not
+%               available
 %
 % OUTPUTS:
 %   good_variables : cell array of available variable(s)
@@ -33,6 +38,18 @@ function good_variables = check_variables(variables)
 
 global Settings;
 
+% set defaults
+warn = [];
+
+% parse optional arguments
+for i = 1:2:length(varargin)-1
+    if strcmpi(varargin{i}, 'warning')
+        warn = varargin{i+1};
+    else
+        warning('unknown option: %s', varargin{i});
+    end
+end
+
 % make sure Settings is initialized
 if isempty(Settings)
     initialize_argo();
@@ -46,6 +63,9 @@ good_variables = variables;
 
 for i = 1:length(variables)
     if ~any(strcmp(variables{i}, Settings.avail_vars))
+        if ~isempty(warn)
+            warning('%s: %s', warn, variables{i});
+        end
         good_variables(strcmp(variables{i}, good_variables)) = [];
     end
 end
