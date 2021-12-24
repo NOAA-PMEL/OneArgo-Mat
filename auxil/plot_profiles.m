@@ -168,7 +168,7 @@ end
 
 % vertical interpolation to depths with regular intervals
 for f = 1:nfloats
-    Datai.(floats{f}) = depth_interp(Data.(floats{f}), qc_flags);
+    Datai.(floats{f}) = depth_interp(Data.(floats{f}), qc_flags, 'raw', raw);
 end
 
 if per_float
@@ -188,6 +188,7 @@ for v = 1:nvars
     end
     for f = 1:nfloats
         try
+            assert(strcmp(raw, 'no')) % use PRES if raw values are used
             PRES = Data.(floats{f}).PRES_ADJUSTED;
         catch
             PRES = Data.(floats{f}).PRES;

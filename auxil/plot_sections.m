@@ -149,8 +149,14 @@ for f = 1:nfloats
         varargs = {'calc_mld_dens', 1};
     end
     Datai = depth_interp(Data.(floats{f}), qc_flags, ...
-        'calc_dens', calc_dens, varargs{:});
+        'calc_dens', calc_dens, 'raw', raw, varargs{:});
     for v = 1:nvars
+        if isempty(find(isfinite(Datai.PRES) & ...
+                isfinite(Datai.(variables{v})), 1))
+            warning('no valid data found for %s of float %s', ...
+                variables{v}, floats{f})
+            continue;
+        end
         [long_name, units] = get_var_name_units(variables{v});
         f1 = figure('Renderer', 'painters', 'Position', [10*f 10*f 800 400]);
         set(gca,'fontsize',16);
