@@ -17,6 +17,8 @@ function Datai = depth_interp(Data, qc_flags, varargin)
 %
 % OPTIONAL INPUTS:
 %   'prs_res',prs_res             : pressure resolution (default: 2 dbar)
+%   'raw',raw                     : use raw data if 'yes', adjusted data
+%                                   if no (default: 'no')
 %   'calc_dens',calc_dens         : if set to 1, calculate density on
 %                                   interpolated depth levels
 %   'calc_mld_dens',calc_mld_dens : if set to 1, calculate mixed layer
@@ -61,11 +63,14 @@ calc_dens = 0;
 calc_mld_dens = 0;
 calc_mld_temp = 0;
 varargpass= {};
+raw = 'no';
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'prs_res')
         prs_res = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'raw')
+        raw = varargin{i+1};
     elseif strcmpi(varargin{i}, 'calc_dens')
         calc_dens = varargin{i+1};
     elseif strcmpi(varargin{i}, 'calc_mld_dens')
@@ -80,6 +85,7 @@ end
 
 % DEFINE PRESSURE DATA AS 'X'
 try
+    assert(strcmp(raw, 'no'));
     X = Data.PRES_ADJUSTED;
 catch
     X = Data.PRES;
@@ -93,8 +99,8 @@ xi = repmat(xi,1,size(X,2));
 vars = fieldnames(Data);
 for k=1:numel(vars)
     % CHECK FOR EXISTENCE OF FIELD
-    if startsWith(vars{k},Settings.avail_vars) && ~endsWith(vars{k},'_QC')
-        
+    if startsWith(vars{k},Settings.avail_vars) && ...
+            ~startsWith(vars{k}, 'PRES') && ~endsWith(vars{k},'_QC')
         % DEFINE DEPENDENT VARIABLE AS 'Y'
         Y = Data.(vars{k});
         
@@ -139,5 +145,5 @@ Datai.CYCLE_NUMBER = repmat(Data.CYCLE_NUMBER(1,:),size(xi,1),1);
 if calc_dens || calc_mld_dens || calc_mld_temp
     Datai = calc_auxil(Datai, 'calc_dens', 1, ...
         'calc_mld_dens', calc_mld_dens, 'calc_mld_temp', calc_mld_temp, ...
-        varargpass{:});
+        'raw', raw, varargpass{:});
 end

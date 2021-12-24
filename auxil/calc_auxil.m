@@ -16,6 +16,8 @@ function Data = calc_auxil(Data,varargin)
 %               interpolated pressure/depth axis)
 %
 % OPTIONAL INPUTS:
+%   'raw',raw                     : use raw data if 'yes', adjusted data
+%                                   if no (default: 'no')
 %   'calc_dens', calc_dens:         if set, calculate in situ density
 %   'calc_mld_temp', calc_mld_temp: if set, compute MLD based on T threshold
 %   'temp_thresh', temp_threshold : temperature threshold for MLD calculation
@@ -65,6 +67,7 @@ if nargin < 2
 end
 
 % set defaults
+raw = 'no';
 calc_dens = 0;
 calc_mld_temp = 0;
 calc_mld_dens = 0;
@@ -73,7 +76,9 @@ dens_thresh = Settings.dens_thresh;
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
-    if strcmpi(varargin{i}, 'calc_dens')
+    if strcmpi(varargin{i}, 'raw')
+        raw = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'calc_dens')
         calc_dens = varargin{i+1};
     elseif strcmpi(varargin{i}, 'calc_mld_temp')
         calc_mld_temp = varargin{i+1};
@@ -89,6 +94,7 @@ end
 % Calculate in situ density:
 if calc_dens
     try % Try with adjusted values first
+        assert(strcmp(raw, 'no'));
         Data.PSAL_ABS_ADJUSTED = gsw_SA_from_SP(Data.PSAL_ADJUSTED,...
             Data.PRES_ADJUSTED,...
             Data.LONGITUDE,Data.LATITUDE); % Calculate absolute salinity
@@ -110,11 +116,13 @@ end
 
 if calc_mld_temp || calc_mld_dens
     try % Try with adjusted values first
+        assert(strcmp(raw, 'no'));
         temp = Data.TEMP_ADJUSTED;
     catch % Then try with unadjusted values
         temp = Data.TEMP;
     end
     try % Try with adjusted values first
+        assert(strcmp(raw, 'no'));
         pres = Data.PRES_ADJUSTED;
     catch % Then try with unadjusted values
         pres = Data.PRES;
@@ -123,6 +131,7 @@ end
     
 if calc_mld_temp
     try % Try with adjusted values first
+        assert(strcmp(raw, 'no'));
         sal = Data.PSAL_ADJUSTED;
     catch % Then try with unadjusted values
         sal = Data.PSAL;
@@ -154,6 +163,7 @@ end
 
 if calc_mld_dens
     try % Try with adjusted values first
+        assert(strcmp(raw, 'no'));
         salt = Data.PSAL_ADJUSTED;
     catch % Then try with unadjusted values
         salt = Data.PSAL;
