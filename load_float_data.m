@@ -100,6 +100,11 @@ end
 % download Sprof files if necessary
 good_float_ids = download_multi_floats(float_ids);
 
+if length(good_float_ids) < length(float_ids) && ~isempty(float_profs)
+    [~, idx] = intersect(float_ids, good_float_ids, 'stable');
+    float_profs = float_profs(idx);
+end
+
 % LOOP TO IMPORT PROFILES AND EXTRACT VARIABLES
 for n = 1:length(good_float_ids)
     floatnum = good_float_ids(n);
