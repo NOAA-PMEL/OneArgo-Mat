@@ -32,6 +32,11 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %  'png',fn_png   : save the plot to a png file with the given 
 %                   file name (fn_png)
 %  'title',title  : title for the plot (default: "Float trajectories")
+%  'lines',lines  : lines (string) can be 'yes' to connect float positions
+%                   with a line or 'no' (default)
+%  'lgnd',lgnd    : lgnd (string) can be 'yes' to show legend along with
+%                   plot (default) or 'no'
+%  'size',sz      : sz defines the size of plotted points
 %
 % OUTPUT:
 %   good_float_ids : array of the float IDs whose Sprof files were
@@ -69,7 +74,10 @@ color = 'r'; % red
 float_profs = [];
 pos = [];
 fn_png = [];
-title1 = 'Float trajectories';
+title = 'Float trajectories';
+lines = 'no';
+lgnd = 'yes';
+sz = 36;
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -82,7 +90,13 @@ for i = 1:2:length(varargin)-1
     elseif strcmpi(varargin{i}, 'png')
         fn_png = varargin{i+1};
     elseif strcmpi(varargin{i}, 'title')
-        title1 = varargin{i+1};
+        title = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'lines')
+        lines = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'lgnd')
+        lgnd = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'size')
+        sz = varargin{i+1};
     end
 end
 
@@ -114,5 +128,5 @@ else
             end            
         end
     end
-    plot_trajectories(Data, color, title1, fn_png, float_ids);
+    plot_trajectories(Data, color, title, fn_png, float_ids, lines, lgnd, sz);
 end
