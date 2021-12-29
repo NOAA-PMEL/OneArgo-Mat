@@ -1,4 +1,4 @@
-function plot_trajectories(Data, color, title1, fn_png, float_ids)
+function plot_trajectories(Data, color, title1, fn_png, float_ids, lines, lgnd, sz)
 % plot_trajectories  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
@@ -17,7 +17,7 @@ function plot_trajectories(Data, color, title1, fn_png, float_ids)
 %           or any standard Matlab color descriptor ('r', 'k', 'b',
 %           'g' etc.; all trajectories will be plotted in the same color)
 %           color can also be 'dac'; in this case, the trajectories
-%           are colored by the DAC responsible for the floats 
+%           are colored by the DAC responsible for the floats
 %   title1: title of the plot
 %   fn_png: if not empty, create a png image of the plot with this file name
 %   float_ids: WMO IDs of the floats to be plotted
@@ -88,6 +88,7 @@ elseif strcmp(color, 'multiple') && ~strcmp(Settings.mapping, 'native')
     end
 end
 
+% use "geoscatter" as default
 if strcmp(Settings.mapping, 'native')
     geoaxes;
     hold on;
@@ -108,7 +109,7 @@ if strcmp(Settings.mapping, 'native')
         end
     legend(dacs,'location','eastoutside','AutoUpdate','off')
     end
-    % Plot float trajectories on map
+    % Plot float trajectories on map (points)
     for i=1:nfloats
         if use_alt_lon
             lon = Data.(floats{i}).ALT_LON(1,:);
@@ -129,8 +130,23 @@ if strcmp(Settings.mapping, 'native')
     end
     if ~strcmp(color, 'dac')
         legend(floats,'location','eastoutside','AutoUpdate','off')
+    % reset color order
+    set(gca,'ColorOrderIndex',1);
+    % Plot lines on map
+    if strcmp(lines,'yes')
+        for i=1:nfloats
+            if use_alt_lon
+                lon = Data.(floats{i}).ALT_LON(1,:);
+            else
+                lon = Data.(floats{i}).LONGITUDE(1,:);
+            end
+                l=geoplot(Data.(floats{i}).LATITUDE(1,:), lon, 'k', 'linewidth', 1);
+                % send line to back
+                uistack(l,'bottom');
+                clear l
+        end
     end
-elseif strcmp(Settings.mapping, 'm_map')
+elseif strcmp(Settings.mapping, 'm_map') % use "m_map" if indicated
     if diff(latlim) > 15
         proj = 'robinson';
     else
@@ -138,6 +154,7 @@ elseif strcmp(Settings.mapping, 'm_map')
     end
     m_proj(proj, 'lon', lonlim, 'lat', latlim);
     hold on;
+    % Plot float trajectories on map (points)
     for i=1:nfloats
         if strcmp(color, 'multiple') && nfloats > 1
             cidx = round(1 + (ncolor-1) * (i-1) / (nfloats - 1));
@@ -151,8 +168,23 @@ elseif strcmp(Settings.mapping, 'm_map')
         m_coast('patch', [0.7 0.7 0.7]);
     end
     % neither legend() nor m_legend() works for m_scatter plots
+    % reset color order
+    set(gca,'ColorOrderIndex',1);
+    % Plot lines on map
+    if strcmp(lines,'yes')
+        for i=1:nfloats
+                l=m_plot(Data.(floats{i}).LONGITUDE(1,:),...
+                    Data.(floats{i}).LATITUDE(1,:), 'k', 'linewidth', 1);
+                % send line to back
+                uistack(l,'bottom');
+                % send line up a number of positions equal to nfloats
+                uistack(l,'up',nfloats);
+                clear l
+        end
+    end
 else % "plain" plot
     hold on;
+    % Plot float trajectories on map (points)
     for i=1:nfloats
         if strcmp(color, 'multiple') && nfloats > 1
             cidx = round(1 + (ncolor-1) * (i-1) / (nfloats - 1));
@@ -167,6 +199,18 @@ else % "plain" plot
     xlabel('Longitude')
     ylabel('Latitude')
     legend(floats,'location','eastoutside','AutoUpdate','off')
+    % reset color order
+    set(gca,'ColorOrderIndex',1);
+    % Plot lines on map
+    if strcmp(lines,'yes')
+        for i=1:nfloats
+            l=plot(Data.(floats{i}).LONGITUDE(1,:), ...
+                Data.(floats{i}).LATITUDE(1,:), 'k', 'linewidth', 1);
+            % send line to back
+            uistack(l,'bottom');
+            clear l
+        end
+    end
 end
 hold off
 title(title1)
