@@ -117,15 +117,15 @@ if strcmp(Settings.mapping, 'native')
             lon = Data.(floats{i}).LONGITUDE(1,:);
         end
         if strcmp(color, 'multiple')
-            geoscatter(Data.(floats{i}).LATITUDE(1,:), lon, '.');
+            geoscatter(Data.(floats{i}).LATITUDE(1,:), lon, sz, '.');
         elseif strcmp(color, 'dac')
             this_dac = Float.dac(find(Float.wmoid == float_ids(i), 1));
             cidx = find(strcmp(dacs, this_dac), 1);
-            geoscatter(Data.(floats{i}).LATITUDE(1,:), lon, ...
+            geoscatter(Data.(floats{i}).LATITUDE(1,:), lon, sz, ...
                 [], repmat(cmap(cidx, :), size(lon,2), 1), '.')
         else
-            geoscatter(Data.(floats{i}).LATITUDE(1,:), lon, ...
-                [color, '.']);
+            geoscatter(Data.(floats{i}).LATITUDE(1,:), lon, sz, ...
+                [color, '.']);      
         end
     end
     % add legend
@@ -163,10 +163,10 @@ elseif strcmp(Settings.mapping, 'm_map') % use "m_map" if indicated
         if strcmp(color, 'multiple') && nfloats > 1
             cidx = round(1 + (ncolor-1) * (i-1) / (nfloats - 1));
             m_scatter(Data.(floats{i}).LONGITUDE(1,:),...
-                Data.(floats{i}).LATITUDE(1,:),10,cmap(cidx,:),'filled');
+                Data.(floats{i}).LATITUDE(1,:),round(sz/6),cmap(cidx,:),'filled');
         else
             m_scatter(Data.(floats{i}).LONGITUDE(1,:),...
-                Data.(floats{i}).LATITUDE(1,:),10,color,'filled');
+                Data.(floats{i}).LATITUDE(1,:),round(sz/6),color,'filled');
         end
         m_grid('box','fancy');
         m_coast('patch', [0.7 0.7 0.7]);
@@ -193,10 +193,10 @@ else % "plain" plot
         if strcmp(color, 'multiple') && nfloats > 1
             cidx = round(1 + (ncolor-1) * (i-1) / (nfloats - 1));
             scatter(Data.(floats{i}).LONGITUDE(1,:),...
-                Data.(floats{i}).LATITUDE(1,:),10,cmap(cidx,:),'filled');
+                Data.(floats{i}).LATITUDE(1,:),round(sz/5),cmap(cidx,:),'filled');
         else
             scatter(Data.(floats{i}).LONGITUDE(1,:),...
-                Data.(floats{i}).LATITUDE(1,:),10,color,'filled');
+                Data.(floats{i}).LATITUDE(1,:),round(sz/5),color,'filled');
         end
     end
     box on
