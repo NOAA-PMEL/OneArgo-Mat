@@ -128,8 +128,12 @@ if strcmp(Settings.mapping, 'native')
                 [color, '.']);
         end
     end
-    if ~strcmp(color, 'dac')
-        legend(floats,'location','eastoutside','AutoUpdate','off')
+    % add legend
+    if strcmp(lgnd,'yes')
+        if ~strcmp(color, 'dac')
+            legend(floats,'location','eastoutside','AutoUpdate','off')
+        end
+    end
     % reset color order
     set(gca,'ColorOrderIndex',1);
     % Plot lines on map
@@ -198,7 +202,12 @@ else % "plain" plot
     box on
     xlabel('Longitude')
     ylabel('Latitude')
-    legend(floats,'location','eastoutside','AutoUpdate','off')
+    % add legend
+    if strcmp(lgnd,'yes')
+        if ~strcmp(color, 'dac')
+            legend(floats,'location','eastoutside','AutoUpdate','off')
+        end
+    end
     % reset color order
     set(gca,'ColorOrderIndex',1);
     % Plot lines on map
