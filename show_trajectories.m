@@ -10,7 +10,7 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %   one given float and calls plot_trajectories to create the plot.
 %
 % INPUT:
-%   float_ids : WMO ID(s) of one or more floats 
+%   float_ids : WMO ID(s) of one or more floats
 %               (if not set: Settings.demo_float is used as a demo)
 %
 % OPTIONAL INPUTS:
@@ -20,7 +20,7 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   (all trajectories will be plotted in the same color);
 %                   default value is 'r' (red);
 %                   color can also be 'dac'; in this case, the trajectories
-%                   are colored by the DAC responsible for the floats 
+%                   are colored by the DAC responsible for the floats
 %  'float_profs',fp : fp is an array with the per-float indices of the
 %                   selected profiles, as returned by function
 %                   select_profiles - use this optional argument if you
@@ -29,20 +29,21 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   spatial and/or temporal constraints
 %  'position', pos: show only the selected position (either 'first' or
 %                   'last')
-%  'png',fn_png   : save the plot to a png file with the given 
+%  'png',fn_png   : save the plot to a png file with the given
 %                   file name (fn_png)
 %  'title',title  : title for the plot (default: "Float trajectories")
 %  'lines',lines  : lines (string) can be 'yes' to connect float positions
 %                   with a line or 'no' (default)
-%  'lgnd',lgnd    : lgnd (string) can be 'yes' to show legend along with
+%  'legend',legend: legend (string) can be 'yes' to show legend along with
 %                   plot (default) or 'no'
-%  'size',sz      : sz defines the size of plotted points
+%  'size',sz      : sz (positive integer) defines the size of plotted
+%                   points (default: 36)
 %
 % OUTPUT:
 %   good_float_ids : array of the float IDs whose Sprof files were
 %                    successfully downloaded or existed already
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -93,10 +94,16 @@ for i = 1:2:length(varargin)-1
         title = varargin{i+1};
     elseif strcmpi(varargin{i}, 'lines')
         lines = varargin{i+1};
-    elseif strcmpi(varargin{i}, 'lgnd')
+    elseif strcmpi(varargin{i}, 'legend')
         lgnd = varargin{i+1};
     elseif strcmpi(varargin{i}, 'size')
-        sz = varargin{i+1};
+        if str2double(varargin{i}) > 0
+            sz = round(str2double(varargin{i+1}));
+        else
+            warning('size must be a positive integer')
+        end
+    else
+        warning('unknown option: %s', varargin{i});
     end
 end
 
@@ -113,19 +120,19 @@ else
         nfloats = length(floats);
         if strcmp(pos, 'first')
             for f = 1:nfloats
-               % only lon/lat fields are used by plot_trajectories
-               Data.(floats{f}).LONGITUDE = ...
-                   Data.(floats{f}).LONGITUDE(:,1);
-               Data.(floats{f}).LATITUDE = ...
-                   Data.(floats{f}).LATITUDE(:,1);
+                % only lon/lat fields are used by plot_trajectories
+                Data.(floats{f}).LONGITUDE = ...
+                    Data.(floats{f}).LONGITUDE(:,1);
+                Data.(floats{f}).LATITUDE = ...
+                    Data.(floats{f}).LATITUDE(:,1);
             end
         elseif strcmp(pos, 'last')
             for f = 1:nfloats
-               Data.(floats{f}).LONGITUDE = ...
-                   Data.(floats{f}).LONGITUDE(:,end);
-               Data.(floats{f}).LATITUDE = ...
-                   Data.(floats{f}).LATITUDE(:,end);
-            end            
+                Data.(floats{f}).LONGITUDE = ...
+                    Data.(floats{f}).LONGITUDE(:,end);
+                Data.(floats{f}).LATITUDE = ...
+                    Data.(floats{f}).LATITUDE(:,end);
+            end
         end
     end
     plot_trajectories(Data, color, title, fn_png, float_ids, lines, lgnd, sz);
