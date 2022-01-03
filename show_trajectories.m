@@ -97,7 +97,7 @@ for i = 1:2:length(varargin)-1
     elseif strcmpi(varargin{i}, 'legend')
         lgnd = varargin{i+1};
     elseif strcmpi(varargin{i}, 'size')
-        if str2double(varargin{i}) > 0
+        if str2double(varargin{i+1}) > 0
             sz = round(str2double(varargin{i+1}));
         else
             warning('size must be a positive integer')
