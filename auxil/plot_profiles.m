@@ -26,19 +26,17 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %               <basename>_<variable>.png
 %
 % OPTIONAL INPUTS:
+%   'depth',[min max] : minimum and maximum depth levels to plot
 %   'method',method : either 'all' (all profiles from each float are
 %                     shown in one plot per variable) or 'mean'
 %                     (mean and standard deviation across profiles);
 %                     default is 'all'
+%   'obs',obs       : plot markers at depths of observations (1);
+%                     default: 0 (=off)
 %   'per_float',per_float : show profiles separately for each float (1)
 %                     or all in one plot (0); default: 1 --
 %                     either option can be used with 'all' and
 %                     'mean' methods
-%   'obs',obs       : plot markers at depths of observations (1);
-%                     default: 0 (=off)
-%   'raw',raw       : plot raw, i.e., unadjusted data if set to 'yes';
-%                     default: 'no' (i.e., plot adjusted data if
-%                     available)
 %   'qc',flags      : show only values with the given QC flags (array)
 %                     0: no QC was performed;
 %                     1: good data;
@@ -52,12 +50,15 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %                     default setting: 0:9 (all flags)
 %                     See Table 7 in Bittig et al.:
 %                     https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
+%   'raw',raw       : plot raw, i.e., unadjusted data if set to 'yes';
+%                     default: 'no' (i.e., plot adjusted data if
+%                     available)
+%   'title_add',text: add the given text to the end of the title
 %   'var2',variable : if variable is not empty, profiles of this second
 %                     variable will be plotted; if it is the same type as the
 %                     first variable (e.g., DOXY2 compared to DOXY), it will
 %                     be plotted using the same axes; otherwise, right and
 %                     top axes will be used for the second variable
-%   'title_add',text: add the given text to the end of the title
 %
 % OUTPUTS:
 %   mean_prof : mean across profiles (cell array of cell arrays of column
@@ -99,6 +100,7 @@ if nargin < 4
 end
 
 % set defaults
+depth = [];
 method = 'all'; % show all profiles per variable in one plot
 per_float = 1; % show profiles for each float in a separate plot
 obs = 'off'; % don't show observation points on each profile by default
@@ -109,7 +111,19 @@ var2_orig = [];
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
-    if strcmpi(varargin{i}, 'method')
+    if strcmpi(varargin{i}, 'depth')
+        if isnumeric(varargin{i+1}) && numel(varargin{i+1}) == 2
+            depth = varargin{i+1};
+            if depth(1) > depth(2) % ensure [min max] order
+                depth = depth([2 1]);
+            elseif depth(1) == depth(2)
+                warning('min and max depth must be different values')
+                depth = [];
+            end
+        else
+            warning('min and max depth must be specified')
+        end
+    elseif strcmpi(varargin{i}, 'method')
         method = varargin{i+1};
     elseif strcmpi(varargin{i}, 'per_float')
         per_float = varargin{i+1};
@@ -198,9 +212,9 @@ end
 
 if ~isempty(basename)
     [var2_insert{1:nvars}] = deal('');
-    if ~isempty(var2)
+    if ~isempty(var2_orig)
         for v = 1:nvars
-            var2_insert{v} = sprintf('_%s', var2{v})
+            var2_insert{v} = sprintf('_%s', var2{v});
         end
     end
 end
@@ -273,7 +287,7 @@ for v = 1:nvars
                     'omitnan');
             end
             f1 = figure; % one figure per variable for each float
-            if ~isempty(var2{v}) && ~same_var_type
+            if ~isempty(var2_orig) && ~same_var_type
                 [ax1, ax2] = create_tiled_layout();
             else
                 ax1 = axes(f1);
@@ -329,16 +343,23 @@ for v = 1:nvars
         [long_name, units] = get_var_name_units(variables{v});
         xlabel(ax1, [long_name, ' ', units])
         ylabel(ax1,'Pressure (dbar)')
-        if ~isempty(var2) && ~same_var_type
+        if ~isempty(depth)
+            ylim(ax1, depth);
+        end
+        if ~isempty(var2_orig) && ~same_var_type
             set(ax2, 'Ydir', 'reverse');
             [long_name, units] = get_var_name_units(var2_orig);
             xlabel(ax2, [long_name, ' ', units])
             ylabel(ax2, 'Pressure (dbar)')
-            % make sure that both axes use the same pressure range
-            yl1 = ylim(ax1);
-            yl2 = ylim(ax2);
-            ylim(ax1, [min(yl1(1), yl2(1)), max(yl1(2), yl2(2))])
-            ylim(ax2, [min(yl1(1), yl2(1)), max(yl1(2), yl2(2))])
+            if isempty(depth)
+                % make sure that both axes use the same pressure range
+                yl1 = ylim(ax1);
+                yl2 = ylim(ax2);
+                ylim(ax1, [min(yl1(1), yl2(1)), max(yl1(2), yl2(2))])
+                ylim(ax2, [min(yl1(1), yl2(1)), max(yl1(2), yl2(2))])
+            else
+                ylim(ax2, depth);
+            end
         end
         if per_float
             hold off

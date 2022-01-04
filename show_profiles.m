@@ -17,6 +17,7 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %                (if not set: {'DOXY'} (=O2) is used)
 %
 % OPTIONAL INPUTS:
+%   'depth',[min max] : minimum and maximum depth levels to plot
 %   'float_profs',fp : cell array with per-float indices of the profiles to
 %                   be shown, as returned by select_profiles
 %   'method',method : by default (method='all') all profiles from each float
@@ -29,8 +30,11 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %   'per_float',per_float : show profiles separately for each float (1)
 %                   or all in one plot (0); default: 1
 %                   either option can be used with 'all' and 'mean' methods
-%   'raw',raw     : plot raw, i.e., unadjusted data if set to 'yes';
-%                   default: 'no' (i.e., plot adjusted data if available)
+%   'png',basename: if basename is not empty, png files will be created
+%                   for all plots; if per_float is used, the file
+%                   names will be <basename>_<WMOID>_<variable>.png,
+%                   if per_float is not used, the file names will be
+%                   <basename>_<variable>.png
 %   'qc',flags    : show only values with the given QC flags (as an array)
 %                   0: no QC was performed;
 %                   1: good data;
@@ -44,17 +48,14 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %                   default setting: 0:9 (all flags)
 %                   See Table 7 in Bittig et al.:
 %                   https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
+%   'raw',raw     : plot raw, i.e., unadjusted data if set to 'yes';
+%                   default: 'no' (i.e., plot adjusted data if available)
+%   'title_add',text : add the given text to the end of all titles
 %   'var2',variable: if variable is not empty, profiles of this second
 %                   variable will be plotted; if it is the same type as the
 %                   first variable (e.g., DOXY2 compared to DOXY), it will
 %                   be plotted using the same axes; otherwise, right and
 %                   top axes will be used for the second variable
-%   'title_add',text : add the given text to the end of all titles
-%   'png',basename: if basename is not empty, png files will be created
-%                   for all plots; if per_float is used, the file
-%                   names will be <basename>_<WMOID>_<variable>.png,
-%                   if per_float is not used, the file names will be
-%                   <basename>_<variable>.png
 %
 % OUTPUTS:
 %   good_float_ids : array of the float IDs whose Sprof files were
