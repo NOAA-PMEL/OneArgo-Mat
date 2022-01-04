@@ -5,13 +5,13 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %
 % USAGE:
 %   [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
-%       variables, varargin)
+%       variables, basename, varargin)
 %
 % DESCRIPTION:
-%   This function plots profiles of one or more specified float(s) for 
+%   This function plots profiles of one or more specified float(s) for
 %   the specified variable(s).
 %
-% PREREQUISITE: 
+% PREREQUISITE:
 %   Sprof file(s) for the specified float(s) must exist locally.
 %
 % INPUTS:
@@ -20,9 +20,9 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %   Mdata     : struct that must contain the WMO_ID field
 %   variables : cell array with names of the measured fields (e.g., DOXY)
 %   basename  : if not empty, create png files of all plots;
-%               if per_float is used, the file names will be 
+%               if per_float is used, the file names will be
 %               <basename>_<WMOID>_<variable>.png,
-%               if per_float is not used, the file names will be 
+%               if per_float is not used, the file names will be
 %               <basename>_<variable>.png
 %
 % OPTIONAL INPUTS:
@@ -37,26 +37,31 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %   'obs',obs       : plot markers at depths of observations (1);
 %                     default: 0 (=off)
 %   'raw',raw       : plot raw, i.e., unadjusted data if set to 'yes';
-%                     default: 'no' (i.e., plot adjusted data if 
+%                     default: 'no' (i.e., plot adjusted data if
 %                     available)
 %   'qc',flags      : show only values with the given QC flags (array)
-%                     0: no QC was performed; 
-%                     1: good data; 
+%                     0: no QC was performed;
+%                     1: good data;
 %                     2: probably good data;
 %                     3: probably bad data that are potentially correctable;
-%                     4: bad data; 
-%                     5: value changed; 
+%                     4: bad data;
+%                     5: value changed;
 %                     6,7: not used;
-%                     8: estimated value; 
+%                     8: estimated value;
 %                     9: missing value
 %                     default setting: 0:9 (all flags)
 %                     See Table 7 in Bittig et al.:
 %                     https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
+%   'var2',variable : if variable is not empty, profiles of this second
+%                     variable will be plotted; if it is the same type as the
+%                     first variable (e.g., DOXY2 compared to DOXY), it will
+%                     be plotted using the same axes; otherwise, right and
+%                     top axes will be used for the second variable
 %   'title_add',text: add the given text to the end of the title
 %
 % OUTPUTS:
-%   mean_prof : mean across profiles (cell array of cell arrays of column 
-%               vectors ({variable}{float}) if per_float is set to 1, 
+%   mean_prof : mean across profiles (cell array of cell arrays of column
+%               vectors ({variable}{float}) if per_float is set to 1,
 %               cell array of column vectors ({variable}) if per_float
 %               is set to 0)
 %   std_prof  : standard deviation across profiles (same type as mean_prof)
@@ -64,7 +69,7 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %               vectors if per_float is set to 1,
 %               column vector if per_float is 0)
 %
-% AUTHORS: 
+% AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -100,6 +105,7 @@ obs = 'off'; % don't show observation points on each profile by default
 raw = 'no'; % plot adjusted data by default
 title_add = ''; % nothing added to title
 qc_flags = 0:9; % use all data
+var2_orig = [];
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -115,6 +121,10 @@ for i = 1:2:length(varargin)-1
         title_add = varargin{i+1};
     elseif strcmpi(varargin{i}, 'qc')
         qc_flags = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'var2')
+        var2_orig = varargin{i+1};
+    else
+        warning('unknown option: %s', varargin{i});
     end
 end
 
@@ -139,10 +149,14 @@ if nplots > Settings.max_plots
     return
 end
 
+if ~isempty(var2_orig)
+    [var2{1:nvars}] = deal(var2_orig); % default; may change later
+end
 % unless 'raw' is specified, plot adjusted data
 if strncmpi(raw,'y',1)
-    title_add = ' [raw values]';
+    [title_added{1:nvars}] = deal([title_add, ' [raw values]']);
 else
+    [title_added{1:nvars}] = deal(title_add);
     for v = 1:nvars
         % if all floats have adjusted values available for a variable,
         % they will be used instead of raw values
@@ -151,17 +165,42 @@ else
             % the "_ADJUSTED" variable usually exists, but it may not
             % be filled with actual values
             if isfield(Data.(floats{f}),[variables{v}, '_ADJUSTED']) && ...
-                sum(isfinite(Data.(floats{f}).([variables{v}, '_ADJUSTED'])(:)))
+                    sum(isfinite(Data.(floats{f}).([variables{v}, '_ADJUSTED'])(:)))
                 has_adj = has_adj + 1;
             else
                 warning(['adjusted values for %s for float %s are not available,',...
                     ' showing raw values for all profiles instead'], ...
                     variables{v}, floats{f});
-                title_add = ' [raw values]';
+                title_added{v} = [title_added{v}, ' [raw values]'];
+                break
+            end
+            if ~isempty(var2_orig)
+                if isfield(Data.(floats{f}),[var2_orig, '_ADJUSTED']) && ...
+                        sum(isfinite(Data.(floats{f}).([var2_orig, '_ADJUSTED'])(:)))
+                    has_adj = has_adj + 1;
+                else
+                    warning(['adjusted values for %s for float %s ', ...
+                        'are not available, showing raw values for ', ...
+                        'all profiles instead'], var2_orig, floats{f});
+                    title_added{v} = ' [raw values]';
+                    break
+                end
             end
         end
-        if has_adj == nfloats
-            variables{v} = [variables{v} '_ADJUSTED'];
+        if has_adj == nfloats * (1 + ~isempty(var2_orig))
+            variables{v} = [variables{v}, '_ADJUSTED'];
+            if ~isempty(var2_orig)
+                var2{v} = [var2_orig, '_ADJUSTED'];
+            end
+        end
+    end
+end
+
+if ~isempty(basename)
+    [var2_insert{1:nvars}] = deal('');
+    if ~isempty(var2)
+        for v = 1:nvars
+            var2_insert{v} = sprintf('_%s', var2{v})
         end
     end
 end
@@ -172,19 +211,44 @@ for f = 1:nfloats
 end
 
 if per_float
+    mean_pres = cell(nfloats, 1);
     for f = 1:nfloats
-        mean_pres{f} = Datai.(floats{f}).PRES(:,1);
+        try
+            mean_pres{f} = Datai.(floats{f}).PRES(:,1);
+        catch % this happens when there are no valid values
+            mean_pres{f} = [];
+        end
     end
+    mean_prof = cell(nvars, nfloats);
+    std_prof = cell(nvars, nfloats);
+else
+    mean_prof = cell(nvars, 1);
+    std_prof = cell(nvars, 1);
 end
 for v = 1:nvars
+    if ~isempty(var2_orig)
+        same_var_type = strncmp(variables{v}, var2{v}, ...
+            length(variables{v}) - ...
+            9 * endsWith(variables{v}, '_ADJUSTED'));
+    end
     if ~per_float
         [mean_prof{v}, std_prof{v}, mean_pres] = ...
             get_multi_profile_mean(Datai, variables{v});
         this_mean_prof = mean_prof{v};
         this_std_prof = std_prof{v};
         this_mean_pres = mean_pres;
+        if ~isempty(var2_orig)
+            [mean_prof_var2,std_prof_var2] = ...
+                get_multi_profile_mean(Datai, var2{v});
+        end
         f1 = figure; % one figure per variable for all floats
-        hold on
+        if ~isempty(var2_orig) && ~same_var_type
+            [ax1, ax2] = create_tiled_layout();
+        else
+            ax1 = axes(f1);
+            ax2 = ax1; % only used if ~isempty(var2_orig) && same_var_type
+        end
+        hold(ax1, 'on')
     end
     for f = 1:nfloats
         try
@@ -202,47 +266,88 @@ for v = 1:nvars
             this_mean_prof = mean_prof{v}{f};
             this_std_prof = std_prof{v}{f};
             this_mean_pres = mean_pres{f};
+            if ~isempty(var2_orig)
+                mean_prof_var2 = mean(Datai.(floats{f}).(var2{v}),2,...
+                    'omitnan');
+                std_prof_var2 = std(Datai.(floats{f}).(var2{v}),[],2,...
+                    'omitnan');
+            end
             f1 = figure; % one figure per variable for each float
-            hold on
+            if ~isempty(var2{v}) && ~same_var_type
+                [ax1, ax2] = create_tiled_layout();
+            else
+                ax1 = axes(f1);
+                ax2 = ax1; % only used if ~isempty(var2_orig) && same_var_type
+            end
+            hold(ax1, 'on')
         end
         if strcmp(method, 'all')
             for p = 1:nprofs
-                idx = isfinite(Data.(floats{f}).(variables{v})(:,p)) & ...
-                    isfinite(PRES(:,p)) & ...
-                    ismember(Data.(floats{f}).([variables{v},'_QC'])(:,p),...
-                    qc_flags);
-                if sum(idx)
-                    plot(Data.(floats{f}).(variables{v})(idx,p), ...
-                        PRES(idx,p),'k-');
-                    if strcmp(obs,'on')
-                        scatter(Data.(floats{f}).(variables{v})(idx,p), ...
-                            PRES(idx,p),'k.');
-                    end
-                else
-                    warning(['no valid observations matching selected',...
+                if ~plot_one_profile(ax1, ...
+                        Data.(floats{f}).(variables{v})(:,p), ...
+                        PRES(:,p), ...
+                        Data.(floats{f}).([variables{v},'_QC'])(:,p), ...
+                        qc_flags, strcmp(obs,'on'), Settings.color_var1_range)
+                    warning(['no valid observations of %s matching selected',...
                         ' QC flags found for profile %d of float %s'], ...
-                        p, floats{f});
+                        variables{v}, p, floats{f});
+                end
+                if ~isempty(var2_orig)
+                    if ~plot_one_profile(ax2, Data.(floats{f}).(var2{v})(:,p), ...
+                            PRES(:,p), ...
+                            Data.(floats{f}).([var2{v},'_QC'])(:,p), ...
+                            qc_flags, strcmp(obs,'on'), Settings.color_var2_range)
+                        warning(['no valid observations of %s matching selected',...
+                            ' QC flags found for profile %d of float %s'], ...
+                            var2{v}, p, floats{f});
+                    end
                 end
             end
-            plot(this_mean_prof,this_mean_pres,'r-','linewidth',2);
+            plot(ax1,this_mean_prof,this_mean_pres,...
+                'color',Settings.color_var1_mean,'linewidth',2);
+            if ~isempty(var2_orig)
+                plot(ax2,mean_prof_var2,this_mean_pres,...
+                    'color',Settings.color_var2_mean,'linewidth',2);
+            end
         else
-            plot(this_mean_prof,this_mean_pres,'k-','linewidth',2);
-            plot(this_mean_prof - this_std_prof,this_mean_pres,...
-                'b-','linewidth',2);
-            plot(this_mean_prof + this_std_prof,this_mean_pres,...
-                'b-','linewidth',2);
+            plot(ax1,this_mean_prof,this_mean_pres,...
+                'color',Settings.color_var1_mean,'linewidth',2);
+            plot(ax1,this_mean_prof - this_std_prof,this_mean_pres,...
+                'color',Settings.color_var1_range,'linewidth',2);
+            plot(ax1,this_mean_prof + this_std_prof,this_mean_pres,...
+                'color',Settings.color_var1_range,'linewidth',2);
+            if ~isempty(var2_orig)
+                plot(ax2,mean_prof_var2,this_mean_pres,...
+                    'color',Settings.color_var2_mean,'linewidth',2);
+                plot(ax2,mean_prof_var2 - std_prof_var2,this_mean_pres,...
+                    'color',Settings.color_var2_range,'linewidth',2);
+                plot(ax2,mean_prof_var2 + std_prof_var2,this_mean_pres,...
+                    'color',Settings.color_var2_range,'linewidth',2);
+            end
         end
-        set(gca,'Ydir','reverse');
+        set(ax1,'Ydir','reverse');
         [long_name, units] = get_var_name_units(variables{v});
-        xlabel([long_name, ' ', units])
-        ylabel('Pressure (dbar)')
+        xlabel(ax1, [long_name, ' ', units])
+        ylabel(ax1,'Pressure (dbar)')
+        if ~isempty(var2) && ~same_var_type
+            set(ax2, 'Ydir', 'reverse');
+            [long_name, units] = get_var_name_units(var2_orig);
+            xlabel(ax2, [long_name, ' ', units])
+            ylabel(ax2, 'Pressure (dbar)')
+            % make sure that both axes use the same pressure range
+            yl1 = ylim(ax1);
+            yl2 = ylim(ax2);
+            ylim(ax1, [min(yl1(1), yl2(1)), max(yl1(2), yl2(2))])
+            ylim(ax2, [min(yl1(1), yl2(1)), max(yl1(2), yl2(2))])
+        end
         if per_float
             hold off
             title(sprintf('Float %d %s', ...
-                Mdata.(float_ids{f}).WMO_NUMBER, title_add));
+                Mdata.(float_ids{f}).WMO_NUMBER, title_added{v}));
             if ~isempty(basename)
-                fn_png = sprintf('%s_%d_%s.png', basename, ...
-                    Mdata.(float_ids{f}).WMO_NUMBER, variables{v});
+                fn_png = sprintf('%s_%d_%s%s.png', basename, ...
+                    Mdata.(float_ids{f}).WMO_NUMBER, variables{v}, ...
+                    var2_insert{v});
                 print(f1, '-dpng', fn_png);
             end
         end
@@ -258,9 +363,10 @@ for v = 1:nvars
         else
             ttitle = 'All selected floats';
         end
-        title([ttitle, title_add]);
+        title([ttitle, title_added{v}]);
         if ~isempty(basename)
-            fn_png = sprintf('%s_%s.png', basename, variables{v});
+            fn_png = sprintf('%s%s.png', basename, variables{v}, ...
+                var2_insert{v});
             print(f1, '-dpng', fn_png);
         end
     end

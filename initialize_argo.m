@@ -6,13 +6,13 @@ function initialize_argo()
 %   initialize_argo()
 %
 % DESCRIPTION:
-%   This function defines standard settings and paths and downloads 
+%   This function defines standard settings and paths and downloads
 %   index files. It must be called once before any other functions
 %   can be used, either directly or indirectly by calling any of
 %   the functions load_float_data, select_profiles, show_profiles,
 %   show_sections, or show_trajectories.
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -48,7 +48,7 @@ Settings.verbose = 1;
 
 % Maximum number of plots that can be created with one call to
 % show_profiles etc.
-% Increase this number if necessary, if you are sure that 
+% Increase this number if necessary, if you are sure that
 % your system can handle it.
 Settings.max_plots = 20;
 
@@ -56,7 +56,7 @@ Settings.max_plots = 20;
 Settings.prof_dir = './Profiles/';
 
 % Index files are stored in subdirectory 'Index'
-Settings.index_dir = './Index/'; 
+Settings.index_dir = './Index/';
 
 Settings.demo_float = 5904021;
 
@@ -70,6 +70,13 @@ Settings.temp_thresh = 0.2;
 Settings.dens_thresh = 0.03;
 
 % Settings.colormap = 'jet'; % uncomment and change as needed
+
+% colors for profile plots ("range" is for individual profiles using the
+% 'all' method and mean +- std.dev. in the 'mean' method)
+Settings.color_var1_mean = [0, 0, 0]; % black
+Settings.color_var1_range = [0.7 0.7 0.7]; % light gray
+Settings.color_var2_mean = [0, 0, 1]; % blue
+Settings.color_var2_range = [0.5, 0.75, 1]; % light blue
 
 % Default: try US GDAC before French GDAC
 host_ifremer = 'https://data-argo.ifremer.fr/';
@@ -102,14 +109,14 @@ end
 % Full set of available variables (but not all floats have all sensors)
 % Additional sensors of existing types (e.g., DOXY2, BBP700_2) will
 % be added below if they are found in the index file
-Settings.avail_vars = {'PRES';'PSAL';'TEMP';'DOXY';'BBP';'BBP470';'BBP532';...
-    'BBP700';'TURBIDITY';'CP';'CP660';'CHLA';'CDOM';'NITRATE';'BISULFIDE';...
-    'PH_IN_SITU_TOTAL';'DOWN_IRRADIANCE';'DOWN_IRRADIANCE380';...
+Settings.avail_vars = {'PRES';'PSAL';'TEMP';'CNDC';'DOXY';'BBP';'BBP470';...
+    'BBP532';'BBP700';'TURBIDITY';'CP';'CP660';'CHLA';'CDOM';'NITRATE';...
+    'BISULFIDE';'PH_IN_SITU_TOTAL';'DOWN_IRRADIANCE';'DOWN_IRRADIANCE380';...
     'DOWN_IRRADIANCE412';'DOWN_IRRADIANCE443';'DOWN_IRRADIANCE490';...
     'DOWN_IRRADIANCE555';'DOWN_IRRADIANCE670';'UP_RADIANCE';...
     'UP_RADIANCE412';'UP_RADIANCE443';'UP_RADIANCE490';'UP_RADIANCE555';...
     'UP_RADIANCE';'UP_RADIANCE412';'UP_RADIANCE443';'UP_RADIANCE490';...
-    'UP_RADIANCE555';'DOWNWELLING_PAR';'CNDC'};
+    'UP_RADIANCE555';'DOWNWELLING_PAR'};
 
 % List of Data Assimilation Centers
 Settings.dacs = {'aoml'; 'bodc'; 'coriolis'; 'csio'; 'csiro'; 'incois'; ...

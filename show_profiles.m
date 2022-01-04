@@ -17,8 +17,8 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %                (if not set: {'DOXY'} (=O2) is used)
 %
 % OPTIONAL INPUTS:
-%   'float_profs',fp : per-float indices of the profiles to be shown,
-%                   as returned by select_profiles
+%   'float_profs',fp : cell array with per-float indices of the profiles to
+%                   be shown, as returned by select_profiles
 %   'method',method : by default (method='all') all profiles from each float
 %                   are shown in one plot per variable;
 %                   use method='mean' to plot mean and standard deviation
@@ -32,18 +32,23 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %   'raw',raw     : plot raw, i.e., unadjusted data if set to 'yes';
 %                   default: 'no' (i.e., plot adjusted data if available)
 %   'qc',flags    : show only values with the given QC flags (as an array)
-%                   0: no QC was performed; 
-%                   1: good data; 
+%                   0: no QC was performed;
+%                   1: good data;
 %                   2: probably good data;
 %                   3: probably bad data that are potentially correctable;
-%                   4: bad data; 
-%                   5: value changed; 
+%                   4: bad data;
+%                   5: value changed;
 %                   6,7: not used;
-%                   8: estimated value; 
+%                   8: estimated value;
 %                   9: missing value
 %                   default setting: 0:9 (all flags)
 %                   See Table 7 in Bittig et al.:
 %                   https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
+%   'var2',variable: if variable is not empty, profiles of this second
+%                   variable will be plotted; if it is the same type as the
+%                   first variable (e.g., DOXY2 compared to DOXY), it will
+%                   be plotted using the same axes; otherwise, right and
+%                   top axes will be used for the second variable
 %   'title_add',text : add the given text to the end of all titles
 %   'png',basename: if basename is not empty, png files will be created
 %                   for all plots; if per_float is used, the file
@@ -64,7 +69,7 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %                   vectors if per_float is set to 1,
 %                   column vector if per_float is 0)
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -109,6 +114,7 @@ if nargin < 2
 end
 float_profs = [];
 basename = [];
+var2 = [];
 varargpass= {};
 
 % parse optional arguments
@@ -118,18 +124,34 @@ for i = 1:2:length(varargin)-1
     elseif strcmpi(varargin{i}, 'png')
         basename = varargin{i+1};
     else
-        varargpass = [varargpass, varargin{i:i+1}];
         if strcmpi(varargin{i}, 'qc')
             if min(varargin{i+1}) < 0 || max(varargin{i+1}) > 9
                 warning('only QC flags 0..9 are allowed!')
+                continue; % don't add it to varargpass
             end
+        elseif strcmp(varargin{i}, 'var2')
+            var2 = check_variables(varargin{i+1}, 'warning', ...
+                'unknown sensor will be ignored');
         end
+        varargpass = [varargpass, varargin{i:i+1}];
     end
 end
 
 % convert requested variable to cell array if necessary and
 % discard unknown variables
-variables = check_variables(variables);
+variables = check_variables(variables, 'warning', ...
+    'unknown sensor will be  ignored');
+
+% if float profiles were specified, make sure that there are no empty
+% arrays; if so, disregard these floats
+if ~isempty(float_profs)
+    no_profs = cellfun(@isempty, float_profs);
+    if any(no_profs)
+        warning('No profiles specified for float(s) %s', ...
+            num2str(float_ids(no_profs)))
+        float_ids(no_profs) = [];
+    end
+end
 
 % download Sprof files if necessary
 good_float_ids = download_multi_floats(float_ids);
@@ -137,8 +159,8 @@ good_float_ids = download_multi_floats(float_ids);
 if isempty(good_float_ids)
     warning('no valid floats found')
 else
-    [Data, Mdata] = load_float_data(good_float_ids, variables, float_profs);
+    [Data, Mdata] = load_float_data(good_float_ids, [variables; var2], ...
+        float_profs);
     [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
         variables, basename, varargpass{:});
 end
-
