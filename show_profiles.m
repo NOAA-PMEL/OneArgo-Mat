@@ -99,11 +99,6 @@ mean_prof = {};
 std_prof = {};
 mean_pres = {};
 
-if nargin < 2
-    warning('Usage: show_profiles(float_ids, variables, varargin)')
-    return
-end
-
 if isempty(float_ids)
     warning('no floats specified')
     return
