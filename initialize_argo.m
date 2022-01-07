@@ -69,6 +69,10 @@ Settings.update = 3600; % time is given in seconds
 Settings.temp_thresh = 0.2;
 Settings.dens_thresh = 0.03;
 
+% default value for deviation from requested depth level for time series
+% plots - if exceeded, a warning will be issued
+Settings.depth_tol = 5; 
+
 % Settings.colormap = 'jet'; % uncomment and change as needed
 
 % colors for profile plots ("range" is for individual profiles using the
