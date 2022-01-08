@@ -23,11 +23,11 @@ function plot_trajectories(Data, color, title1, fn_png, float_ids, ...
 %   title1: title of the plot
 %   fn_png: if not empty, create a png image of the plot with this file name
 %   float_ids: WMO IDs of the floats to be plotted
-%  'lines',lines  : lines (string) can be 'yes' to connect float positions
-%                   with a line or 'no' (default)
-%  'lgnd',lgnd    : lgnd (string) can be 'yes' to show legend along with
-%                   plot (default) or 'no'
-%  'size',sz      : sz defines the size of plotted points (default: 36)
+%   lines : lines (string) can be 'yes' to connect float positions
+%           with a line or 'no' (default)
+%   lgnd  : lgnd (string) can be 'yes' to show legend along with
+%           plot (default) or 'no'
+%   sz    : sz defines the size of plotted points (default: 36)
 %
 % AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
