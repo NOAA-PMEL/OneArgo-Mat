@@ -156,10 +156,17 @@ end
 
 float_ids = fieldnames(Mdata);
 nvars = length(variables);
-nplots = nfloats * nvars;
+if per_float
+    nplots = nfloats * nvars;
+    warn_insert = 'floats and/or ';
+else
+    nplots = nvars;
+    warn_insert = '';
+end
 if nplots > Settings.max_plots
-    warning(['too many plots requested - use fewer profiles and/or variables', ...
-        newline, 'or increase Settings.max_plots if possible'])
+    warning(['too many plots requested - use fewer %svariables', ...
+        newline, 'or increase Settings.max_plots if possible'], ...
+        warn_insert)
     return
 end
 
@@ -363,6 +370,7 @@ for v = 1:nvars
         end
         if per_float
             hold off
+            box on
             title(sprintf('Float %d %s', ...
                 Mdata.(float_ids{f}).WMO_NUMBER, title_added{v}));
             if ~isempty(basename)
@@ -375,6 +383,7 @@ for v = 1:nvars
     end
     if ~per_float
         hold off
+        box on
         if nfloats < 4
             ttitle = 'Floats';
             for f = 1:nfloats
