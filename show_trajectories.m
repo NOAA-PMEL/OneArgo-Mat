@@ -6,7 +6,7 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %   show_trajectories(float_ids,varargin)
 %
 % DESCRIPTION:
-%  This is an intermediary function that downloads profiles for at least
+%   This is an intermediary function that downloads profiles for at least
 %   one given float and calls plot_trajectories to create the plot.
 %
 % INPUT:
@@ -21,22 +21,22 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   default value is 'r' (red);
 %                   color can also be 'dac'; in this case, the trajectories
 %                   are colored by the DAC responsible for the floats
-%  'float_profs',fp : fp is an array with the per-float indices of the
+%   'float_profs',fp : fp is an array with the per-float indices of the
 %                   selected profiles, as returned by function
 %                   select_profiles - use this optional argument if you
 %                   don't want to plot the full trajectories of the
 %                   given floats, but only those locations that match
 %                   spatial and/or temporal constraints
-%  'position', pos: show only the selected position (either 'first' or
+%   'position', pos: show only the selected position (either 'first' or
 %                   'last')
-%  'png',fn_png   : save the plot to a png file with the given
+%   'png',fn_png  : save the plot to a png file with the given
 %                   file name (fn_png)
-%  'title',title  : title for the plot (default: "Float trajectories")
-%  'lines',lines  : lines (string) can be 'yes' to connect float positions
+%   'title',title : title for the plot (default: "Float trajectories")
+%   'lines',lines : lines (string) can be 'yes' to connect float positions
 %                   with a line or 'no' (default)
-%  'legend',legend: legend (string) can be 'yes' to show legend along with
+%   'legend',legend: legend (string) can be 'yes' to show legend along with
 %                   plot (default) or 'no'
-%  'size',sz      : sz (positive integer) defines the size of plotted
+%   'size',sz     : sz (positive integer) defines the size of plotted
 %                   points (default: 36)
 %
 % OUTPUT:
@@ -97,8 +97,8 @@ for i = 1:2:length(varargin)-1
     elseif strcmpi(varargin{i}, 'legend')
         lgnd = varargin{i+1};
     elseif strcmpi(varargin{i}, 'size')
-        if str2double(varargin{i+1}) > 0
-            sz = round(str2double(varargin{i+1}));
+        if round(varargin{i+1}) > 0
+            sz = round(varargin{i+1});
         else
             warning('size must be a positive integer')
         end
