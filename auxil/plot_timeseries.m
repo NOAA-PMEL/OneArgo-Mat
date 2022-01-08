@@ -51,6 +51,7 @@ function plot_timeseries(Data, Mdata, variables, depth, basename, varargin)
 %                     [YYYY MM DD HH MM SS] or [YYYY MM DD])
 %   'time_label',label : use either years or months ('m'); default depends
 %                     on length of time shown ('m' for up to 18 months,
+%                     'y' otherwise)
 %   'title',title   : title for the plot (default: "Depth: .. db"); an
 %                     empty string ('') suppresses the title
 %   'var2',variable : if variable is not empty, profiles of this second
@@ -113,19 +114,9 @@ for i = 1:2:length(varargin)-1
     elseif strcmpi(varargin{i}, 'time_label')
         time_label = varargin{i+1};
     elseif strcmp(varargin{i}, 'start')
-        if length(varargin{i+1}) == 3 || length(varargin{i+1}) == 6
-            start_date = datenum(varargin{i+1});
-        else
-            warning(['dates should be in [YYYY MM DD HH MM SS] or ', ...
-                '[YYYY MM DD] format']);
-        end
+        start_date = check_datenum(varargin{i+1});
     elseif strcmp(varargin{i}, 'end')
-        if length(varargin{i+1}) == 3 || length(varargin{i+1}) == 6
-            end_date = datenum(varargin{i+1});
-        else
-            warning(['dates should be in [YYYY MM DD HH MM SS] or ', ...
-                '[YYYY MM DD] format']);
-        end
+        end_date = check_datenum(varargin{i+1});
     else
         warning('unknown option: %s', varargin{i});
     end
@@ -265,16 +256,9 @@ for v = 1:nvars
             end
             plot(Datai.(floats{f}).TIME(1,:), ...
                 Datai.(floats{f}).(variables{v})(idx{f,d},:), 'LineWidth', 2);
-            xl = xlim;
-            if ~isempty(start_date) || ~isempty(end_date)
-                if ~isempty(start_date)
-                    xl(1) = start_date;
-                end
-                if ~isempty(end_date)
-                    xl(2) = end_date;
-                end
-                xlim(xl);
-            end
+            xlim([Datai.(floats{f}).TIME(1,1), ...
+                Datai.(floats{f}).TIME(1,end)]); % tight layout
+            xl = set_xlim(start_date, end_date);
             % determine type of time label based on length of time series
             if isempty(time_label)
                 if xl(2) - xl(1) >  548 % in days; ~1.5 years

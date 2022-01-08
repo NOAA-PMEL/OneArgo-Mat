@@ -33,7 +33,8 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %   plot_mld    : if set to 1 or 2, mixed layer depth will be plotted,
 %                 using either a temperature (1) or density (2) criterion
 %   time_label  : either 'y' (year) or 'm' (month) - type of time labeling on
-%                 the x-axis
+%                 the x-axis; or [] to determine label based on length of
+%                 plot ('m' for up to 18 months, 'y' otherwise)
 %   max_depth   : maximum depth to plot (an empty array signals the
 %                 plotting of all available depths)
 %   raw         : if 'no', use adjusted variables if available;
@@ -42,8 +43,10 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %   basename    : if not empty, create png files of all plots;
 %                 the file names will be <basename>_<variable>.png
 %
-% OPTIONAL INPUT:
-%  'qc',flags   : show only values with the given QC flags (array)
+% OPTIONAL INPUTS:
+%   'end',end_date : end date (in one of the following formats:
+%                 [YYYY MM DD HH MM SS] or [YYYY MM DD])
+%   'qc',flags  : show only values with the given QC flags (array)
 %                 0: no QC was performed; 
 %                 1: good data; 
 %                 2: probably good data;
@@ -57,6 +60,8 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %                 default setting: 0:9 (all flags)
 %                 See Table 7 in Bittig et al.:
 %                 https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
+%   'start',start_date : start date (in one of the following formats:
+%                 [YYYY MM DD HH MM SS] or [YYYY MM DD])
 %
 % AUTHORS: 
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
@@ -85,11 +90,17 @@ end
 
 % set defaults
 qc_flags = []; % if not changed, actual defaults will be assigned below
+start_date = [];
+end_date = [];
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'qc')
         qc_flags = varargin{i+1};
+    elseif strcmp(varargin{i}, 'start')
+        start_date = check_datenum(varargin{i+1});
+    elseif strcmp(varargin{i}, 'end')
+        end_date = check_datenum(varargin{i+1});
     end
 end
 
@@ -191,6 +202,7 @@ for f = 1:nfloats
             plot(Datai.TIME,Datai.MLD_DENS(1,:),'k','LineWidth',2);
         end
         hold off
+        xl = set_xlim(start_date, end_date);
         if ~isempty(max_depth)
             ylim([0 max_depth]);
         end

@@ -16,6 +16,8 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %                (if not set: {'DOXY'} (=O2) is used)
 %
 % OPTIONAL INPUTS:
+%   'end',end_date     : end date (in one of the following formats:
+%                        [YYYY MM DD HH MM SS] or [YYYY MM DD])
 %   'float_profs',fp   : per-float indices of the profiles to be shown,
 %                        as returned by select_profiles
 %   'isopyc',isopyc    : plot isopycnal lines if non-zero (default: 1=on)
@@ -26,15 +28,15 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %                        'isopyc',[25.5, 26.3]
 %                        'isopyc',25.5:0.1:26
 %                        if set to 0, no isopycnal lines will be plotted
+%   'max_depth',depth  : maximum depth to be plotted (default: all)
 %   'mld',mld          : plot mixed layer depth, using either a 
 %                        temperature criterion (mld=1) or a density
 %                        criterion (mld=2); default: 0=off
-%   'time_label',label : use either years ('y', by default) or months ('m')
-%   'max_depth',depth  : maximum depth to be plotted (default: all)
-%   'raw',raw          : plot raw, i.e., unadjusted data if set to 'yes';
-%                        default: 'no' (i.e., plot adjusted data if available)
 %   'obs',obs          : if 'on', add dots at the depths of observations
 %                        default: 'on'; use 'off' to turn off this behavior
+%   'png',basename     : if basename is not empty, png files will be created
+%                        for all plots, the file names will be
+%                        <basename>_<variable>.png
 %   'qc',flags         : show only values with the given QC flags (as an array)
 %                        0: no QC was performed; 
 %                        1: good data; 
@@ -48,9 +50,13 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %                        default setting: 0:9 (all flags)
 %                        See Table 7 in Bittig et al.:
 %                        https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
-%   'png',basename     : if basename is not empty, png files will be created
-%                        for all plots, the file names will be
-%                        <basename>_<variable>.png
+%   'raw',raw          : plot raw, i.e., unadjusted data if set to 'yes';
+%                        default: 'no' (i.e., plot adjusted data if available)
+%   'start',start_date : start date (in one of the following formats:
+%                        [YYYY MM DD HH MM SS] or [YYYY MM DD])
+%   'time_label',label : use either years ('y', by default) or months
+%                        ('m'), or [] to determine label based on length of
+%                        plot ('m' for up to 18 months, 'y' otherwise)
 %
 % OUTPUT:
 %   good_float_ids : array of the float IDs whose Sprof files were
@@ -94,7 +100,7 @@ end
 float_profs = [];
 plot_isopyc = 1;
 plot_mld = 0;
-time_label = 'y';
+time_label = [];
 max_depth = []; % used as flag: plot all available depths
 raw = 'no'; % plot adjusted data by default
 obs = 'on'; % plot observations on section by default
