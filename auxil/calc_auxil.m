@@ -127,15 +127,15 @@ if calc_mld_temp || calc_mld_dens
     catch % Then try with unadjusted values
         pres = Data.PRES;
     end
+    try % Try with adjusted values first
+        assert(strcmp(raw, 'no'));
+        salt = Data.PSAL_ADJUSTED;
+    catch % Then try with unadjusted values
+        salt = Data.PSAL;
+    end
 end
     
 if calc_mld_temp
-    try % Try with adjusted values first
-        assert(strcmp(raw, 'no'));
-        sal = Data.PSAL_ADJUSTED;
-    catch % Then try with unadjusted values
-        sal = Data.PSAL;
-    end
     % Pre-allocate mixed layer
     Data.MLD_TEMP = nan(1,size(temp,2));
     % Calculate mixed layer depth based on temperature threshold
@@ -144,9 +144,9 @@ if calc_mld_temp
         % determine pressure closest to 10
         [~,ref_idx] = min(abs(pressure_prof-10));
         temperature_prof = temp(:,n); % extract temperature profile
-        sal_prof = sal(:,n); % same for salinity
+        salt_prof = salt(:,n); % same for salinity
         % compute potential temperature
-        ptemp_prof = gsw_pt0_from_t(sal_prof,temperature_prof,pressure_prof);
+        ptemp_prof = gsw_pt0_from_t(salt_prof,temperature_prof,pressure_prof);
         % define reference potential temperature as closest to P = 10
         ptemp_ref = ptemp_prof(ref_idx);
         under_ref = pressure_prof > pressure_prof(ref_idx); % index below reference
@@ -162,12 +162,6 @@ if calc_mld_temp
 end
 
 if calc_mld_dens
-    try % Try with adjusted values first
-        assert(strcmp(raw, 'no'));
-        salt = Data.PSAL_ADJUSTED;
-    catch % Then try with unadjusted values
-        salt = Data.PSAL;
-    end
     % Calculate potential density with respect to surface pressure (=0)
     pdensity = gsw_rho(salt,temp,zeros(size(temp)));
     % Pre-allocate mixed layer
