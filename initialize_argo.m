@@ -203,6 +203,20 @@ Float.prof_idx2 = ia(2:end) - 1;
 % use the update date of the last profile
 Float.update = Sprof.date_update(Float.prof_idx2);
 
+% determine sensor availability by float
+nfloats = length(Float.wmoid);
+Float.min_sens = cell(nfloats, 1);
+Float.max_sens = cell(nfloats, 1);
+len_sens = cellfun(@length, Sprof.sens);
+for f = 1:nfloats
+    [~, idx1] = min(len_sens(Float.prof_idx1(f):Float.prof_idx2(f)));
+    [~, idx2] = max(len_sens(Float.prof_idx1(f):Float.prof_idx2(f)));
+    % assumption: the shortest string has sensors that are shared among all
+    % profiles and the longest string has the union of all available sensors
+    Float.min_sens{f} = split(Sprof.sens{Float.prof_idx1(f)+idx1-1});
+    Float.max_sens{f} = split(Sprof.sens{Float.prof_idx1(f)+idx2-1});
+end
+
 % Determine the availability of mapping functions
 if ~isempty(which('geobasemap'))
     Settings.mapping = 'native';
