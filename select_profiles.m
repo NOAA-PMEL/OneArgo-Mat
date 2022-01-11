@@ -13,8 +13,8 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %   It does not download any files.
 %
 % INPUTS:
-% lon_lim    : longitude limits
-% lat_lim    : latitude limits
+%   lon_lim : longitude limits
+%   lat_lim : latitude limits
 %            * Latitude and longitude limits can be input as either
 %            two element vectors ([LON1 LON2], [LAT1 LAT2]) for maximum
 %            and minimum limits, or as same-sized vectors with at least
@@ -24,19 +24,37 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %            360 degree range that encloses all the desired longitude
 %            values, e.g., [-20 200])
 %            * Either or both values can be '[]' to indicate the full range
-% start_date : start date
-% end_date   : end date
+%   start_date : start date
+%   end_date : end date
 %            * Dates should be in one of the following formats:
 %            [YYYY MM DD HH MM SS] or [YYYY MM DD]
 %            * Both values can be '[]' to indicate the full range
 %
-% OPITONAL INPUTS (key,value pairs):
-% 'outside', 'none' 'time' 'space' 'both': By default, only float profiles
+% OPTIONAL INPUTS (key,value pairs):
+%   'dac',dac: Select by Data Assimilation Center reponsible for the floats.
+%           A single DAC can be entered as a string (e.g.: 'aoml'),
+%           multiple DACs can be entered as a cell array (e.g.:
+%           {'meds';'incois'}.
+%           Valid values are any of: {'aoml'; 'bodc'; 'coriolis'; ...
+%           'csio'; 'csiro'; 'incois'; 'jma'; 'kma'; 'kordi'; 'meds'}
+%   'floats',floats: Select profiles only from these floats that must
+%           match all other criteria
+%   'mode',mode: Valid modes are 'R' (real-time), 'A' (adjusted), and
+%           'D', in any combination. Only profiles with the selected
+%           mode(s) will be listed in float_profs.
+%           Default is 'RAD' (all modes).
+%           If 'sensor' option is not used, the 'mode' option is ignored.
+%   'ocean', ocean: Valid choices are 'A' (Atlantic), 'P' (Pacific), and
+%           'I' (Indian). This selection is in addition to the specified
+%           longitude and latitude limits. (To select all floats and 
+%           profiles from one ocean basin, leave lon_lim and lat_lim
+%           empty.)
+%   'outside', 'none' 'time' 'space' 'both': By default, only float profiles
 %           that are within both the temporal and spatial constraints are
 %           returned ('none'); specify to also maintain profiles outside
 %           the temporal constraints ('time'), spatial constraints
 %           ('space'), or both constraints ('both')
-% 'sensor', SENSOR_TYPE: This option allows the selection by 
+%   'sensor', SENSOR_TYPE: This option allows the selection by 
 %           sensor type. Available are: PRES, PSAL, TEMP, DOXY, BBP,
 %           BBP470, BBP532, BBP700, TURBIDITY, CP, CP660, CHLA, CDOM,
 %           NITRATE, BISULFIDE, PH_IN_SITU_TOTAL, DOWN_IRRADIANCE,
@@ -47,22 +65,6 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           (Full list can be displayed with the list_sensors function.)
 %           Multiple sensors can be entered as a cell array, e.g.:
 %           {'DOXY';'NITRATE'}
-% 'ocean', ocean: Valid choices are 'A' (Atlantic), 'P' (Pacific), and
-%           'I' (Indian). This selection is in addition to the specified
-%           longitude and latitude limits. (To select all floats and 
-%           profiles from one ocean basin, leave lon_lim and lat_lim
-%           empty.)
-% 'mode',mode: Valid modes are 'R' (real-time), 'A' (adjusted), and
-%           'D', in any combination. Only profiles with the selected
-%           mode(s) will be listed in float_profs.
-%           Default is 'RAD' (all modes).
-%           If 'sensor' option is not used, the 'mode' option is ignored.
-% 'dac',dac: Select by Data Assimilation Center reponsible for the floats.
-%           A single DAC can be entered as a string (e.g.: 'aoml'),
-%           multiple DACs can be entered as a cell array (e.g.:
-%           {'meds';'incois'}.
-%           Valid values are any of: {'aoml'; 'bodc'; 'coriolis'; ...
-%           'csio'; 'csiro'; 'incois'; 'jma'; 'kma'; 'kordi'; 'meds'}
 %
 % OUTPUTS:
 %   float_ids   : array with the WMO IDs of all matching floats
@@ -99,6 +101,7 @@ sensor = []; % default: use all profiles that match other criteria
 ocean = []; % default: any ocean basin
 mode = 'RAD';
 dac = [];
+floats = [];
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -112,6 +115,8 @@ for i = 1:2:length(varargin)-1
         mode = varargin{i+1};
     elseif strcmpi(varargin{i}, 'dac')
         dac = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'floats')
+        floats = varargin{i+1};
     else
         warning('unknown option: %s', varargin{i});
     end
@@ -245,6 +250,11 @@ if ~isempty(dac)
     found_dacs = Float.dac(idx);
     uses_dac = ismember(found_dacs, dac);
     float_ids = float_ids(uses_dac);
+end
+
+if ~isempty(floats)
+    % select only those floats found so far that also were specified
+    float_ids = intersect(float_ids, floats);
 end
 
 % download Sprof files if necessary
