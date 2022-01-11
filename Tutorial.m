@@ -1,8 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% main_workshop.m
-% Driver routine for the GO-BGC workshop Matlab tutorial
+% Tutorial.m
+% Driver routine for the MATLAB toolbox for accessing BGC-Argo float data.
+%
+% Initially written for the GO-BGC workshop Matlab tutorial
 % June 28-30, 2021
-% It uses the MATLAB toolbox for accessing BGC-Argo float data.
 %
 % Demonstrates the downloading of BGC-Argo float data with sample plots,
 % a discussion of available data, quality control flags etc.
