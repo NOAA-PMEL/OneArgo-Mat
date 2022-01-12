@@ -37,8 +37,12 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           {'meds';'incois'}.
 %           Valid values are any of: {'aoml'; 'bodc'; 'coriolis'; ...
 %           'csio'; 'csiro'; 'incois'; 'jma'; 'kma'; 'kordi'; 'meds'}
+%   'depth',depth: Select profiles that reach at least this depth
+%           (positive downwards; in db)
 %   'floats',floats: Select profiles only from these floats that must
 %           match all other criteria
+%   'min_num_prof',num_prof: Select only floats that have at least
+%           num_prof profiles that meet all other criteria
 %   'mode',mode: Valid modes are 'R' (real-time), 'A' (adjusted), and
 %           'D', in any combination. Only profiles with the selected
 %           mode(s) will be listed in float_profs.
@@ -102,6 +106,8 @@ ocean = []; % default: any ocean basin
 mode = 'RAD';
 dac = [];
 floats = [];
+depth = [];
+min_num_prof = 0;
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -117,6 +123,10 @@ for i = 1:2:length(varargin)-1
         dac = varargin{i+1};
     elseif strcmpi(varargin{i}, 'floats')
         floats = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'depth')
+        depth = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'min_num_prof')
+        min_num_prof = varargin{i+1};
     else
         warning('unknown option: %s', varargin{i});
     end
@@ -280,6 +290,12 @@ for fl = 1:length(good_float_ids)
     lon = ncread(filename, 'LONGITUDE');
     lat = ncread(filename, 'LATITUDE');
     juld = ncread(filename, 'JULD');
+    if isempty(depth)
+        has_press = ones(size(lon));
+    else
+        press = ncread(filename, 'PRES');
+        has_press = (max(press) >= depth)';
+    end
     if ~isempty(sensor) && ~strcmp(mode, 'ADR')
         params = ncread(filename, 'PARAMETER');
         param_names = cell(n_param, 1);
@@ -325,22 +341,30 @@ for fl = 1:length(good_float_ids)
     all_prof = 1:length(inpoly);
     if strcmp(outside, 'none')
         float_profs{fl} = all_prof(inpoly & indate & has_sensor & ...
-            is_ocean & has_mode);
+            is_ocean & has_mode & has_press);
     elseif strcmp(outside, 'time') % must meet space constraint
-        float_profs{fl} = all_prof(inpoly & has_sensor & is_ocean & has_mode);
+        float_profs{fl} = all_prof(inpoly & has_sensor & is_ocean & ...
+            has_mode & has_press);
     elseif strcmp(outside, 'space') % must meet time constraint
-        float_profs{fl} = all_prof(indate & has_sensor & is_ocean & has_mode);
+        float_profs{fl} = all_prof(indate & has_sensor & is_ocean & ...
+            has_mode & has_press);
     elseif strcmp(outside, 'both') % no time or space constraint
-        float_profs{fl} = all_prof(has_sensor & is_ocean & has_mode);
+        float_profs{fl} = all_prof(has_sensor & is_ocean & ...
+            has_mode & has_press);
     else
         warning('no such setting for "outside": %s', outside)
         float_profs{fl} = [];
     end
  
     if isempty(float_profs{fl})
-        warning('no matching profiles found for float %d', good_float_ids(fl))
         float_ids(float_ids == good_float_ids(fl)) = [];
     end
 end
 
 float_profs(cellfun(@isempty, float_profs)) = [];
+
+if min_num_prof
+    has_num = cellfun(@length, float_profs) >= min_num_prof;
+    float_ids = float_ids(has_num);
+    float_profs = float_profs(has_num);
+end
