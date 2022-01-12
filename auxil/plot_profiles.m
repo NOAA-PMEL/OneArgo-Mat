@@ -251,6 +251,11 @@ for v = 1:nvars
         same_var_type = strncmp(variables{v}, var2{v}, ...
             length(variables{v}) - ...
             9 * endsWith(variables{v}, '_ADJUSTED'));
+        if ~same_var_type && verLessThan('matlab', '9.7')
+            warning(['Plotting profiles for two different variables ', ...
+                'requires R2019b or later.']);
+            continue;
+        end
     end
     if ~per_float
         [mean_prof{v}, std_prof{v}, mean_pres] = ...
@@ -370,7 +375,7 @@ for v = 1:nvars
         end
         if per_float
             hold off
-            if isempty(var2_orig)
+            if isempty(var2_orig) || same_var_type
                 box(ax1, 'on');
             end
             title(sprintf('Float %d %s', ...
@@ -385,7 +390,7 @@ for v = 1:nvars
     end
     if ~per_float
         hold off
-        if isempty(var2_orig)
+        if isempty(var2_orig) || same_var_type
             box(ax1, 'on')
         end
         if nfloats < 4
