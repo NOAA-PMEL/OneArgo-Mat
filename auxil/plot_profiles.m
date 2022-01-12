@@ -370,7 +370,9 @@ for v = 1:nvars
         end
         if per_float
             hold off
-            box on
+            if isempty(var2_orig)
+                box(ax1, 'on');
+            end
             title(sprintf('Float %d %s', ...
                 Mdata.(float_ids{f}).WMO_NUMBER, title_added{v}));
             if ~isempty(basename)
@@ -383,7 +385,9 @@ for v = 1:nvars
     end
     if ~per_float
         hold off
-        box on
+        if isempty(var2_orig)
+            box(ax1, 'on')
+        end
         if nfloats < 4
             ttitle = 'Floats';
             for f = 1:nfloats
