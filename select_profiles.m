@@ -47,6 +47,8 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           'D', in any combination. Only profiles with the selected
 %           mode(s) will be listed in float_profs.
 %           Default is 'RAD' (all modes).
+%           If multiple sensors are specified, all of them must be in 
+%           the selected mode(s).
 %           If 'sensor' option is not used, the 'mode' option is ignored.
 %   'ocean', ocean: Valid choices are 'A' (Atlantic), 'P' (Pacific), and
 %           'I' (Indian). This selection is in addition to the specified
@@ -136,6 +138,11 @@ end
 % discard unknown sensors
 sensor = check_variables(sensor, 'warning', ...
     'unknown sensor will be ignored');
+
+% only use mode if sensor was specified
+if isempty(sensor)
+    mode = [];
+end
 
 % check if specified ocean is correct
 if ~isempty(ocean) && ~contains('API', ocean)
@@ -233,20 +240,23 @@ else
 end
 
 % select by data mode
-if isempty(mode) || strcmp(mode, 'ADR')
-    has_mode = ones(size(inpoly));
-else
-    has_mode = zeros(size(inpoly));
-    is_good = inpoly & indate & has_sensor & is_ocean;
-    idx = all_floats(is_good);
-    for i = 1:length(idx)
-        pos = strcmp(split(Sprof.sens(idx(i))), sensor);
-        if any(pos)
-            str = cell2mat(Sprof.data_mode(idx(i)));
-            has_mode(idx(i)) = contains(mode, str(pos));
-        end
-    end
-end
+% Note: due to inconsistencies between index and Sprof files, this
+% matching is not performed in the first round, only in the second
+% round below (based on Sprof files)
+%if strcmp(mode, 'ADR')
+has_mode = ones(size(inpoly));
+% else
+%     has_mode = zeros(size(inpoly));
+%     is_good = inpoly & indate & has_sensor & is_ocean;
+%     idx = all_floats(is_good);
+%     for i = 1:length(idx)
+%         pos = strcmp(split(Sprof.sens(idx(i))), sensor);
+%         if any(pos)
+%             str = cell2mat(Sprof.data_mode(idx(i)));
+%             has_mode(idx(i)) = contains(mode, str(pos));
+%         end
+%     end
+% end
 
 % perform selection
 all_prof = 1:length(indate);
@@ -299,10 +309,16 @@ for fl = 1:length(good_float_ids)
     if ~isempty(sensor) && ~strcmp(mode, 'ADR')
         params = ncread(filename, 'PARAMETER');
         param_names = cell(n_param, 1);
+        % find the index of a profile that has the most sensors available
+        tmp = sum(sum(params));
+        pidx = find(max(tmp) == tmp, 1);
         for p = 1:n_param
-            param_names{p} = strtrim(params(:,p,1,1)');
+            param_names{p} = strtrim(params(:,p,1,pidx)');
         end
-        param_idx = find(strcmp(param_names, sensor), 1);
+        param_idx = zeros(length(sensor), 1);
+        for s = 1:length(sensor)
+            param_idx(s) = find(strcmp(param_names, sensor{s}), 1);
+        end
         data_mode = ncread(filename, 'PARAMETER_DATA_MODE');
     end
     date = datenum(juld) + datenum([1950 1 1]);
@@ -329,13 +345,18 @@ for fl = 1:length(good_float_ids)
         is_ocean = strcmp(Sprof.ocean(idx),ocean);
         is_ocean(isnan(this_loc)) = 0;
     end
-    if isempty(mode) || strcmp(mode, 'ADR')
+    if strcmp(mode, 'ADR')
         has_mode = ones(size(inpoly));
     else
-        has_mode = zeros(size(inpoly));
-        for m = 1:length(mode)
-            has_mode = has_mode + (data_mode(param_idx,:)' == mode(m));
+        sens_has_mode = zeros(size(inpoly));
+        for s = 1:length(sensor)
+            for m = 1:length(mode)
+                sens_has_mode = sens_has_mode + ...
+                    (data_mode(param_idx(s),:)' == mode(m));
+            end
         end
+        % all sensors must be in one of the specified modes
+        has_mode = (sens_has_mode == length(sensor));
     end
     % now apply the given constraints
     all_prof = 1:length(inpoly);
