@@ -1,5 +1,5 @@
 function plot_trajectories(Data, color, title1, fn_png, float_ids, ...
-    lines, lgnd, sz)
+    lines, lgnd, sz, mark_estim)
 % plot_trajectories  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
@@ -28,6 +28,9 @@ function plot_trajectories(Data, color, title1, fn_png, float_ids, ...
 %   lgnd  : lgnd (string) can be 'yes' to show legend along with
 %           plot (default) or 'no'
 %   sz    : sz defines the size of plotted points (default: 36)
+%   mark_estim: if 'yes', show estimated locations in light gray
+%           (set by Settings.color_estim_loc); if 'no', use the same color
+%           for known and estimated locations
 %
 % AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
@@ -47,9 +50,9 @@ function plot_trajectories(Data, color, title1, fn_png, float_ids, ...
 
 global Settings Float;
 
-if nargin < 8
+if nargin < 9
     warning(['Usage: plot_trajectories(Data, color, title1, fn_png, ',...
-        'float_ids, lines, lgnd, sz)'])
+        'float_ids, lines, lgnd, sz, mark_estim)'])
     return;
 end
 
@@ -125,17 +128,33 @@ if strcmp(Settings.mapping, 'native')
         legend(dacs,'location','eastoutside','AutoUpdate','off')
     end
     % Plot float trajectories on map (points)
+    idxk = cell(nfloats, 1); % known positions
+    idxe = cell(nfloats, 1); % estimated positions
     for i = 1:nfloats
+        if strncmpi(mark_estim, 'y', 1)
+            idxk{i} = find(Data.(floats{i}).POSITION_QC(1,:) < 8);
+            idxe{i} = find(Data.(floats{i}).POSITION_QC(1,:) == 8);
+        else % use the same color for known and estimated locations
+            idxk{i} = 1:size(Data.(floats{i}).LONGITUDE, 2);
+        end
         if strcmp(color, 'multiple')
-            geoscatter(Data.(floats{i}).LATITUDE(1,:), lon{i}, sz, '.');
+            geoscatter(Data.(floats{i}).LATITUDE(1,idxk{i}), ...
+                lon{i}(idxk{i}), sz, '.');
         elseif strcmp(color, 'dac')
             this_dac = Float.dac(find(Float.wmoid == float_ids(i), 1));
             cidx = find(strcmp(dacs, this_dac), 1);
-            geoscatter(Data.(floats{i}).LATITUDE(1,:), lon{i}, sz, ...
-                repmat(cmap(cidx, :), size(lon,2), 1), '.')
+            geoscatter(Data.(floats{i}).LATITUDE(1,idxk{i}), ...
+                lon{i}(idxk{i}), sz, ...
+                repmat(cmap(cidx, :), length(idxk{i}), 1), '.')
         else
-            geoscatter(Data.(floats{i}).LATITUDE(1,:), lon{i}, sz, ...
-                [color, '.']);
+            geoscatter(Data.(floats{i}).LATITUDE(1,idxk{i}), ...
+                lon{i}(idxk{i}), sz, color, '.');
+        end
+    end
+    if strncmpi(mark_estim, 'y', 1)
+        for i = 1:nfloats
+            geoscatter(Data.(floats{i}).LATITUDE(1,idxe{i}), ...
+                lon{i}(idxe{i}), sz, Settings.color_estim_loc, '.');
         end
     end
     % add legend

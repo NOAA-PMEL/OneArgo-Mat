@@ -27,6 +27,10 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   don't want to plot the full trajectories of the
 %                   given floats, but only those locations that match
 %                   spatial and/or temporal constraints
+%   'mark_estim',mark: if mark is 'yes', show estimated locations in
+%                   light gray (set by Settings.color_estim_loc);
+%                   if 'no' (default) use the same color for known and
+%                   estimated locations
 %   'position', pos: show only the selected position (either 'first' or
 %                   'last')
 %   'png',fn_png  : save the plot to a png file with the given
@@ -79,6 +83,7 @@ title = 'Float trajectories';
 lines = 'no';
 lgnd = 'yes';
 sz = 36;
+mark_estim = 'no';
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -102,6 +107,8 @@ for i = 1:2:length(varargin)-1
         else
             warning('size must be a positive integer')
         end
+    elseif strcmpi(varargin{i}, 'mark_estim')
+        mark_estim = varargin{i+1};
     else
         warning('unknown option: %s', varargin{i});
     end
@@ -135,5 +142,6 @@ else
             end
         end
     end
-    plot_trajectories(Data, color, title, fn_png, float_ids, lines, lgnd, sz);
+    plot_trajectories(Data, color, title, fn_png, float_ids, lines, ...
+        lgnd, sz, mark_estim);
 end

@@ -82,8 +82,9 @@ do_pause();
 data.(['F' num2str(WMO)]) % show data that has been loaded into MATLAB
 do_pause();
 
-%% Show the trajectory of the downloaded float
-show_trajectories(WMO);
+%% Show the trajectory of the downloaded float, with estimated values
+% (when the float was under ice and didn't surface) shown in gray
+show_trajectories(WMO, 'mark_estim', 'yes');
 do_pause();
 
 %% Show all profiles for salinity and nitrate from the downloaded float
