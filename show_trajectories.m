@@ -27,6 +27,9 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   don't want to plot the full trajectories of the
 %                   given floats, but only those locations that match
 %                   spatial and/or temporal constraints
+%   'interp_lonlat', intp : if intp is 'yes' (default), missing lon/lat
+%                   values (typically under ice) will be interpolated;
+%                   set intp to 'no' to suppress interpolation
 %   'mark_estim',mark: if mark is 'yes', show estimated locations in
 %                   light gray (set by Settings.color_estim_loc);
 %                   if 'no' (default) use the same color for known and
@@ -84,6 +87,7 @@ lines = 'no';
 lgnd = 'yes';
 sz = 36;
 mark_estim = 'no';
+interp_lonlat = 'yes';
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -109,6 +113,8 @@ for i = 1:2:length(varargin)-1
         end
     elseif strcmpi(varargin{i}, 'mark_estim')
         mark_estim = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'interp_lonlat')
+        interp_lonlat = varargin{i+1};
     else
         warning('unknown option: %s', varargin{i});
     end
@@ -121,7 +127,8 @@ if isempty(good_float_ids)
     warning('no valid floats found')
 else
     % meta data return values and observations are not needed here
-    Data = load_float_data(good_float_ids,{},float_profs);
+    Data = load_float_data(good_float_ids, {}, float_profs, ...
+        'interp_lonlat', interp_lonlat);
     if ~isempty(pos)
         floats = fieldnames(Data);
         nfloats = length(floats);
