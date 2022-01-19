@@ -164,6 +164,7 @@ Sprof.ocean = H{5};
 % column 6: profiler type
 % column 7: institution
 Sprof.sens = H{8};
+Sprof.split_sens = cellfun(@split, Sprof.sens, 'UniformOutput', false);
 Sprof.data_mode = H{9};
 Sprof.date_update = H{10};
 
@@ -216,8 +217,8 @@ for f = 1:nfloats
     [~, idx2] = max(len_sens(Float.prof_idx1(f):Float.prof_idx2(f)));
     % assumption: the shortest string has sensors that are shared among all
     % profiles and the longest string has the union of all available sensors
-    Float.min_sens{f} = split(Sprof.sens{Float.prof_idx1(f)+idx1-1});
-    Float.max_sens{f} = split(Sprof.sens{Float.prof_idx1(f)+idx2-1});
+    Float.min_sens{f} = Sprof.split_sens{Float.prof_idx1(f)+idx1-1};
+    Float.max_sens{f} = Sprof.split_sens{Float.prof_idx1(f)+idx2-1};
 end
 
 % Determine the availability of mapping functions

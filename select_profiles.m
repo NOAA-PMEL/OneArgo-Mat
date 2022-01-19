@@ -239,10 +239,9 @@ indate(sel_floats_space(indate_poly)) = 1;
 % SELECT BY SENSOR
 has_sensor = ones(size(indate));
 if ~isempty(sensor)
-    sprof_sens = cellfun(@split, Sprof.sens, 'UniformOutput', false);
     for i = 1:length(sensor)
         has_sensor = has_sensor & cellfun(@(x) ...
-            any(strcmp(x, sensor{i})), sprof_sens);
+            any(strcmp(x, sensor{i})), Sprof.split_sens);
     end
 end
 if ~any(has_sensor)
