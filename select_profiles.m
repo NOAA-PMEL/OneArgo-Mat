@@ -41,6 +41,9 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           (positive downwards; in db)
 %   'floats',floats: Select profiles only from these floats that must
 %           match all other criteria
+%   'interp_lonlat', intp : if intp is 'yes' (default), missing lon/lat
+%           values (e.g., under ice) will be interpolated;
+%           set intp to 'no' to suppress interpolation
 %   'min_num_prof',num_prof: Select only floats that have at least
 %           num_prof profiles that meet all other criteria
 %   'mode',mode: Valid modes are 'R' (real-time), 'A' (adjusted), and
@@ -110,6 +113,7 @@ dac = [];
 floats = [];
 depth = [];
 min_num_prof = 0;
+interp_ll = 'yes';
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -129,6 +133,8 @@ for i = 1:2:length(varargin)-1
         depth = varargin{i+1};
     elseif strcmpi(varargin{i}, 'min_num_prof')
         min_num_prof = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'interp_lonlat')
+        interp_ll = varargin{i+1};
     else
         warning('unknown option: %s', varargin{i});
     end
@@ -201,8 +207,20 @@ end
 dn1 = datenum(start_date); 
 dn2 = datenum(end_date);
 
+% adjust longitude to standard range of -180..180 degrees
+Sprof.lon(Sprof.lon > 180) = Sprof.lon(Sprof.lon > 180) - 360;
+Sprof.lon(Sprof.lon < -180) = Sprof.lon(Sprof.lon < -180) + 360;
+
 % GET INDEX OF PROFILES WITHIN USER-SPECIFIED GEOGRAPHIC POLYGON
 inpoly = get_inpolygon(Sprof.lon,Sprof.lat,lon_lim,lat_lim);
+
+% if interpolation of missing values is requested, include all missing
+% positions for now; actual interpolation will be performed in the
+% second round of matching after reading the Sprof files
+if strncmpi(interp_ll, 'yes', 1)
+    inpoly(isnan(Sprof.lon)) = 1;
+end
+
 if isempty(inpoly) || ~any(inpoly)
     warning('no matching profiles found')
     return
@@ -239,28 +257,13 @@ else
     is_ocean = strcmp(Sprof.ocean, ocean);
 end
 
-% select by data mode
-% Note: due to inconsistencies between index and Sprof files, this
-% matching is not performed in the first round, only in the second
+% Note: due to inconsistencies between index and Sprof files, selecting
+% by data mode  is not performed in the first round, only in the second
 % round below (based on Sprof files)
-%if strcmp(mode, 'ADR')
-has_mode = ones(size(inpoly));
-% else
-%     has_mode = zeros(size(inpoly));
-%     is_good = inpoly & indate & has_sensor & is_ocean;
-%     idx = all_floats(is_good);
-%     for i = 1:length(idx)
-%         pos = strcmp(split(Sprof.sens(idx(i))), sensor);
-%         if any(pos)
-%             str = cell2mat(Sprof.data_mode(idx(i)));
-%             has_mode(idx(i)) = contains(mode, str(pos));
-%         end
-%     end
-% end
 
 % perform selection
 all_prof = 1:length(indate);
-profiles = all_prof(inpoly & indate & has_sensor & is_ocean & has_mode);
+profiles = all_prof(inpoly & indate & has_sensor & is_ocean);
 float_ids = unique(Sprof.wmo(profiles));
 
 % check for selected DACs if applicable (DACs are stored by float,
@@ -300,6 +303,20 @@ for fl = 1:length(good_float_ids)
     lon = ncread(filename, 'LONGITUDE');
     lat = ncread(filename, 'LATITUDE');
     juld = ncread(filename, 'JULD');
+    if strncmpi(interp_ll, 'yes', 1)
+        % build a minimal Data struct that can be used by function
+        % interp_lonlat
+        pos_qc = ncread(filename, 'POSITION_QC');
+        str_floatnum = sprintf('F%d', good_float_ids(fl));
+        Data = struct();
+        Data.(str_floatnum).LONGITUDE = lon';
+        Data.(str_floatnum).LATITUDE = lat';
+        Data.(str_floatnum).POSITION_QC = str2num(pos_qc)';
+        Data = interp_lonlat(Data, good_float_ids(fl));
+        lon = Data.(str_floatnum).LONGITUDE(1,:)';
+        lat = Data.(str_floatnum).LATITUDE(1,:)';
+        clear Data;
+    end
     if isempty(depth)
         has_press = ones(size(lon));
     else
