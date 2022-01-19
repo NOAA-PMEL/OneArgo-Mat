@@ -88,7 +88,7 @@ if idx_miss
         Data.(str_floatnum).LONGITUDE = repmat(lon, n_levels, 1);
         Data.(str_floatnum).LATITUDE = repmat(lat, n_levels, 1);
         Data.(str_floatnum).POSITION_QC = repmat(pos_qc, n_levels, 1);
-        warning(['position interpolation performed for %d ',...
-            'missing values of float %d'], new_values, floatnum)
+        fprintf(['position interpolation performed for %d ',...
+            'missing values of float %d\n'], new_values, floatnum);
     end
 end
