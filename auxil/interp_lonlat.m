@@ -1,4 +1,4 @@
-function Data = interp_lonlat(Data, floatnum, n_levels)
+function Data = interp_lonlat(Data, floatnum)
 % interp_lonlat  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
@@ -12,7 +12,6 @@ function Data = interp_lonlat(Data, floatnum, n_levels)
 % INPUT:
 %   Data     : struct with float data (load_float_data format)
 %   floatnum : WMO ID of one float (integer)
-%   n_levels : number of depth levels per profile (integer)
 %
 %
 % OUTPUTS:
@@ -85,6 +84,7 @@ if idx_miss
             % revert back to standard range of -180..180 degrees
             lon(lon > 180) = lon(lon > 180) - 360;
         end
+        n_levels = size(Data.(str_floatnum).LONGITUDE, 1);
         Data.(str_floatnum).LONGITUDE = repmat(lon, n_levels, 1);
         Data.(str_floatnum).LATITUDE = repmat(lat, n_levels, 1);
         Data.(str_floatnum).POSITION_QC = repmat(pos_qc, n_levels, 1);

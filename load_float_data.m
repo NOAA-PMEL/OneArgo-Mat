@@ -167,7 +167,7 @@ for n = 1:length(good_float_ids)
         clear tmp;
     end
     if strncmpi(interp_ll, 'y', 1)
-        Data = interp_lonlat(Data, floatnum, n_levels);
+        Data = interp_lonlat(Data, floatnum);
     end
     
     % Add WMO float number to metadata
