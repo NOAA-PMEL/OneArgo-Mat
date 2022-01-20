@@ -10,14 +10,14 @@ function [long_name, units] = get_var_name_units(short_name)
 %   with the given short name.
 %
 % INPUT:
-%   short_name : case-sensitive name of a variable as it appears in 
+%   short_name : case-sensitive name of a variable as it appears in
 %                the Sprof index file, e.g., TEMP or DOXY
 %
 % OUTPUTS:
 %   long_name  : long name of the variable
 %   units      : units of the variable
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -74,7 +74,7 @@ elseif contains(short_name,'DOWN_IRRADIANCE')
     long_name = 'Downwelling irradiance';
     units = '(W m^{-2} nm^{-1})';
 elseif contains(short_name,'UP_RADIANCE')
-    long_name = 'Upwelling irradiance';
+    long_name = 'Upwelling radiance';
     units = '(W m^{-2} nm^{-1})';
 elseif contains(short_name,'DOWNWELLING_PAR')
     long_name = 'Downwelling PAR';
@@ -89,7 +89,7 @@ elseif strncmp(short_name, 'CP', 2)
     long_name = 'Particle beam attenuation';
     units = '(m^{-1})';
 elseif strncmp(short_name, 'CNDC', 2)
-    long_name = 'Electrical conductivity'; 
+    long_name = 'Electrical conductivity';
     units = '(mhos m^{-1})';
 else
     warning('unknown variable')
@@ -112,7 +112,7 @@ if contains(main_sensor, 'RADIANCE') || strncmp(main_sensor, 'CP', 2) || ...
             long_name = sprintf('%s (%s nm)', long_name, wavelength);
         else
             long_name = sprintf('%s (%s nm; sensor %s)', long_name, ...
-                 wavelength, sensor_number);
+                wavelength, sensor_number);
         end
     end
 elseif ~isempty(sensor_number)
