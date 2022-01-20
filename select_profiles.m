@@ -374,6 +374,14 @@ for fl = 1:length(good_float_ids)
         % all sensors must be in one of the specified modes
         has_mode = (sens_has_mode == length(sensor));
     end
+    % special case: if interpolation is used, any float with missing
+    % positions is included in the initial search results
+    % if no floats match the geographic limits after interpolation,
+    % the float must be excluded
+    if strncmpi(interp_ll, 'y', 1) && ~any(inpoly)
+        % used for all settings of outside:
+        has_sensor = zeros(size(has_sensor));
+    end
     % now apply the given constraints
     all_prof = 1:length(inpoly);
     if strcmp(outside, 'none')
