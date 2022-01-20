@@ -45,9 +45,10 @@ function good_float_ids = show_timeseries(float_ids, variables, ...
 %                   default: 'no' (i.e., plot adjusted data if available)
 %   'start',start_date : start date (in one of the following formats:
 %                   [YYYY MM DD HH MM SS] or [YYYY MM DD])
-%   'time_label',label : use either years or months ('m'); default depends
-%                   on length of time shown ('m' for up to 18 months,
-%                   'y' otherwise)
+%   'time_label',label : use either years ('y'), months ('m'), or days ('d');
+%                   default depends on length of time shown:
+%                   'd' for up to 60 days, 'm' for up to 18 months,
+%                   'y' otherwise
 %   'title',title : title for the plot (default: "Depth: .. db"); an
 %                   empty string ('') suppresses the title
 %   'var2',variable: if variable is not empty, time series of this second

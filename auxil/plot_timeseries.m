@@ -49,9 +49,10 @@ function plot_timeseries(Data, Mdata, variables, depth, basename, varargin)
 %                     available)
 %   'start',start_date : start date (in one of the following formats:
 %                     [YYYY MM DD HH MM SS] or [YYYY MM DD])
-%   'time_label',label : use either years or months ('m'); default depends
-%                     on length of time shown ('m' for up to 18 months,
-%                     'y' otherwise)
+%   'time_label',label : use either years ('y'), months ('m'), or days ('d');
+%                     default depends on length of time shown:
+%                     'd' for up to 60 days, 'm' for up to 18 months,
+%                     'y' otherwise
 %   'title',title   : title for the plot (default: "Depth: .. db"); an
 %                     empty string ('') suppresses the title
 %   'var2',variable : if variable is not empty, profiles of this second
@@ -160,7 +161,7 @@ if strncmpi(raw,'y',1)
     if ~ischar(title1) || ~isempty(title1) % not added if title1 == ''
         [title_added{1:nvars}] = deal(' [raw values]');
     end
-else    
+else
     for v = 1:nvars
         % if all floats have adjusted values available for a variable,
         % they will be used instead of raw values
@@ -228,7 +229,7 @@ for d = 1:ndepths
         press{f,d} = Datai.(floats{f}).PRES(idx{f,d},1);
         if mini > Settings.depth_tol
             warning(['Closest depth level to requested %.1f db for ', ...
-                'float %s is %.1f db'], depth(d), floats{f}, press{f,d});           
+                'float %s is %.1f db'], depth(d), floats{f}, press{f,d});
         end
     end
 end
@@ -241,43 +242,27 @@ for v = 1:nvars
     end
     for d = 1:ndepths
         if ~per_float
-             % one figure per variable for all floats; make wide plot
+            % one figure per variable for all floats; make wide plot
             f1 = figure('Position',[20 20 800 400]);
             % reset color order
             set(gca,'ColorOrderIndex',1);
             hold(gca, 'on')
+            min_time = Datai.(floats{1}).TIME(1,1);
+            max_time = Datai.(floats{1}).TIME(1,end);
+            for f = 2:nfloats
+                min_time = min(min_time, Datai.(floats{f}).TIME(1,1));
+                max_time = max(max_time, Datai.(floats{f}).TIME(1,1));
+            end
         end
         for f = 1:nfloats
             if per_float
-                 % one figure per variable for each float; make wide plot
+                % one figure per variable for each float; make wide plot
                 f1 = figure('Position',[20 20 800 400]);
                 set(gca,'ColorOrderIndex',1);
                 hold(gca, 'on')
             end
             plot(Datai.(floats{f}).TIME(1,:), ...
                 Datai.(floats{f}).(variables{v})(idx{f,d},:), 'LineWidth', 2);
-            xlim([Datai.(floats{f}).TIME(1,1), ...
-                Datai.(floats{f}).TIME(1,end)]); % tight layout
-            xl = set_xlim(start_date, end_date);
-            % determine type of time label based on length of time series
-            if isempty(time_label)
-                if xl(2) - xl(1) >  548 % in days; ~1.5 years
-                    time_label = 'y';
-                else
-                    time_label = 'm';
-                end
-            end
-            if strncmpi(time_label, 'y', 1)
-                set(gca,'XTick',datenum([(2000:2030)' ones(31,1) ones(31,1)]));
-                datetick('x','yyyy','keeplimits','keepticks');
-                xlabel('Year','FontSize',14);
-            else
-                set(gca,'XTick',datenum([repelem((2000:2030)',12,1) ...
-                    repmat((1:12)',31, 1) ones(31*12,1)]));
-                datetick('x','mm-yyyy','keeplimits','keepticks');
-                xlabel('Month','FontSize',14);
-            end
-            
             [long_name, units] = get_var_name_units(variables{v});
             ylabel([long_name, ' ', units])
             if ~isempty(var2_orig)
@@ -294,6 +279,9 @@ for v = 1:nvars
             if per_float
                 hold off
                 box on;
+                mod_xaxis_timeseries(Datai.(floats{f}).TIME(1,1), ...
+                    Datai.(floats{f}).TIME(1,end), start_date, end_date, ...
+                    time_label)
                 if isempty(title1) && ~ischar(title1) % i.e., []
                     if strcmp(lgnd, 'no') || ~isempty(var2_orig)
                         % add float number to title instead
@@ -327,6 +315,8 @@ for v = 1:nvars
         if ~per_float
             hold off
             box on;
+            mod_xaxis_timeseries(min_time, max_time, start_date, ...
+                end_date, time_label)
             if isempty(title1) && ~ischar(title1) % i.e., []
                 if strcmp(lgnd, 'yes')
                     title(sprintf('Depth: %d db%s', press{f,d}, ...
