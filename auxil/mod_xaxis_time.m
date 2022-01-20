@@ -1,21 +1,21 @@
-function mod_xaxis_timeseries(min_time, max_time, start_date, end_date, ...
+function mod_xaxis_time(min_time, max_time, start_date, end_date, ...
     time_label)
 % mod_xaxis_timeseries  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   plot_timeseries(Data, Mdata, variables, depth, basename, varargin)
+%   mod_xaxis_time(min_time, max_time, start_date, end_date, time_label)
 %
 % DESCRIPTION:
-%   This function modifies the x axis of a time series plot by setting
-%   its limits first to [min_time, max_time] and then applies non-empty
-%   values of start_date and end_date. If time_label is empty,
+%   This function modifies the x axis of a time series or section plot by
+%   setting its limits first to [min_time, max_time] and then applies
+%   non-empty values of start_date and end_date. If time_label is empty,
 %   the length of the plot determines the choice of time label -
 %   years for plots of at least 1.5 years, months for plots of over 60 days,
 %   days otherwise.
 %
 % PREREQUISITE:
-%   The time series plot must exist already.
+%   The time series or section plot must exist already.
 %
 % INPUTS:
 %   min_time   : datenum value for the first time value of the data
@@ -23,7 +23,8 @@ function mod_xaxis_timeseries(min_time, max_time, start_date, end_date, ...
 %   start_date : datenum value for the starting point (may be empty)
 %   end_date   : datenum value for the ending point (may be empty)
 %   time_label : type of time label: either years ('y'), months ('m'),
-%                or days ('d'); default depends on length of time shown:
+%                or days ('d'); if left empty, default is used,
+%                which depends on length of time shown:
 %                'd' for up to 60 days, 'm' for up to 18 months,
 %                'y' otherwise
 %
@@ -68,7 +69,7 @@ elseif strncmpi(time_label, 'm', 1)
     datetick('x','mm-yyyy','keeplimits','keepticks');
     xlabel('Month','FontSize',14);
 else
-    set(gca,'XTick',datenum(2000,1,1):3:datenum(2030,12,31))
+    set(gca,'XTick',datenum(2000,1,1):3:datenum(2030,12,31));
     datetick('x','mm-dd-yyyy','keeplimits','keepticks');
     xlabel('Day','FontSize',14);
 end

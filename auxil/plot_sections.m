@@ -32,9 +32,7 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %                 if set to 0, no isopycnal lines will be plotted
 %   plot_mld    : if set to 1 or 2, mixed layer depth will be plotted,
 %                 using either a temperature (1) or density (2) criterion
-%   time_label  : either 'y' (year) or 'm' (month) - type of time labeling on
-%                 the x-axis; or [] to determine label based on length of
-%                 plot ('m' for up to 18 months, 'y' otherwise)
+%   time_label  : either years ('y'), months ('m'), or days ('d')
 %   max_depth   : maximum depth to plot (an empty array signals the
 %                 plotting of all available depths)
 %   raw         : if 'no', use adjusted variables if available;
@@ -202,7 +200,8 @@ for f = 1:nfloats
             plot(Datai.TIME,Datai.MLD_DENS(1,:),'k','LineWidth',2);
         end
         hold off
-        xl = set_xlim(start_date, end_date);
+        mod_xaxis_time(Datai.TIME(1,1), Datai.TIME(1,end), ...
+            start_date, end_date, time_label)
         if ~isempty(max_depth)
             ylim([0 max_depth]);
         end
@@ -214,16 +213,6 @@ for f = 1:nfloats
         colorbar;
         caxis([min(min(Datai.(variables{v}))), ...
             max(max(Datai.(variables{v})))]);
-        if strncmpi(time_label, 'y', 1)
-            set(gca,'XTick',datenum([(2000:2030)' ones(31,1) ones(31,1)]));
-            datetick('x','yyyy','keeplimits','keepticks');
-            xlabel('Year','FontSize',14);
-        else
-            set(gca,'XTick',datenum([repelem((2000:2030)',12,1) ...
-                repmat((1:12)',31, 1) ones(31*12,1)]));
-            datetick('x','mm-yyyy','keeplimits','keepticks');
-            xlabel('Month','FontSize',14);
-        end
         if ~isempty(basename)
             fn_png = sprintf('%s_%d_%s.png', basename, ...
                 Mdata.(float_ids{f}).WMO_NUMBER, variables{v});

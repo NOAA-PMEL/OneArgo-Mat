@@ -54,10 +54,10 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %                        default: 'no' (i.e., plot adjusted data if available)
 %   'start',start_date : start date (in one of the following formats:
 %                        [YYYY MM DD HH MM SS] or [YYYY MM DD])
-%   'time_label',label : use either years ('y', by default) or months
-%                        ('m'), or [] to determine label based on length of
-%                        plot ('m' for up to 18 months, 'y' otherwise)
-%
+%   'time_label',label : label can be years ('y'), months ('m'), or days ('d');
+%                        default depends on length of time shown:
+%                        'd' for up to 60 days, 'm' for up to 18 months,
+%                        'y' otherwise
 % OUTPUT:
 %   good_float_ids : array of the float IDs whose Sprof files were
 %                    successfully downloaded or existed already

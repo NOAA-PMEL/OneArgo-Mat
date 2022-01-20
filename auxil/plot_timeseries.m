@@ -279,7 +279,7 @@ for v = 1:nvars
             if per_float
                 hold off
                 box on;
-                mod_xaxis_timeseries(Datai.(floats{f}).TIME(1,1), ...
+                mod_xaxis_time(Datai.(floats{f}).TIME(1,1), ...
                     Datai.(floats{f}).TIME(1,end), start_date, end_date, ...
                     time_label)
                 if isempty(title1) && ~ischar(title1) % i.e., []
@@ -315,7 +315,7 @@ for v = 1:nvars
         if ~per_float
             hold off
             box on;
-            mod_xaxis_timeseries(min_time, max_time, start_date, ...
+            mod_xaxis_time(min_time, max_time, start_date, ...
                 end_date, time_label)
             if isempty(title1) && ~ischar(title1) % i.e., []
                 if strcmp(lgnd, 'yes')
