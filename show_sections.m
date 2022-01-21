@@ -23,7 +23,7 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %   'isopyc',isopyc    : plot isopycnal lines if non-zero (default: 1=on)
 %                        using a value of 1 will result in plotting
 %                        isopycnal lines at default values (24:27);
-%                        specific sigma levels can be specified as well, e.g.:
+%                        specific sigma_0 levels can be specified as well, e.g.:
 %                        'isopyc',25
 %                        'isopyc',[25.5, 26.3]
 %                        'isopyc',25.5:0.1:26

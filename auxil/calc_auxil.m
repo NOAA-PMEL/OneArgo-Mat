@@ -18,7 +18,7 @@ function Data = calc_auxil(Data,varargin)
 % OPTIONAL INPUTS:
 %   'raw',raw                     : use raw data if 'yes', adjusted data
 %                                   if no (default: 'no')
-%   'calc_dens', calc_dens:         if set, calculate in situ density
+%   'calc_dens', calc_dens:         if set, calculate in potential density
 %   'calc_mld_temp', calc_mld_temp: if set, compute MLD based on T threshold
 %   'temp_thresh', temp_threshold : temperature threshold for MLD calculation
 %                                   (default: 0.2 dg C); ignored if
@@ -101,16 +101,15 @@ if calc_dens
         Data.TEMP_CNS_ADJUSTED = gsw_CT_from_t(Data.PSAL_ABS_ADJUSTED,...
             Data.TEMP_ADJUSTED,...
             Data.PRES_ADJUSTED); % Calculate conservative temperature
-        Data.DENS_ADJUSTED = gsw_rho(Data.PSAL_ABS_ADJUSTED,...
-            Data.TEMP_CNS_ADJUSTED,...
-            Data.PRES_ADJUSTED); % Calculate in situ density
+        Data.DENS_ADJUSTED = 1000 + gsw_sigma0(Data.PSAL_ABS_ADJUSTED,...
+            Data.TEMP_CNS_ADJUSTED); % Calculate potential density
     catch % Then try with unadjusted values
         Data.PSAL_ABS = gsw_SA_from_SP(Data.PSAL,Data.PRES,...
             Data.LONGITUDE,Data.LATITUDE); % Calculate absolute salinity
         Data.TEMP_CNS = gsw_CT_from_t(Data.PSAL_ABS,Data.TEMP,...
             Data.PRES); % Calculate conservative temperature
-        Data.DENS     = gsw_rho(Data.PSAL_ABS,Data.TEMP_CNS,...
-            Data.PRES); % Calculate in situ density
+        Data.DENS     = 1000 + gsw_sigma0(Data.PSAL_ABS,...
+            Data.TEMP_CNS); % Calculate in situ density
     end
 end
 
@@ -163,7 +162,9 @@ end
 
 if calc_mld_dens
     % Calculate potential density with respect to surface pressure (=0)
-    pdensity = gsw_rho(salt,temp,zeros(size(temp)));
+    SA = gsw_SA_from_SP(salt,Data.PRES,Data.LONGITUDE,Data.LATITUDE);
+    CT = gsw_CT_from_t(SA,temp,Data.PRES);
+    pdensity = 1000 + gsw_sigma0(SA,CT);
     % Pre-allocate mixed layer
     Data.MLD_DENS = nan(1,size(pdensity,2));
     % Identify first instance of potential density that is

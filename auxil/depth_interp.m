@@ -19,7 +19,7 @@ function Datai = depth_interp(Data, qc_flags, varargin)
 %   'prs_res',prs_res             : pressure resolution (default: 2 dbar)
 %   'raw',raw                     : use raw data if 'yes', adjusted data
 %                                   if no (default: 'no')
-%   'calc_dens',calc_dens         : if set to 1, calculate density on
+%   'calc_dens',calc_dens         : if set to 1, calculate potential density on
 %                                   interpolated depth levels
 %   'calc_mld_dens',calc_mld_dens : if set to 1, calculate mixed layer
 %                                   depth (MLD) based on a density criterion
