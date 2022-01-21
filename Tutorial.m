@@ -49,12 +49,12 @@ global Sprof Float Settings;
 % Example: Look at the profile ID numbers and available sensors for the
 % profiles that have been executed by new GO-BGC float #5906439.
 float_idx = (Float.wmoid == 5906439); % index for float #5906439
-prof_ids = Float.prof_idx1(float_idx):Float.prof_idx2(float_idx) % profile IDs for float #5906439
+prof_ids = Float.prof_idx1(float_idx):Float.prof_idx2(float_idx); % profile IDs for float #5906439
 dates = datestr(datenum(Sprof.date(prof_ids), 'yyyymmddHHMMSS')) % dates of each profile from float #5906439
-sensors = unique(Sprof.sens(prof_ids)) % sensors available for float #5906439
+list_sensors(5906439); % sensors available for float #5906439
 do_pause();
 
-clear float_idx prof_ids dates sensors % clean up workspace
+clear float_idx prof_ids dates % clean up workspace
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exercise 1: SOCCOM float
@@ -66,6 +66,9 @@ clear float_idx prof_ids dates sensors % clean up workspace
 %% Download NetCDF file for float #5904183, a SOCCOM float with multiple seasons under ice
 WMO = 5904859; 
 success = download_float(WMO);
+if ~success
+    warning('Sprof file for float 5904859 could not be downloaded')
+end
 
 %% Display attributes, dimensions, and variables available in the NetCDF
 ncdisp(['./Profiles/' num2str(WMO) '_Sprof.nc'])
@@ -84,7 +87,8 @@ do_pause();
 
 %% Show the trajectory of the downloaded float, with estimated values
 % (when the float was under ice and didn't surface) shown in gray
-show_trajectories(WMO, 'mark_estim', 'yes');
+show_trajectories(WMO, 'mark_estim', 'yes', 'title', ...
+    'Float trajectory (gray: estimated, under ice)');
 do_pause();
 
 %% Show all profiles for salinity and nitrate from the downloaded float
@@ -112,6 +116,12 @@ show_sections(WMO, {'NITRATE'},...
 
 show_sections(WMO, {'NITRATE'}, 'mld', 2,...
     'qc',[1 2]); % tells the function to plot good and probably-good data
+
+% since there are no good data after the end of 2018, restrict the
+% plot in time
+show_sections(WMO, {'NITRATE'}, 'mld', 2, 'end', [2018,12,31], ...
+    'time_label', 'm', 'qc',[1 2]); % plot only good and probably-good data
+
 do_pause();
 
 %% Clean up the workspace
@@ -151,10 +161,9 @@ disp(['# of matching floats: ' num2str(length(OSP_floats))]);
 disp(' ');
 
 %% Show trajectories for the matching floats
-% This function downloads the specified floats from the GDAC (unless the
-% files have already been downloaded) and then loads the data for plotting.
+% This function loads the data for plotting.
 % Adding the optional input pair 'color','multiple' will plot different
-% floats in different colors
+% floats in different colors.
 show_trajectories(OSP_floats,...
     'color','multiple'); % this plots different floats in different colors
 do_pause();
@@ -224,7 +233,7 @@ do_pause();
 %% Show trajectories for the matching profiles from each float, along with the geo limits
 % Adding the optional input of 'float_profs' with the per-float profile numbers given by
 % the select_profiles function will plot only the locations of those
-% specified profiles from the specified floats
+% profiles from the specified floats
 show_trajectories(HW_floats,'color','multiple','float_profs',HW_float_profs);
 
 % show domain of interest
@@ -282,6 +291,11 @@ do_pause();
 %% Show sections for pH and oxygen for the fifth float in the list of Hawaii floats
 % this shows the adjusted data
 show_sections(HW_floats(5), {'PH_IN_SITU_TOTAL';'DOXY'}, 'mld', 1,'raw', 'no');
+
+%% Show time series of near-surface pH and oxygen for two Hawaii floats
+% show both floats in one plot per variable, use adjusted values
+show_timeseries(HW_floats(4:5), {'PH_IN_SITU_TOTAL';'DOXY'}, 20, ...
+    'per_float', 0);
 
 %% clean up the workspace
 clear all;
