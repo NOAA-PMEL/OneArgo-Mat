@@ -160,8 +160,8 @@ for n = 1:length(good_float_ids)
         elseif isequal(size(tmp), [n_prof 1])
             Data.(str_floatnum).(all_vars{l}) = repmat(tmp', n_levels, 1);
         else
-            chars = sum(sum(tmp));
-            idx = find(max(chars) == chars, 1);
+            chars = permute(sum(sum(tmp)), [3 4 1 2]);
+            [~, idx] = max(chars(end,:));
             Mdata.(str_floatnum).(all_vars{l}) = tmp(:,:,1,idx);
         end
         clear tmp;

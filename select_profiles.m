@@ -327,7 +327,7 @@ for fl = 1:length(good_float_ids)
         param_names = cell(n_param, 1);
         % find the index of a profile that has the most sensors available
         tmp = sum(sum(params));
-        pidx = find(max(tmp) == tmp, 1);
+        [~, pidx] = max(tmp(1,1,end,:), [], 4);
         for p = 1:n_param
             param_names{p} = strtrim(params(:,p,1,pidx)');
         end
