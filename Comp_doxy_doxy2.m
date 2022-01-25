@@ -55,9 +55,9 @@ show_timeseries(doxy2_floats, 'DOXY', [10,100,200], 'var2', 'DOXY2', ...
 % the values for Settings.color_var1_mean etc.
 
 % type 1: all profiles with mean
-show_profiles(doxy2_floats(1), 'DOXY','var2','DOXY2');
+show_profiles(doxy2_floats(1), 'DOXY','var2','DOXY2','png','doxy_doxy2_all');
 % type 2: mean with standard deviation
-show_profiles(doxy2_floats(1), 'DOXY','var2','DOXY2','method','mean');
+show_profiles(doxy2_floats(1), 'DOXY','var2','DOXY2','method','mean','png','doxy_doxy2_mean');
 
 %% show a correlation plot between the two sensors for the first float
 Data = load_float_data(doxy2_floats(1), {'DOXY';'DOXY2'}, doxy2_fp(1));
@@ -96,9 +96,4 @@ box on;
 xlabel('Oxygen sensor 1 (\mumol kg^{-1})')
 ylabel('Oxygen sensor 2 (\mumol kg^{-1})')
 title(sprintf('Oygen sensor comparison for float %d', doxy2_floats(1)));
-
-
-
-
-
 
