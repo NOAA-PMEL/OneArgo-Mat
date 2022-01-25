@@ -85,6 +85,10 @@ Settings.color_var2_range = [0.5, 0.75, 1]; % light blue
 % color for estimated locations in trajectory plots
 Settings.color_estim_loc = [0.7 0.7 0.7]; % light gray
 
+% amount of lon/lat padding in trajectory plots (in degrees)
+Settings.pad_lon = 5;
+Settings.pad_lat = 5;
+
 % Default: try US GDAC before French GDAC
 host_ifremer = 'https://data-argo.ifremer.fr/';
 host_godae = 'https://usgodae.org/ftp/outgoing/argo/';

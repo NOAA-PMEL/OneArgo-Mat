@@ -62,8 +62,8 @@ nfloats = numel(floats);
 
 [lon_lim, lat_lim, Data] = get_lon_lat_lims(Data);
 % Set lat and lon limits
-latlim = [lat_lim(1)-5 lat_lim(2)+5];
-lonlim = [lon_lim(1)-5 lon_lim(2)+5];
+latlim = [lat_lim(1)-Settings.pad_lat, lat_lim(2)+Settings.pad_lat];
+lonlim = [lon_lim(1)-Settings.pad_lon, lon_lim(2)+Settings.pad_lon];
 % Adjust limits outside range to minimum and maximum limits
 latlim(latlim < -90) = -90;
 latlim(latlim >  90) =  90;
@@ -164,7 +164,7 @@ if strcmp(Settings.mapping, 'native')
     % reset color order
     set(gca,'ColorOrderIndex',1);
     % Plot lines on map
-    if strcmp(lines,'yes')
+    if strncmpi(lines, 'y', 1)
         for i = 1:nfloats
             % mask out long jumps between opposite sides of the plot
             lon{i}(abs(diff(lon{i})) > 300) = nan;
