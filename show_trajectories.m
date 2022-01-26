@@ -19,8 +19,13 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   color descriptor ('r', 'k', 'b', 'g' etc.)
 %                   (all trajectories will be plotted in the same color);
 %                   default value is 'r' (red);
+%                   if color is 'mode', the data mode of the given sensor
+%                   is used to color the profiles (blue for R,
+%                   yellow for A, green for D);
 %                   color can also be 'dac'; in this case, the trajectories
 %                   are colored by the DAC responsible for the floats
+%                   (Both 'dac' and 'mode' color options are only implemented
+%                   for Matlab-native trajectory plots, not m_map or plain.)
 %   'float_profs',fp : fp is an array with the per-float indices of the
 %                   selected profiles, as returned by function
 %                   select_profiles - use this optional argument if you
@@ -38,6 +43,8 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   'last')
 %   'png',fn_png  : save the plot to a png file with the given
 %                   file name (fn_png)
+%   'sensor',sensor: name of the sensor to use for coloring by data mode -
+%                   this option is ignored if color is not 'mode'
 %   'title',title : title for the plot (default: "Float trajectories")
 %   'lines',lines : lines (string) can be 'yes' to connect float positions
 %                   with a line or 'no' (default)
@@ -88,6 +95,7 @@ lgnd = 'yes';
 sz = 36;
 mark_estim = 'no';
 interp_lonlat = 'yes';
+sensor = [];
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -115,9 +123,16 @@ for i = 1:2:length(varargin)-1
         mark_estim = varargin{i+1};
     elseif strcmpi(varargin{i}, 'interp_lonlat')
         interp_lonlat = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'sensor')
+        sensor = varargin{i+1};
     else
         warning('unknown option: %s', varargin{i});
     end
+end
+
+if strcmp(color, 'mode') && isempty(sensor)
+    warning('sensor must be specified for "mode" colors')
+    return;
 end
 
 % download Sprof files if necessary
@@ -127,7 +142,7 @@ if isempty(good_float_ids)
     warning('no valid floats found')
 else
     % meta data return values and observations are not needed here
-    Data = load_float_data(good_float_ids, {}, float_profs, ...
+    Data = load_float_data(good_float_ids, sensor, float_profs, ...
         'interp_lonlat', interp_lonlat);
     if ~isempty(pos)
         floats = fieldnames(Data);
@@ -150,5 +165,5 @@ else
         end
     end
     plot_trajectories(Data, color, title, fn_png, float_ids, lines, ...
-        lgnd, sz, mark_estim);
+        lgnd, sz, mark_estim, sensor);
 end

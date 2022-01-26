@@ -1,5 +1,5 @@
 function plot_trajectories(Data, color, title1, fn_png, float_ids, ...
-    lines, lgnd, sz, mark_estim)
+    lines, lgnd, sz, mark_estim, sensor)
 % plot_trajectories  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
@@ -17,9 +17,13 @@ function plot_trajectories(Data, color, title1, fn_png, float_ids, ...
 %   Data  : struct that must contain LONGITUDE and LATITUDE fields
 %   color : either 'multiple' (different colors for different floats),
 %           or any standard Matlab color descriptor ('r', 'k', 'b',
-%           'g' etc.; all trajectories will be plotted in the same color)
+%           'g' etc.; all trajectories will be plotted in the same color);
+%           if color is 'mode', the data mode of the given sensor is used
+%           to color the profiles (blue for R, yellow for A, green for D);
 %           color can also be 'dac'; in this case, the trajectories
 %           are colored by the DAC responsible for the floats
+%           (Both 'dac' and 'mode' color options are only implemented
+%           for Matlab-native trajectory plots, not m_map or plain.)
 %   title1: title of the plot
 %   fn_png: if not empty, create a png image of the plot with this file name
 %   float_ids: WMO IDs of the floats to be plotted
@@ -31,6 +35,8 @@ function plot_trajectories(Data, color, title1, fn_png, float_ids, ...
 %   mark_estim: if 'yes', show estimated locations in light gray
 %           (set by Settings.color_estim_loc); if 'no', use the same color
 %           for known and estimated locations
+%   sensor: name of the sensor to use for coloring by data mode - this
+%           argument is ignored if color is not 'mode'
 %
 % AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
@@ -126,6 +132,44 @@ if strcmp(Settings.mapping, 'native')
                 sz, cmap(i, :), '.', 'DisplayName', dacs{i})
         end
         legend(dacs,'location','eastoutside','AutoUpdate','off')
+    elseif strcmp(color, 'mode')
+        % plot one point per data mode to create the legend
+        modes = {'R'; 'A'; 'D'};
+        mode_names = {'Real time'; 'Adjusted'; 'Delayed'};
+        modes_found = zeros(3, 1);
+        sensor_mode = sprintf('%s_DATA_MODE', sensor);
+        this_mode = cell(nfloats, 1);
+        for i = 1:nfloats
+            if isfield(Data.(floats{i}), sensor_mode)
+                this_mode{i} = Data.(floats{i}).(sensor_mode)(1,:);
+                for m = 1:3
+                    if ~modes_found(m)
+                        % missing positions are not plotted, exclude them
+                        idx = find(this_mode{i} == modes{m} & ...
+                            isfinite(lon{i}), 1);
+                        if ~isempty(idx)
+                            modes_found(m) = 1;
+                        end
+                    end
+                end
+            end
+        end
+        if ~any(modes_found)
+            warning('no data mode found for %s; using multiple colors', ...
+                sensor)
+            color = 'multiple';
+        else
+            for m = 1:3
+                if modes_found(m)
+                    % actual locations will be plotted later
+                    geoscatter(nan, nan, sz, ...
+                        Settings.traj_color_modes{m}, '.', ...
+                        'DisplayName', modes{m})
+                end
+            end
+            legend(mode_names(modes_found==1),'location','eastoutside',...
+                'AutoUpdate','off')
+        end
     end
     % Plot float trajectories on map (points)
     idxk = cell(nfloats, 1); % known positions
@@ -146,6 +190,14 @@ if strcmp(Settings.mapping, 'native')
             geoscatter(Data.(floats{i}).LATITUDE(1,idxk{i}), ...
                 lon{i}(idxk{i}), sz, ...
                 repmat(cmap(cidx, :), length(idxk{i}), 1), '.')
+        elseif strcmp(color, 'mode')
+            for m = 1:3
+                if modes_found(m)
+                    idx = find(this_mode{i} == modes{m});
+                    geoscatter(Data.(floats{i}).LATITUDE(1,idx), ...
+                        lon{i}(idx), sz, Settings.traj_mode_colors{m}, '.')
+                end
+            end
         else
             geoscatter(Data.(floats{i}).LATITUDE(1,idxk{i}), ...
                 lon{i}(idxk{i}), sz, color, '.');
@@ -158,7 +210,7 @@ if strcmp(Settings.mapping, 'native')
         end
     end
     % add legend
-    if strcmp(lgnd,'yes') && ~strcmp(color, 'dac')
+    if strcmp(lgnd,'yes') && ~strcmp(color, 'dac') && ~strcmp(color, 'mode')
         legend(floats,'location','eastoutside','AutoUpdate','off')
     end
     % reset color order
@@ -230,7 +282,7 @@ else % "plain" plot
     xlabel('Longitude')
     ylabel('Latitude')
     % add legend
-    if strcmp(lgnd,'yes') &&  ~strcmp(color, 'dac')
+    if strcmp(lgnd,'yes')
         legend(floats,'location','eastoutside','AutoUpdate','off')
     end
     % reset color order

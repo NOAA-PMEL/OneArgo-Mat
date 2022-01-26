@@ -85,6 +85,11 @@ Settings.color_var2_range = [0.5, 0.75, 1]; % light blue
 % color for estimated locations in trajectory plots
 Settings.color_estim_loc = [0.7 0.7 0.7]; % light gray
 
+% colors for data modes in trajectory plots:
+% blue for R, yellow for A, green for D
+Settings.traj_mode_colors = {[0, 0.4470, 0.7410]; ...
+    [0.9290, 0.6940, 0.1250]; [0.4660, 0.6740, 0.1880]};
+
 % amount of lon/lat padding in trajectory plots (in degrees)
 Settings.pad_lon = 5;
 Settings.pad_lat = 5;
