@@ -53,7 +53,7 @@ function plot_timeseries(Data, Mdata, variables, depth, basename, varargin)
 %                     default depends on length of time shown:
 %                     'd' for up to 60 days, 'm' for up to 18 months,
 %                     'y' otherwise
-%   'title',title   : title for the plot (default: "Depth: .. db"); an
+%   'title',title   : title for the plot (default: "Depth: .. dbar"); an
 %                     empty string ('') suppresses the title
 %   'var2',variable : if variable is not empty, profiles of this second
 %                     variable will be plotted; if it is the same type as the
@@ -228,8 +228,8 @@ for d = 1:ndepths
         [mini, idx{f,d}] = min(abs(Datai.(floats{f}).PRES(:,1) - depth(d)));
         press{f,d} = Datai.(floats{f}).PRES(idx{f,d},1);
         if mini > Settings.depth_tol
-            warning(['Closest depth level to requested %.1f db for ', ...
-                'float %s is %.1f db'], depth(d), floats{f}, press{f,d});
+            warning(['Closest depth level to requested %.1f dbar for ', ...
+                'float %s is %.1f dbar'], depth(d), floats{f}, press{f,d});
         end
     end
 end
@@ -261,16 +261,34 @@ for v = 1:nvars
                 set(gca,'ColorOrderIndex',1);
                 hold(gca, 'on')
             end
-            plot(Datai.(floats{f}).TIME(1,:), ...
+            plt1 = plot(Datai.(floats{f}).TIME(1,:), ...
                 Datai.(floats{f}).(variables{v})(idx{f,d},:), 'LineWidth', 2);
+            % good values between missing values will not be connected by
+            % a line, so plot them individually as points as well
+            if find(isnan(Datai.(floats{f}).(variables{v})(idx{f,d},:)), 1)
+                color1 = get(plt1, 'color');
+                sc1 = scatter(Datai.(floats{f}).TIME(1,:), ...
+                    Datai.(floats{f}).(variables{v})(idx{f,d},:), 7, ...
+                    color1, 'filled');
+                set(get(get(sc1, 'Annotation'), 'LegendInformation'), ...
+                    'IconDisplayStyle', 'off');
+            end
             [long_name, units] = get_var_name_units(variables{v});
             ylabel([long_name, ' ', units])
             if ~isempty(var2_orig)
                 if ~same_var_type
                     yyaxis right;
                 end
-                plot(Datai.(floats{f}).TIME(1,:), ...
+                plt2 = plot(Datai.(floats{f}).TIME(1,:), ...
                     Datai.(floats{f}).(var2{v})(idx{f,d},:), 'LineWidth', 2);
+                if find(isnan(Datai.(floats{f}).(var2{v})(idx{f,d},:)), 1)
+                    color2 = get(plt2, 'color');
+                    sc2 = scatter(Datai.(floats{f}).TIME(1,:), ...
+                        Datai.(floats{f}).(var2{v})(idx{f,d},:), 7, ...
+                        color2, 'filled');
+                    set(get(get(sc2, 'Annotation'), 'LegendInformation'), ...
+                        'IconDisplayStyle', 'off');
+                end
                 if ~same_var_type
                     [long_name, units] = get_var_name_units(var2_orig);
                     ylabel([long_name, ' ', units])
@@ -285,10 +303,10 @@ for v = 1:nvars
                 if isempty(title1) && ~ischar(title1) % i.e., []
                     if strcmp(lgnd, 'no') || ~isempty(var2_orig)
                         % add float number to title instead
-                        title(sprintf('Depth: %d db (%s)%s', press{f,d}, ...
+                        title(sprintf('Depth: %d dbar (%s)%s', press{f,d}, ...
                             floats{f}, title_added{v}));
                     else % legend shows float number
-                        title(sprintf('Depth: %d db%s', press{f,d}, ...
+                        title(sprintf('Depth: %d dbar%s', press{f,d}, ...
                             title_added{v}));
                     end
                 else
@@ -305,7 +323,7 @@ for v = 1:nvars
                     end
                 end
                 if ~isempty(basename)
-                    fn_png = sprintf('%s_%d_%s%s_%ddb.png', basename, ...
+                    fn_png = sprintf('%s_%d_%s%s_%ddbar.png', basename, ...
                         Mdata.(float_ids{f}).WMO_NUMBER, variables{v}, ...
                         var2_insert{v}, press{f,d});
                     print(f1, '-dpng', fn_png);
@@ -319,10 +337,10 @@ for v = 1:nvars
                 end_date, time_label)
             if isempty(title1) && ~ischar(title1) % i.e., []
                 if strcmp(lgnd, 'yes')
-                    title(sprintf('Depth: %d db%s', press{f,d}, ...
+                    title(sprintf('Depth: %d dbar%s', press{f,d}, ...
                         title_added{v}));
                 else
-                    title(sprintf('Depth: %d db (%s)%s', press{f,d}, ...
+                    title(sprintf('Depth: %d dbar (%s)%s', press{f,d}, ...
                         floats{f}, title_added{v}));
                 end
             else
@@ -333,7 +351,7 @@ for v = 1:nvars
                     'AutoUpdate','off');
             end
             if ~isempty(basename)
-                fn_png = sprintf('%s_%s%s_%ddb.png', basename, variables{v}, ...
+                fn_png = sprintf('%s_%s%s_%ddbar.png', basename, variables{v}, ...
                     var2_insert{v}, press{f,d});
                 print(f1, '-dpng', fn_png);
             end

@@ -27,7 +27,9 @@ function good_float_ids = show_timeseries(float_ids, variables, ...
 %                   or all in one plot (0); default: 1
 %   'png',basename: if basename is not empty, png files will be created
 %                   for all plots; the file names will be 
-%                   <basename>_<WMOID>_<variable>_<depth>db.png
+%                   <basename>_<WMOID>_<variable>_<depth>dbar.png if
+%                   per_float is 1 or <basename>_<variable>_<depth>dbar.png
+%                   if per_float is 0
 %   'qc',flags    : show only values with the given QC flags (as an array)
 %                   0: no QC was performed;
 %                   1: good data;
@@ -49,7 +51,7 @@ function good_float_ids = show_timeseries(float_ids, variables, ...
 %                   default depends on length of time shown:
 %                   'd' for up to 60 days, 'm' for up to 18 months,
 %                   'y' otherwise
-%   'title',title : title for the plot (default: "Depth: .. db"); an
+%   'title',title : title for the plot (default: "Depth: .. dbar"); an
 %                   empty string ('') suppresses the title
 %   'var2',variable: if variable is not empty, time series of this second
 %                   variable will be plotted; if it is the same type as the
