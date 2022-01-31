@@ -127,7 +127,7 @@ for n = 1:length(good_float_ids)
     filename = sprintf('%s%d_Sprof.nc', Settings.prof_dir, floatnum);
     if use_all_vars
         info = ncinfo(filename); % Read netcdf information
-        these_vars = extractfield(info.Variables, 'Name');
+        these_vars = {info.Variables.('Name')};
         add_vars = ismember(Settings.avail_vars, these_vars);
         new_vars = Settings.avail_vars(add_vars);
         all_vars = combine_variables(base_vars, new_vars);

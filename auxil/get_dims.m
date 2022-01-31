@@ -37,7 +37,7 @@ info = ncinfo(filename); % Read netcdf information
 dims = info.Dimensions; % Extract dimensional information
 
 % Determine names of dimensional properties
-dimensions = extractfield(dims, 'Name');
+dimensions = {dims.('Name')};
 
 % Find 'number of profiles', 'number of parameters',
 % and 'number of depth levels'
