@@ -265,8 +265,8 @@ for v = 1:nvars
                 Datai.(floats{f}).(variables{v})(idx{f,d},:), 'LineWidth', 2);
             % good values between missing values will not be connected by
             % a line, so plot them individually as points as well
+            color1 = get(plt1, 'color');
             if find(isnan(Datai.(floats{f}).(variables{v})(idx{f,d},:)), 1)
-                color1 = get(plt1, 'color');
                 sc1 = scatter(Datai.(floats{f}).TIME(1,:), ...
                     Datai.(floats{f}).(variables{v})(idx{f,d},:), 7, ...
                     color1, 'filled');
@@ -274,15 +274,15 @@ for v = 1:nvars
                     'IconDisplayStyle', 'off');
             end
             [long_name, units] = get_var_name_units(variables{v});
-            ylabel([long_name, ' ', units])
+            yl1 = ylabel([long_name, ' ', units]);
             if ~isempty(var2_orig)
                 if ~same_var_type
                     yyaxis right;
                 end
                 plt2 = plot(Datai.(floats{f}).TIME(1,:), ...
                     Datai.(floats{f}).(var2{v})(idx{f,d},:), 'LineWidth', 2);
+                color2 = get(plt2, 'color');
                 if find(isnan(Datai.(floats{f}).(var2{v})(idx{f,d},:)), 1)
-                    color2 = get(plt2, 'color');
                     sc2 = scatter(Datai.(floats{f}).TIME(1,:), ...
                         Datai.(floats{f}).(var2{v})(idx{f,d},:), 7, ...
                         color2, 'filled');
@@ -291,7 +291,14 @@ for v = 1:nvars
                 end
                 if ~same_var_type
                     [long_name, units] = get_var_name_units(var2_orig);
-                    ylabel([long_name, ' ', units])
+                    yl2 = ylabel([long_name, ' ', units]);
+                    set(yl2, 'color', color2);
+                    ax2 = gca;
+                    ax2.YColor = color2;
+                    yyaxis left;
+                    ax1 = gca;
+                    set(yl1, 'color', color1);
+                    ax1.YColor = color1;
                 end
             end
             if per_float
