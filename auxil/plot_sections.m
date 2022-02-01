@@ -1,17 +1,17 @@
 function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
-    plot_mld, time_label, max_depth, raw, obs, basename, varargin)
+    plot_mld, time_label, depth, raw, obs, basename, varargin)
 % plot_sections  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
 %   plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
-%                 plot_mld, time_label, max_depth, raw, obs, varargin)
+%                 plot_mld, time_label, depth, raw, obs, varargin)
 %
 % DESCRIPTION:
 %   This function plots sections of one or more specified float(s) for
 %   the specified variable(s).
 %
-% PREREQUISITE: 
+% PREREQUISITE:
 %   Sprof file(s) for the specified float(s) must exist locally.
 %
 % INPUTS:
@@ -33,8 +33,8 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %   plot_mld    : if set to 1 or 2, mixed layer depth will be plotted,
 %                 using either a temperature (1) or density (2) criterion
 %   time_label  : either years ('y'), months ('m'), or days ('d')
-%   max_depth   : maximum depth to plot (an empty array signals the
-%                 plotting of all available depths)
+%   depth       : minimum and maximum depths to plot (an empty array
+%                 signals the plotting of all available depths)
 %   raw         : if 'no', use adjusted variables if available;
 %                 if 'yes', always use raw values
 %   obs         : if 'on', add dots at the depths of observations
@@ -45,15 +45,15 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %   'end',end_date : end date (in one of the following formats:
 %                 [YYYY MM DD HH MM SS] or [YYYY MM DD])
 %   'qc',flags  : show only values with the given QC flags (array)
-%                 0: no QC was performed; 
-%                 1: good data; 
+%                 0: no QC was performed;
+%                 1: good data;
 %                 2: probably good data;
-%                 3: probably bad data that are 
+%                 3: probably bad data that are
 %                    potentially correctable;
-%                 4: bad data; 
-%                 5: value changed; 
+%                 4: bad data;
+%                 5: value changed;
 %                 6,7: not used;
-%                 8: estimated value; 
+%                 8: estimated value;
 %                 9: missing value
 %                 default setting: 0:9 (all flags)
 %                 See Table 7 in Bittig et al.:
@@ -61,7 +61,7 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %   'start',start_date : start date (in one of the following formats:
 %                 [YYYY MM DD HH MM SS] or [YYYY MM DD])
 %
-% AUTHORS: 
+% AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -81,7 +81,7 @@ global Settings;
 
 if nargin < 11
     warning(['Usage: plot_sections(Data, Mdata, variables, nvars, ', ...
-        'plot_isopyc, plot_mld, time_label, max_depth, raw, obs, ', ...
+        'plot_isopyc, plot_mld, time_label, depth, raw, obs, ', ...
         'basename [, varargin])']);
     return
 end
@@ -134,7 +134,7 @@ else
             % the "_ADJUSTED" variable usually exists, but it may not
             % be filled with actual values
             if isfield(Data.(floats{f}),[variables{v}, '_ADJUSTED']) && ...
-                sum(isfinite(Data.(floats{f}).([variables{v}, '_ADJUSTED'])(:)))
+                    sum(isfinite(Data.(floats{f}).([variables{v}, '_ADJUSTED'])(:)))
                 has_adj = has_adj + 1;
             else
                 warning(['adjusted values for %s for float %s are not available,',...
@@ -202,8 +202,8 @@ for f = 1:nfloats
         hold off
         mod_xaxis_time(Datai.TIME(1,1), Datai.TIME(1,end), ...
             start_date, end_date, time_label)
-        if ~isempty(max_depth)
-            ylim([0 max_depth]);
+        if length(depth) == 2
+            ylim(depth);
         end
         title(sprintf('Float %d: %s %s%s', ...
             Mdata.(float_ids{f}).WMO_NUMBER, long_name, units, title_add),...
