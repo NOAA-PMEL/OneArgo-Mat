@@ -17,6 +17,7 @@ For an overview of how to use this toolbox, step through the Tutorial script (us
 
 ### Main functions (to be called from script or command window):
 
+download_meta_files.m    : downloads <WMOID_meta.nc files from GDAC<br/>
 get_lon_lat_time.m       : returns longitude, latitude, time for selected floats and profiles<br/>
 initialize_argo.m        : defines standard settings and paths and downloads synthetic profile index file<br/>
 list_sensors.m           : shows available sensors across fleet or for specified floats<br/>
@@ -41,7 +42,7 @@ create_tiled_layout.m    : creates tiled layout in a profile plot with two diffe
 depth_interp.m           : interpolates values for BGC-Argo parameters against depth<br/>
 do_download.m            : determines if a file should be downloaded or not<br/>
 do_pause.m               : pauses execution of main_workshop (if used without desktop)<br/>
-download_float.m         : downloads the Sprof NetCDF file for one float<br/>
+download_float.m         : downloads the Sprof or meta NetCDF file for one float<br/>
 download_multi_floats.m  : calls download_float to download Sprof NetCDF files for multiple floats<br/>
 get_dims.m               : returns number of profiles, parameters, and depth levels of one Sprof file<br/>
 get_inpolygon.m          : determines which of the given points are within the specified lon/lat limits<br/>

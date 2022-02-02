@@ -32,7 +32,8 @@ The color scheme for profile plots was modified and can now be
 easily adjusted by changing the default values in initialize_argo.
 A depth range can now be specified.
 
-For section plots start and end date can now be spcecified.
+For section plots start and end date as well as a depth range
+can now be spcecified.
 
 New options are available for trajectory plots: lines between
 profiles, size of the markers for profiles, and the legend can be
@@ -53,9 +54,14 @@ New function list_sensors shows either all available sensors across
 the fleet of all floats or the sensors that are available on all
 of the specified floats.
 
+New function download_meta_files downloads *meta.nc files from the
+GDAC. Extraction of information from these files must be performed
+outside of the toolbox.
+
 Auxiliary variables (density and mixed layer depth) will now be based
 on raw pressure, temperature, and salinity if the underlying plot
-uses raw variables.
+uses raw variables. Potential density instead of in situ density
+is used now.
 
 
 Version 1.1 (December 1, 2021)
