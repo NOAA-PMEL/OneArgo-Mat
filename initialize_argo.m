@@ -28,7 +28,7 @@ function initialize_argo()
 %
 % DATE: DECEMBER 1, 2021  (Version 1.1)
 
-global Settings Sprof Float;
+global Settings Sprof Float Meta;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BEGINNING OF SECTION WITH USER SPECIFIC OPTIONS
@@ -57,6 +57,9 @@ Settings.prof_dir = './Profiles/';
 
 % Index files are stored in subdirectory 'Index'
 Settings.index_dir = './Index/';
+
+% Meta files are stored in subdirectory 'Meta'
+Settings.meta_dir = './Meta/';
 
 Settings.demo_float = 5904021;
 
@@ -228,6 +231,30 @@ for f = 1:nfloats
     Float.min_sens{f} = Sprof.split_sens{Float.prof_idx1(f)+idx1-1};
     Float.max_sens{f} = Sprof.split_sens{Float.prof_idx1(f)+idx2-1};
 end
+
+% Write meta index file from GDAC to Index directory
+% Since it is rather small, download the uncompressed file
+meta = 'ar_index_global_meta.txt';
+Settings.dest_path_meta = [Settings.index_dir, meta];
+if do_download(Settings.dest_path_meta)
+    if Settings.verbose
+        disp('meta index file will now be downloaded.')
+    end
+    if ~try_download(meta, Settings.dest_path_meta)
+        error('meta index file could not be downloaded')
+    end
+end
+
+% Extract information from meta index file
+fid = fopen(Settings.dest_path_meta);
+H = textscan(fid,'%s %s %s %s','headerlines',9,...
+    'delimiter',',','whitespace','');
+fclose(fid);
+Meta.file_path = H{1};
+meta_wmoid = regexp(Meta.file_path,'\d{7}','once','match');
+Meta.file_name = regexprep(meta_wmoid,'\d{7}','$0_meta.nc');
+Meta.update = H{4};
+Meta.wmoid = str2double(meta_wmoid);
 
 % Determine the availability of mapping functions
 if ~isempty(which('geobasemap'))

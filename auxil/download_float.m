@@ -1,23 +1,26 @@
-function success = download_float(floatid)
+function success = download_float(floatid, file_type)
 % download_float  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   success = download_float(floatid)
+%   success = download_float(floatid [, file_type])
 %
 % DESCRIPTION:
-%   It downloads the Sprof file for one float with a given floatid.
+%   It downloads the Sprof or meta file for one float with a given floatid.
 %
 % PREREQUISITE:
-%   The Sprof index file must have been downloaded already. 
+%   The Sprof and Meta index files must have been downloaded already.
 %
 % INPUT:
-%   floatid  : WMO ID of a float (integer)
+%   floatid   : WMO ID of a float (integer)
+%
+% OPTIONAL INPUT:
+%   file_type : either 'Sprof' (default) or 'meta'
 %
 % OUTPUT:
-%   success  : 1 for success, 0 for failure
+%   success   : 1 for success, 0 for failure
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -33,11 +36,14 @@ function success = download_float(floatid)
 %
 % DATE: DECEMBER 1, 2021  (Version 1.1)
 
-global Settings Float;
+global Settings Float Meta;
 
 if nargin < 1
-    disp('Usage: download_float(WMO_ID)')
+    disp('Usage: download_float(WMO_ID [, file_type])')
     return
+end
+if nargin < 2
+    file_type = 'Sprof';
 end
 
 success = 0; % set to 1 after successful download
@@ -47,25 +53,42 @@ if isempty(Float)
     initialize_argo();
 end
 
-ind = 1:Float.nfloats;
-float_idx = ind(Float.wmoid == floatid);
+if strcmp(file_type, 'Sprof')
+    ind = 1:Float.nfloats;
+    float_idx = ind(Float.wmoid == floatid);
+elseif strcmp(file_type, 'meta')
+    ind = 1:length(Meta.wmoid);
+    float_idx = ind(Meta.wmoid == floatid);
+else
+    % so far 'meta' is the only other allowed file type
+    warning('unknown file type: %s', file_type)
+    return
+end
 
 if isempty(float_idx)
     warning('Float %d was not found!', floatid)
     return
 end
 
-local_path = [Settings.prof_dir, Float.file_name{float_idx}];
-% now check if the Sprof file exists locally already,
+if strcmp(file_type, 'Sprof')
+    local_path = [Settings.prof_dir, Float.file_name{float_idx}];
+    url_path = ['dac/', Float.file_path{float_idx}];
+    remote_file_update = datenum(Float.update(float_idx), 'yyyymmddHHMMSS');
+elseif strcmp(file_type, 'meta')
+    local_path = [Settings.meta_dir, Meta.file_name{float_idx}];
+    url_path = ['dac/', Meta.file_path{float_idx}];
+    remote_file_update = datenum(Meta.update(float_idx), 'yyyymmddHHMMSS');
+end
+
+% now check if the specified file exists locally already,
 % and if so, if it is up-to-date
 if exist(local_path, 'file') == 2
     try
-        sprof_date = ncread(local_path, 'DATE_UPDATE')';
-        sprof_date = datenum(sprof_date, 'yyyymmddHHMMSS');
+        local_file_update = ncread(local_path, 'DATE_UPDATE')';
+        local_file_update = datenum(local_file_update, 'yyyymmddHHMMSS');
         % allow a small tolerance value for numerical imprecision
-        if sprof_date > ...
-                datenum(Float.update(float_idx), 'yyyymmddHHMMSS') - 0.01
-            % existing file has all profiles, no need to download again
+        if local_file_update > remote_file_update - 0.1
+            % existing file is up-to-date, no need to download again
             success = 1;
             return;
         end
@@ -74,5 +97,4 @@ if exist(local_path, 'file') == 2
     end
 end
 
-success = try_download(['dac/',Float.file_path{float_idx}], ...
-    local_path);
+success = try_download(url_path, local_path);

@@ -1,22 +1,22 @@
-function good_float_ids = download_multi_floats(float_ids)
-% download_multi_floats  This function is part of the
+function good_float_ids = download_meta_files(float_ids)
+% download_meta_files  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   good_float_ids = download_multi_floats(float_ids)
+%   good_float_ids = download_meta_files(float_ids)
 %
 % DESCRIPTION:
-%   This function downloads *Sprof.nc files for the specified float(s).
-%   A message is shown if profiles for any of these floats could not be
-%   downloaded.
+%   This function downloads the meta netcdf files for the floats with
+%   the specified WMO IDs into subdirectory Meta. Extracting relevant
+%   information from these files can be done outside the toolbox.
 %
-% INPUT:
-%   float_ids : numerical array with WMO ID(s) of the float(s)
+% INPUTS:
+%   float_ids : array with WMO IDs of the floats to be considered
 %
-% OUTPUT:
-%   good_float_ids : WMO ID(s) of the float(s) whose Sprof files were downloaded
+% OUTPUTS:
+%   good_float_ids : WMO ID(s) of the float(s) whose meta files were downloaded
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -32,15 +32,27 @@ function good_float_ids = download_multi_floats(float_ids)
 %
 % DATE: DECEMBER 1, 2021  (Version 1.1)
 
+global Settings;
+
 if nargin < 1
-    warning('Usage: download_multi_floats(float_ids)')
+    warning('Usage: download_meta_files(float_ids)')
+end
+
+% make sure Settings is initialized
+if isempty(Settings)
+    initialize_argo();
+end
+
+% Create Meta directory if needed
+if ~check_dir(Settings.meta_dir)
+    error('Meta directory could not be created')
 end
 
 is_good = ones(length(float_ids), 1);
 not_found = '';
 count = 0;
 for i = 1:length(float_ids)
-    if ~download_float(float_ids(i))
+    if ~download_float(float_ids(i), 'meta')
         is_good(i) = 0;
         not_found = sprintf('%s %d', not_found, float_ids(i));
         count = count + 1;
@@ -53,6 +65,6 @@ for i = 1:length(float_ids)
 end
 good_float_ids = float_ids(is_good == 1);
 if ~isempty(not_found)
-    fprintf('Sprof files could not be downloaded for floats:\n%s\n', ...
+    fprintf('meta files could not be downloaded for floats:\n%s\n', ...
         not_found);
 end
