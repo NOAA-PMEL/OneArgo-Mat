@@ -5,7 +5,7 @@ function plot_trajectories(Data, color, title1, fn_png, float_ids, ...
 %
 % USAGE:
 %   plot_trajectories(Data, color, title1, fn_png, float_ids, ...
-%       lines, lgnd, sz)
+%       lines, lgnd, sz, mark_estim, sensor)
 %
 % DESCRIPTION:
 %   This function plots the trajectories of one or more specified float(s).
@@ -38,6 +38,8 @@ function plot_trajectories(Data, color, title1, fn_png, float_ids, ...
 %   sensor: name of the sensor to use for coloring by data mode - this
 %           argument is ignored if color is not 'mode'
 %
+% OUTPUT: None
+%
 % AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
@@ -52,13 +54,13 @@ function plot_trajectories(Data, color, title1, fn_png, float_ids, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings Float;
 
-if nargin < 9
+if nargin < 10
     warning(['Usage: plot_trajectories(Data, color, title1, fn_png, ',...
-        'float_ids, lines, lgnd, sz, mark_estim)'])
+        'float_ids, lines, lgnd, sz, mark_estim, sensor)'])
     return;
 end
 

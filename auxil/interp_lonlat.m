@@ -19,7 +19,7 @@ function Data = interp_lonlat(Data, floatnum)
 %              LONGITUDE, LATITUDE, POSITION_QC fields for the
 %              selected float
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -33,7 +33,9 @@ function Data = interp_lonlat(Data, floatnum)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
+
+global Settings;
 
 str_floatnum = ['F', num2str(floatnum)];
 % if possible, interpolate lon/lat for profiles whose
@@ -88,7 +90,9 @@ if idx_miss
         Data.(str_floatnum).LONGITUDE = repmat(lon, n_levels, 1);
         Data.(str_floatnum).LATITUDE = repmat(lat, n_levels, 1);
         Data.(str_floatnum).POSITION_QC = repmat(pos_qc, n_levels, 1);
-        fprintf(['position interpolation performed for %d ',...
-            'missing values of float %d\n'], new_values, floatnum);
+        if Settings.verbose
+            fprintf(['position interpolation performed for %d ',...
+                'missing values of float %d\n'], new_values, floatnum);
+        end
     end
 end

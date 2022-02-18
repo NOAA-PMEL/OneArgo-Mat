@@ -8,7 +8,7 @@
 % Demonstrates the downloading of BGC-Argo float data with sample plots,
 % a discussion of available data, quality control flags etc.
 %
-% AUTHORS: 
+% AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -22,7 +22,7 @@
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 %% Close figures, clean up workspace, clear command window
 close all; clear; clc
@@ -30,9 +30,9 @@ close all; clear; clc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exercise 0: Initialize
 % This function defines standard settings and paths and creates Index
-% and Profiles folders in your current path. It also downloads the Sprof 
-% index file from the GDAC to your Index folder. The Sprof index is 
-% referenced when downloading and subsetting float data based on user 
+% and Profiles folders in your current path. It also downloads the Sprof
+% index file from the GDAC to your Index folder. The Sprof index is
+% referenced when downloading and subsetting float data based on user
 % specified criteria in other functions.
 initialize_argo();
 do_pause();
@@ -42,7 +42,7 @@ do_pause();
 % downloading and manipulating float data. 'Sprof' contains fields
 % with information for each profile, 'Float' contains fields with
 % information for each float, 'Settings' contains settings to be used in
-% the backgroud during plotting, etc. Variables in the global structures 
+% the backgroud during plotting, etc. Variables in the global structures
 % can be altered within the initialize_argo.m file.
 global Sprof Float Settings;
 
@@ -58,13 +58,13 @@ clear float_idx prof_ids dates % clean up workspace
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exercise 1: SOCCOM float
-% In this exercise, we download the NetCDF file for a Southern Ocean  
+% In this exercise, we download the NetCDF file for a Southern Ocean
 % BGC float, inspect its contents, show the trajectory, plot profiles
-% for unadjusted and adjusted data, and show the effect of adjustments 
+% for unadjusted and adjusted data, and show the effect of adjustments
 % made to the nitrate concentrations.
 
 %% Download NetCDF file for float #5904183, a SOCCOM float with multiple seasons under ice
-WMO = 5904859; 
+WMO = 5904859;
 success = download_float(WMO);
 if ~success
     warning('Sprof file for float 5904859 could not be downloaded')
@@ -92,7 +92,7 @@ show_trajectories(WMO, 'mark_estim', 'yes', 'title', ...
 do_pause();
 
 %% Show all profiles for salinity and nitrate from the downloaded float
-% this plots the raw, unadjusted data, and includes multiple profiles 
+% this plots the raw, unadjusted data, and includes multiple profiles
 % compromised by biofouling that has affected the optics.
 show_profiles(WMO, {'PSAL';'NITRATE'},'obs','on','raw','yes');
 % this plots the adjusted data.
@@ -145,13 +145,13 @@ t2=[2018 12 31];
 [OSP_floats,OSP_float_profs] = select_profiles(lonlim,latlim,t1,t2,...
     'sensor','NITRATE',... % this selects only floats with nitrate sensors
     'outside','both'); % All floats that cross into the time/space limits
-                       % are identified from the Sprof index. The optional 
-                       % 'outside' argument allows the user to specify
-                       % whether to retain profiles from those floats that
-                       % lie outside the space limits ('space'), time
-                       % limits ('time'), both time and space limits 
-                       % ('both'), or to exclude all profiles that fall 
-                       % outside the limits ('none'). The default is 'none'.
+% are identified from the Sprof index. The optional
+% 'outside' argument allows the user to specify
+% whether to retain profiles from those floats that
+% lie outside the space limits ('space'), time
+% limits ('time'), both time and space limits
+% ('both'), or to exclude all profiles that fall
+% outside the limits ('none'). The default is 'none'.
 
 % display the number of matching floats and profiles
 disp(' ');
@@ -213,7 +213,7 @@ disp(' ');
 show_trajectories(HW_floats,'color','multiple');
 
 % show domain of interest
-hold on; 
+hold on;
 if strcmp(Settings.mapping, 'native')
     geoplot([latlim(1) latlim(2) latlim(2) latlim(1) latlim(1)],...
         [lonlim(1) lonlim(1) lonlim(2) lonlim(2) lonlim(1)],...
@@ -237,7 +237,7 @@ do_pause();
 show_trajectories(HW_floats,'color','multiple','float_profs',HW_float_profs);
 
 % show domain of interest
-hold on; 
+hold on;
 if strcmp(Settings.mapping, 'native')
     geoplot([latlim(1) latlim(2) latlim(2) latlim(1) latlim(1)],...
         [lonlim(1) lonlim(1) lonlim(2) lonlim(2) lonlim(1)],...

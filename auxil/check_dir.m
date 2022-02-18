@@ -16,7 +16,7 @@ function success = check_dir(ddir)
 %   success : 0 if ddir did not exist yet and cannot be created; 1
 %             otherwise
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -30,10 +30,11 @@ function success = check_dir(ddir)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 if nargin < 1
     warning('Usage: check_dir(ddir)')
+    return
 end
 
 if ~exist(ddir, 'dir') && ~mkdir(ddir)

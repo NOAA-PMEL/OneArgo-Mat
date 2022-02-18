@@ -4,8 +4,8 @@ function [Data, Mdata] = load_float_data(float_ids, variables, ...
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   [Data, Mdata] = load_float_data(float_ids, variables, ...
-%                                   float_profs, varargin)
+%   [Data, Mdata] = load_float_data(float_ids [, variables] ...
+%                                   [, float_profs], varargin)
 %
 % DESCRIPTION:
 %   This function loads data (at least one variable)
@@ -44,7 +44,7 @@ function [Data, Mdata] = load_float_data(float_ids, variables, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 

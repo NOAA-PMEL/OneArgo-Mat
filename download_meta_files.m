@@ -10,10 +10,10 @@ function good_float_ids = download_meta_files(float_ids)
 %   the specified WMO IDs into subdirectory Meta. Extracting relevant
 %   information from these files can be done outside the toolbox.
 %
-% INPUTS:
+% INPUT:
 %   float_ids : array with WMO IDs of the floats to be considered
 %
-% OUTPUTS:
+% OUTPUT:
 %   good_float_ids : WMO ID(s) of the float(s) whose meta files were downloaded
 %
 % AUTHORS:
@@ -30,12 +30,13 @@ function good_float_ids = download_meta_files(float_ids)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 
 if nargin < 1
     warning('Usage: download_meta_files(float_ids)')
+    return
 end
 
 % make sure Settings is initialized

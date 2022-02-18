@@ -2,11 +2,11 @@
 % Show_deep_floats.m
 %
 % This example script for the BGC-Argo MATLAB toolbox finds floats
-% with oxygen sensors that reach depths of at least 3000 db. 
+% with oxygen sensors that reach depths of at least 3000 db.
 % Oxygen and temperature profiles are plotted for the float that
 % has the most deep profiles with oxygen data.
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -20,7 +20,7 @@
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % search globally and over the whole available time span, find floats that
@@ -52,7 +52,6 @@ end
 no_fp = cellfun(@isempty, float_profs);
 float_profs(no_fp) = [];
 float_ids(no_fp) = [];
-
 
 %% plot the DOXY and TEMP profiles for the float with the most profiles
 if any(strcmp(sensors, 'DOXY')) && any(strcmp(sensors, 'TEMP'))

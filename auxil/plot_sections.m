@@ -5,7 +5,7 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %
 % USAGE:
 %   plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
-%                 plot_mld, time_label, depth, raw, obs, varargin)
+%                 plot_mld, time_label, depth, raw, obs, basename, varargin)
 %
 % DESCRIPTION:
 %   This function plots sections of one or more specified float(s) for
@@ -61,6 +61,8 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %   'start',start_date : start date (in one of the following formats:
 %                 [YYYY MM DD HH MM SS] or [YYYY MM DD])
 %
+% OUTPUT: None
+%
 % AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
@@ -75,7 +77,7 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 

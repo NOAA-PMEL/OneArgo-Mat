@@ -3,7 +3,7 @@ function sensors = list_sensors(float_ids, mode)
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   sensors = list_sensors(float_ids, mode)
+%   sensors = list_sensors([float_ids] [, mode])
 %
 % DESCRIPTION:
 %   This function lists all currently defined sensors by their
@@ -11,8 +11,7 @@ function sensors = list_sensors(float_ids, mode)
 %   the units. This can be done for all available floats or selected
 %   floats.
 %
-% INPUTS:
-%   None.
+% INPUT: None
 %
 % OPTIONAL INPUTS:
 %   float_ids : array with WMO IDs of the floats to be considered
@@ -22,7 +21,7 @@ function sensors = list_sensors(float_ids, mode)
 %               that are available for some profiles of each of the
 %               specified floats)
 %
-% OUTPUTS:
+% OUTPUT:
 %   sensors   : cell array with matching sensors
 %
 % AUTHORS:
@@ -39,7 +38,7 @@ function sensors = list_sensors(float_ids, mode)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Float Settings;
 
@@ -47,7 +46,6 @@ global Float Settings;
 if isempty(Settings)
     initialize_argo();
 end
-
 
 if nargin < 1
     % show all available sensors
@@ -87,5 +85,3 @@ for i = 1:nvars
     fprintf('%-20s   %-42s  %s\n', sensors{i}, long_name, ...
         strrep(strrep(strrep(units, '{', ''), '}', ''), '\mu', 'u'))
 end
-
-

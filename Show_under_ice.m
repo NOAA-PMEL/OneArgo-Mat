@@ -5,7 +5,7 @@
 % of missing and estimated positions, which often (but not only) occur
 % when a float is under ice.
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -19,7 +19,7 @@
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%
@@ -36,14 +36,14 @@ float1 = 5904859; % this float has under ice interpolation in the Sprof file
 show_trajectories(float1, 'title', 'Trajectory partially under ice: Example 1');
 
 % optionally, the estimated locations can be shown in light gray
-% (or a different color, based on the value used for 
+% (or a different color, based on the value used for
 % Settings.color_estim_loc, which is set in initialize_argo):
 show_trajectories(float1, 'title', 'Trajectory partially under ice: Example 1', ...
     'mark_estim', 'yes');
 
 %%
 % For some floats, under ice locations are marked as missing with a value
-% of 9 in the POSITION_QC. By default, the missing locations are 
+% of 9 in the POSITION_QC. By default, the missing locations are
 % linearly interpolated between good location values. A warning message
 % with the number of interpolated positions (13 in this case) is printed
 % in the command window.
@@ -69,4 +69,3 @@ show_trajectories(float2, 'title', 'Trajectory partially under ice: Example 2', 
 % these are the only ones with known good values:
 show_trajectories(float2, 'title', 'Trajectory partially under ice: Example 2', ...
     'mark_estim', 'yes', 'interp_lonlat', 'no');
-

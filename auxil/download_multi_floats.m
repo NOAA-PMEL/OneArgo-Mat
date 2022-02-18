@@ -16,7 +16,7 @@ function good_float_ids = download_multi_floats(float_ids)
 % OUTPUT:
 %   good_float_ids : WMO ID(s) of the float(s) whose Sprof files were downloaded
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -30,10 +30,11 @@ function good_float_ids = download_multi_floats(float_ids)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 if nargin < 1
     warning('Usage: download_multi_floats(float_ids)')
+    return
 end
 
 is_good = ones(length(float_ids), 1);

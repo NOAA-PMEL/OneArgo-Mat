@@ -26,7 +26,7 @@ function good_float_ids = show_timeseries(float_ids, variables, ...
 %   'per_float',per_float : show time series separately for each float (1)
 %                   or all in one plot (0); default: 1
 %   'png',basename: if basename is not empty, png files will be created
-%                   for all plots; the file names will be 
+%                   for all plots; the file names will be
 %                   <basename>_<WMOID>_<variable>_<depth>dbar.png if
 %                   per_float is 1 or <basename>_<variable>_<depth>dbar.png
 %                   if per_float is 0
@@ -60,7 +60,7 @@ function good_float_ids = show_timeseries(float_ids, variables, ...
 %                   axis will be used for the second variable;
 %                   this option can only be used with 'per_float',1
 %
-% OUTPUTS:
+% OUTPUT:
 %   good_float_ids : array of the float IDs whose Sprof files were
 %                   successfully downloaded or existed already
 %
@@ -78,7 +78,7 @@ function good_float_ids = show_timeseries(float_ids, variables, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 
@@ -129,7 +129,7 @@ end
 % convert requested variable to cell array if necessary and
 % discard unknown variables
 variables = check_variables(variables, 'warning', ...
-    'unknown sensor will be  ignored');
+    'unknown sensor will be ignored');
 
 % if float profiles were specified, make sure that there are no empty
 % arrays; if so, disregard these floats

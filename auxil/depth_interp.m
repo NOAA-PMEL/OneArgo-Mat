@@ -30,11 +30,11 @@ function Datai = depth_interp(Data, qc_flags, varargin)
 %   'dens_thres',dens_thres       : temperature threshold for MLD calculation;
 %                                   default value is set in initialize_argo
 %   (Note that MLD can be computed both ways at the same time.)
-% 
+%
 % OUTPUT:
 %   Datai : struct with depth-interpolated variables
 %
-% AUTHORS: 
+% AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -48,7 +48,7 @@ function Datai = depth_interp(Data, qc_flags, varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 
@@ -80,7 +80,7 @@ for i = 1:2:length(varargin)-1
     elseif strcmpi(varargin{i}, 'temp_thresh') || ...
             strcmpi(varargin{i}, 'dens_thresh')
         varargpass = [varargpass, varargin{i:i+1}];
-   end
+    end
 end
 
 % DEFINE PRESSURE DATA AS 'X'
@@ -131,7 +131,7 @@ for k=1:numel(vars)
             end
         end
         Datai.(vars{k}) = yi; % ADD INTERPOLATED DEPENDENT VARIABLE TO OUTPUT
-    end    
+    end
 end
 
 Datai.PRES = xi; % ADD INTERPOLATED PRESSURE GRID TO OUTPUT

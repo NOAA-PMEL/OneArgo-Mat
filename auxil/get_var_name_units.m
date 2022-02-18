@@ -31,10 +31,11 @@ function [long_name, units] = get_var_name_units(short_name)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 if nargin < 1
     warning('Usage: get_var_name_units(short_name)')
+    return
 end
 
 if contains(short_name,'TEMP')

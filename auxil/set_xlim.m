@@ -33,7 +33,7 @@ function xl = set_xlim(start_date, end_date)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 xl = xlim;
 if ~isempty(start_date) || ~isempty(end_date)

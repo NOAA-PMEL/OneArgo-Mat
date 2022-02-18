@@ -3,7 +3,7 @@ function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   [lon, lat, time] = get_inpolygon()
+%   inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 %
 % DESCRIPTION:
 %   This function determines the lon/lat points that lie within
@@ -24,7 +24,7 @@ function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 % OUTPUT:
 %   inpoly   : vector of 0s and 1s (same length as lon and lat)
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -38,7 +38,7 @@ function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 % longitude limits can be specified in -180..180 or 0..360 degree formats,
 % or any other 360 degree range that encloses all the desired longitude

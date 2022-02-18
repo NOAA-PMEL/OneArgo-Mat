@@ -17,7 +17,7 @@ function [n_prof, n_param, n_levels] = get_dims(filename)
 %   n_param     : number of parameters (integer)
 %   n_levels    : number of depth levels (integer)
 %
-% AUTHORS: 
+% AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -31,7 +31,7 @@ function [n_prof, n_param, n_levels] = get_dims(filename)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 info = ncinfo(filename); % Read netcdf information
 dims = info.Dimensions; % Extract dimensional information

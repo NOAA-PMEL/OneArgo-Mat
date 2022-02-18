@@ -12,6 +12,10 @@ function initialize_argo()
 %   the functions load_float_data, select_profiles, show_profiles,
 %   show_sections, or show_trajectories.
 %
+% INPUT: None
+%
+% OUTPUT: None
+%
 % AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
@@ -26,7 +30,7 @@ function initialize_argo()
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings Sprof Float Meta;
 

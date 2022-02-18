@@ -3,7 +3,7 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   show_trajectories(float_ids,varargin)
+%   good_float_ids = show_trajectories(float_ids,varargin)
 %
 % DESCRIPTION:
 %   This is an intermediary function that downloads profiles for at least
@@ -71,7 +71,7 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 

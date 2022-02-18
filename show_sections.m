@@ -76,7 +76,7 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 
@@ -137,7 +137,8 @@ end
 
 % convert requested variable to cell array if necessary and
 % discard unknown variables
-variables = check_variables(variables);
+variables = check_variables(variables, 'warning', ...
+    'unknown sensor will be ignored');
 
 % download Sprof files if necessary
 good_float_ids = download_multi_floats(float_ids);

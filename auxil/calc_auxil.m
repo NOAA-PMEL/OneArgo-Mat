@@ -4,7 +4,7 @@ function Data = calc_auxil(Data,varargin)
 %
 % USAGE:
 %   Data = calc_auxil(Data,varargin)
-% 
+%
 % DESCRIPTION:
 %   This function calculates various auxiliary variables from Argo
 %   float data: Density, mixed layer depth (MLD), based either on
@@ -18,7 +18,7 @@ function Data = calc_auxil(Data,varargin)
 % OPTIONAL INPUTS:
 %   'raw',raw                     : use raw data if 'yes', adjusted data
 %                                   if no (default: 'no')
-%   'calc_dens', calc_dens:         if set, calculate in potential density
+%   'calc_dens', calc_dens:         if set, calculate potential density
 %   'calc_mld_temp', calc_mld_temp: if set, compute MLD based on T threshold
 %   'temp_thresh', temp_threshold : temperature threshold for MLD calculation
 %                                   (default: 0.2 dg C); ignored if
@@ -44,7 +44,7 @@ function Data = calc_auxil(Data,varargin)
 %               calc_mld_dens: MLD_DENS (mixed layer depth based on a
 %                              density threshold)
 %
-% AUTHORS: 
+% AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -58,12 +58,13 @@ function Data = calc_auxil(Data,varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 
 if nargin < 2
     warning('Usage: calc_auxil(Data,varargin)')
+    return
 end
 
 % set defaults
@@ -133,7 +134,7 @@ if calc_mld_temp || calc_mld_dens
         salt = Data.PSAL;
     end
 end
-    
+
 if calc_mld_temp
     % Pre-allocate mixed layer
     Data.MLD_TEMP = nan(1,size(temp,2));

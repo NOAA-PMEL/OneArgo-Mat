@@ -12,7 +12,7 @@ function [ax1, ax2] = create_tiled_layout()
 % PREREQUISITE:
 %   Plotting window must be open already.
 %
-% INPUTS: None.
+% INPUT: None.
 %
 % OUTPUTS:
 %   ax1 : axes for first variable (left and bottom)
@@ -32,7 +32,7 @@ function [ax1, ax2] = create_tiled_layout()
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 t = tiledlayout(1,1);
 

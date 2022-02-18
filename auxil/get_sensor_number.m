@@ -14,12 +14,12 @@ function [main_sensor, sensor_number] = get_sensor_number(sensor_name)
 % INPUTS:
 %   sensor_name : the full name of the sensor, e.g.: 'TEMP' or 'DOXY2'
 %
-% OUTPUTS: 
+% OUTPUTS:
 %   main_sensor : the name of the main sensor, e.g. 'TEMP' or 'DOXY'
 %   sensor_number : the number of the sensor returned as a string,
 %                 e.g.: '2' (empty string for the main sensor)
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -33,9 +33,9 @@ function [main_sensor, sensor_number] = get_sensor_number(sensor_name)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
-% first case: main sensor does not contain numbers, 
+% first case: main sensor does not contain numbers,
 % e.g. if sensor_name is 'DOXY' or 'DOXY2'
 match = regexp(sensor_name, ...
     '(?<main>[A-Z]+(_[A-Z]+)?)(?<num>[2-9]?)$','names');
@@ -47,4 +47,3 @@ if isempty(match)
 end
 main_sensor = match.main;
 sensor_number = match.num;
-

@@ -3,24 +3,24 @@ function good_variables = check_variables(variables, varargin)
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   good_variables = check_variables(variables)
+%   good_variables = check_variables(variables, varargin)
 %
 % DESCRIPTION:
 %   This function checks if the specified variable(s) are available.
 %   The available variables are returned.
 %
-% INPUTS:
+% INPUT:
 %   variables : cell array of variable(s) (or one variable as a string)
 %
-% OPTIONAL INPUTS:
+% OPTIONAL INPUT:
 %   'warning', warning : if warning is not empty, this string will be
 %               displayed with each name of a variable that is not
 %               available
 %
-% OUTPUTS:
+% OUTPUT:
 %   good_variables : cell array of available variable(s)
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -34,7 +34,7 @@ function good_variables = check_variables(variables, varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 

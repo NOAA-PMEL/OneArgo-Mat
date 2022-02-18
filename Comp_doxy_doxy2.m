@@ -4,7 +4,7 @@
 % This example script for the BGC-Argo MATLAB toolbox finds floats with
 % at least two oxygen sensors and creates comparison plots between them.
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -18,7 +18,7 @@
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% search globally since January 1, 2018 for floats that have at least two
@@ -67,7 +67,7 @@ float_names = fieldnames(Data);
 f1 = figure();
 
 scatter(Data.(float_names{1}).DOXY(:), Data.(float_names{1}).DOXY2(:), ...
-    3, Data.(float_names{1}).PRES(:), 'filled'); 
+    3, Data.(float_names{1}).PRES(:), 'filled');
 
 hcb = colorbar('vert');
 set(get(hcb, 'label'), 'String', 'Pressure (db)')
@@ -96,4 +96,3 @@ box on;
 xlabel('Oxygen sensor 1 (\mumol kg^{-1})')
 ylabel('Oxygen sensor 2 (\mumol kg^{-1})')
 title(sprintf('Oygen sensor comparison for float %d', doxy2_floats(1)));
-

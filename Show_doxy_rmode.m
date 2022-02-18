@@ -4,7 +4,7 @@
 % This example script for the BGC-Argo MATLAB toolbox finds floats
 % that have at least 20 DOXY profiles in R mode.
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -18,7 +18,7 @@
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 global Float;
@@ -43,4 +43,3 @@ fprintf('\n\nNumber of floats with at least 20 DOXY profiles in R mode by DAC:\n
 for i = 1:ndacs
     fprintf('%-10s %3d\n', dacs_list{i}, sum(idx_dac == i));
 end
-

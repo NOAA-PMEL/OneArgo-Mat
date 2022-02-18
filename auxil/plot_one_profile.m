@@ -5,7 +5,7 @@ function num_good_values = plot_one_profile(axes, data, pres, data_qc, ...
 %
 % USAGE:
 %   num_good_values = plot_one_profile(axes, data, pres, data_qc, ...
-%       qc_flags, plot_obs, plot_color)
+%       qc_flags, plot_obs [, plot_color])
 %
 % DESCRIPTION:
 %   This function plots one profile of one float for one variable.
@@ -42,7 +42,7 @@ function num_good_values = plot_one_profile(axes, data, pres, data_qc, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 if nargin < 7
     plot_color = 'k';
