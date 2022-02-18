@@ -3,7 +3,7 @@ function success = download_float(floatid, file_type)
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   success = download_float(floatid [, file_type])
+%   success = download_float(floatid, file_type])
 %
 % DESCRIPTION:
 %   It downloads the Sprof or meta file for one float with a given floatid.
