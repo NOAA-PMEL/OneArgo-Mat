@@ -1,17 +1,17 @@
 function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
-    plot_mld, time_label, max_depth, raw, obs, basename, varargin)
+    plot_mld, time_label, depth, raw, obs, basename, varargin)
 % plot_sections  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
 %   plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
-%                 plot_mld, time_label, max_depth, raw, obs, varargin)
+%                 plot_mld, time_label, depth, raw, obs, basename, varargin)
 %
 % DESCRIPTION:
 %   This function plots sections of one or more specified float(s) for
 %   the specified variable(s).
 %
-% PREREQUISITE: 
+% PREREQUISITE:
 %   Sprof file(s) for the specified float(s) must exist locally.
 %
 % INPUTS:
@@ -32,33 +32,38 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %                 if set to 0, no isopycnal lines will be plotted
 %   plot_mld    : if set to 1 or 2, mixed layer depth will be plotted,
 %                 using either a temperature (1) or density (2) criterion
-%   time_label  : either 'y' (year) or 'm' (month) - type of time labeling on
-%                 the x-axis
-%   max_depth   : maximum depth to plot (an empty array signals the
-%                 plotting of all available depths)
+%   time_label  : either years ('y'), months ('m'), or days ('d')
+%   depth       : minimum and maximum depths to plot (an empty array
+%                 signals the plotting of all available depths)
 %   raw         : if 'no', use adjusted variables if available;
 %                 if 'yes', always use raw values
 %   obs         : if 'on', add dots at the depths of observations
 %   basename    : if not empty, create png files of all plots;
 %                 the file names will be <basename>_<variable>.png
 %
-% OPTIONAL INPUT:
-%  'qc',flags   : show only values with the given QC flags (array)
-%                 0: no QC was performed; 
-%                 1: good data; 
+% OPTIONAL INPUTS:
+%   'end',end_date : end date (in one of the following formats:
+%                 [YYYY MM DD HH MM SS] or [YYYY MM DD])
+%   'qc',flags  : show only values with the given QC flags (array)
+%                 0: no QC was performed;
+%                 1: good data;
 %                 2: probably good data;
-%                 3: probably bad data that are 
+%                 3: probably bad data that are
 %                    potentially correctable;
-%                 4: bad data; 
-%                 5: value changed; 
+%                 4: bad data;
+%                 5: value changed;
 %                 6,7: not used;
-%                 8: estimated value; 
+%                 8: estimated value;
 %                 9: missing value
 %                 default setting: 0:9 (all flags)
 %                 See Table 7 in Bittig et al.:
 %                 https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
+%   'start',start_date : start date (in one of the following formats:
+%                 [YYYY MM DD HH MM SS] or [YYYY MM DD])
 %
-% AUTHORS: 
+% OUTPUT: None
+%
+% AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -72,24 +77,30 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 
 if nargin < 11
     warning(['Usage: plot_sections(Data, Mdata, variables, nvars, ', ...
-        'plot_isopyc, plot_mld, time_label, max_depth, raw, obs, ', ...
+        'plot_isopyc, plot_mld, time_label, depth, raw, obs, ', ...
         'basename [, varargin])']);
     return
 end
 
 % set defaults
 qc_flags = []; % if not changed, actual defaults will be assigned below
+start_date = [];
+end_date = [];
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'qc')
         qc_flags = varargin{i+1};
+    elseif strcmp(varargin{i}, 'start')
+        start_date = check_datenum(varargin{i+1});
+    elseif strcmp(varargin{i}, 'end')
+        end_date = check_datenum(varargin{i+1});
     end
 end
 
@@ -114,9 +125,9 @@ calc_dens = ~isequal(plot_isopyc, 0);
 
 % unless 'raw' is specified, plot adjusted data
 if strncmpi(raw,'y',1)
-    title_add = ' [raw values]';
+    [title_added{1:nvars}] = deal(' [raw values]');
 else
-    title_add = '';
+    [title_added{1:nvars}] = deal(''); % default; may change later
     for v = 1:nvars
         % if all floats have adjusted values available for a variable,
         % they will be used instead of raw values
@@ -125,13 +136,13 @@ else
             % the "_ADJUSTED" variable usually exists, but it may not
             % be filled with actual values
             if isfield(Data.(floats{f}),[variables{v}, '_ADJUSTED']) && ...
-                sum(isfinite(Data.(floats{f}).([variables{v}, '_ADJUSTED'])(:)))
+                    sum(isfinite(Data.(floats{f}).([variables{v}, '_ADJUSTED'])(:)))
                 has_adj = has_adj + 1;
             else
                 warning(['adjusted values for %s for float %s are not available,',...
                     ' showing raw value profiles instead'], ...
                     variables{v}, floats{f});
-                title_add = ' [raw values]';
+                title_added{v} = ' [raw values]';
             end
         end
         if has_adj == nfloats
@@ -149,8 +160,14 @@ for f = 1:nfloats
         varargs = {'calc_mld_dens', 1};
     end
     Datai = depth_interp(Data.(floats{f}), qc_flags, ...
-        'calc_dens', calc_dens, varargs{:});
+        'calc_dens', calc_dens, 'raw', raw, varargs{:});
     for v = 1:nvars
+        if isempty(find(isfinite(Datai.PRES) & ...
+                isfinite(Datai.(variables{v})), 1))
+            warning('no valid data found for %s of float %s', ...
+                variables{v}, floats{f})
+            continue;
+        end
         [long_name, units] = get_var_name_units(variables{v});
         f1 = figure('Renderer', 'painters', 'Position', [10*f 10*f 800 400]);
         set(gca,'fontsize',16);
@@ -185,27 +202,19 @@ for f = 1:nfloats
             plot(Datai.TIME,Datai.MLD_DENS(1,:),'k','LineWidth',2);
         end
         hold off
-        if ~isempty(max_depth)
-            ylim([0 max_depth]);
+        mod_xaxis_time(Datai.TIME(1,1), Datai.TIME(1,end), ...
+            start_date, end_date, time_label)
+        if length(depth) == 2
+            ylim(depth);
         end
         title(sprintf('Float %d: %s %s%s', ...
-            Mdata.(float_ids{f}).WMO_NUMBER, long_name, units, title_add),...
-            'FontSize',14);
+            Mdata.(float_ids{f}).WMO_NUMBER, long_name, units, ...
+            title_added{v}), 'FontSize', 14);
         ylabel('Pressure (dbar)');
         set(gca,'Ydir','reverse');
         colorbar;
         caxis([min(min(Datai.(variables{v}))), ...
             max(max(Datai.(variables{v})))]);
-        if strncmpi(time_label, 'y', 1)
-            set(gca,'XTick',datenum([(2000:2030)' ones(31,1) ones(31,1)]));
-            datetick('x','yyyy','keeplimits','keepticks');
-            xlabel('Year','FontSize',14);
-        else
-            set(gca,'XTick',datenum([repelem((2000:2030)',12,1) ...
-                repmat((1:12)',31, 1) ones(31*12,1)]));
-            datetick('x','mm-yyyy','keeplimits','keepticks');
-            xlabel('Month','FontSize',14);
-        end
         if ~isempty(basename)
             fn_png = sprintf('%s_%d_%s.png', basename, ...
                 Mdata.(float_ids{f}).WMO_NUMBER, variables{v});

@@ -17,7 +17,7 @@ function all_vars = combine_variables(base_vars, new_vars)
 % OUTPUT:
 %  all_vars   : cell array with names of all variables
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -31,7 +31,7 @@ function all_vars = combine_variables(base_vars, new_vars)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 cnt_vars = length(base_vars);
 
@@ -58,5 +58,3 @@ for i = 1:length(new_vars)
     cnt_vars = cnt_vars+1;
     all_vars{cnt_vars} = ['PROFILE_', new_vars{i}, '_QC'];
 end
-
-

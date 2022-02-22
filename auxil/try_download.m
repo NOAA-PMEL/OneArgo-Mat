@@ -3,7 +3,7 @@ function success = try_download(filename, dest_path)
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   try_download(filename, dest_path)
+%   success = try_download(filename, dest_path)
 %
 % DESCRIPTION:
 %   This function attempts to download a file from any of the GDACs
@@ -17,7 +17,7 @@ function success = try_download(filename, dest_path)
 %   success   : 1 for successul download; 2 for unsuccessful download,
 %               but the file exists locally already; 0 for failure
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -31,7 +31,7 @@ function success = try_download(filename, dest_path)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 
@@ -60,7 +60,7 @@ for h = 1:length(Settings.hosts)
                 return
             else
                 % caller may distinguish between return values 1 and 2
-                success = 2; 
+                success = 2;
             end
         end
     end

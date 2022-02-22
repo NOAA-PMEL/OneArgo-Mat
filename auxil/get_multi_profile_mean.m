@@ -8,7 +8,7 @@ function [mean_prof,std_prof,mean_pres] = get_multi_profile_mean(Datai, ...
 %
 % DESCRIPTION:
 %   This function computes mean and standard deviation of a
-%   depth-interpolated variable. Missing values are omitted in the 
+%   depth-interpolated variable. Missing values are omitted in the
 %   calculations.
 %
 % INPUTS:
@@ -21,7 +21,7 @@ function [mean_prof,std_prof,mean_pres] = get_multi_profile_mean(Datai, ...
 %   std_prof  : standard variation of the variable across floats (column vector)
 %   mean_pres : mean pressure across floats (column vector)
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -35,7 +35,7 @@ function [mean_prof,std_prof,mean_pres] = get_multi_profile_mean(Datai, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 floats = fieldnames(Datai);
 nfloats = length(floats);
@@ -52,7 +52,7 @@ for f = 1:nfloats
         max_npres = this_npres(f);
     end
 end
- % this is PRES_ADJUSTED if available:
+% this is PRES_ADJUSTED if available:
 mean_pres = Datai.(floats{imax}).PRES(:,1); % values are the same in 2nd dim
 ndepths = size(mean_pres,1);
 total_nprofs = 0;
@@ -72,4 +72,3 @@ for f = 1:nfloats
 end
 mean_prof = mean(all_profs,2,'omitnan');
 std_prof = std(all_profs,[],2,'omitnan');
-    

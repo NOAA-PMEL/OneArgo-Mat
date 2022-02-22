@@ -1,9 +1,9 @@
-function [Data_good] = qc_filter(Data, variables, qc_flags, varargin)
+function Data_good = qc_filter(Data, variables, qc_flags, varargin)
 % qc_filter  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   [Data_good] = qc_filter(Data, variables, qc_flags, varargin)
+%   Data_good = qc_filter(Data, variables [, qc_flags], varargin)
 %
 % DESCRIPTION:
 %   This function generates a new data structure composed of chosen variables
@@ -26,8 +26,10 @@ function [Data_good] = qc_filter(Data, variables, qc_flags, varargin)
 %         {'BBP532';'BBP470'},[1,2,8], 'DOWNWELLING_PAR',1);
 %
 % OUTPUT:
-%   Data_good: struct that contains all the data from the input Data struct
-%              that match the given QC flags
+%   Data_good: struct that contains all the varaiables from the input Data
+%              struct that match the given QC flags;
+%              all other values are set to NaN (the size of the arrays is
+%              unchanged)
 %
 % AUTHORS:
 %   N. Buzby (UW), H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
@@ -44,7 +46,7 @@ function [Data_good] = qc_filter(Data, variables, qc_flags, varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: December 1, 2021 (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 % assign default qc_flags if none provided as input
 if nargin < 3

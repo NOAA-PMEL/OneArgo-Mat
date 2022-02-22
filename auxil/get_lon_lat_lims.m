@@ -9,7 +9,7 @@ function [lon_lim, lat_lim, Data] = get_lon_lat_lims(Data)
 %   This function obtains maximum and minimum latitude and longitude values
 %   from input data.
 %
-% PREREQUISITE: 
+% PREREQUISITE:
 %   Sprof file(s) for the specified float(s) must exist locally.
 %
 % INPUT:
@@ -26,7 +26,7 @@ function [lon_lim, lat_lim, Data] = get_lon_lat_lims(Data)
 %              a range of 0..360 degrees;
 %              it is unchanged from the input otherwise
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -40,7 +40,7 @@ function [lon_lim, lat_lim, Data] = get_lon_lat_lims(Data)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 floats = fieldnames(Data);
 nfloats = length(floats);
@@ -62,7 +62,7 @@ for i = 1:nfloats
     lon_lim2(2) = max([lon_lim2(2), max(ALT_LON{i})]);
 end
 
-if diff(lon_lim2) < diff(lon_lim)
+if ceil(diff(lon_lim2)) < ceil(diff(lon_lim))
     % the alternate (0..360 degrees) longitude range is shorter; use it
     lon_lim = lon_lim2;
     for i = 1:nfloats

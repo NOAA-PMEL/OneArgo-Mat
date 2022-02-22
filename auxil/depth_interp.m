@@ -17,7 +17,9 @@ function Datai = depth_interp(Data, qc_flags, varargin)
 %
 % OPTIONAL INPUTS:
 %   'prs_res',prs_res             : pressure resolution (default: 2 dbar)
-%   'calc_dens',calc_dens         : if set to 1, calculate density on
+%   'raw',raw                     : use raw data if 'yes', adjusted data
+%                                   if no (default: 'no')
+%   'calc_dens',calc_dens         : if set to 1, calculate potential density on
 %                                   interpolated depth levels
 %   'calc_mld_dens',calc_mld_dens : if set to 1, calculate mixed layer
 %                                   depth (MLD) based on a density criterion
@@ -28,11 +30,11 @@ function Datai = depth_interp(Data, qc_flags, varargin)
 %   'dens_thres',dens_thres       : temperature threshold for MLD calculation;
 %                                   default value is set in initialize_argo
 %   (Note that MLD can be computed both ways at the same time.)
-% 
+%
 % OUTPUT:
 %   Datai : struct with depth-interpolated variables
 %
-% AUTHORS: 
+% AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -46,7 +48,7 @@ function Datai = depth_interp(Data, qc_flags, varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 
@@ -61,11 +63,14 @@ calc_dens = 0;
 calc_mld_dens = 0;
 calc_mld_temp = 0;
 varargpass= {};
+raw = 'no';
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'prs_res')
         prs_res = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'raw')
+        raw = varargin{i+1};
     elseif strcmpi(varargin{i}, 'calc_dens')
         calc_dens = varargin{i+1};
     elseif strcmpi(varargin{i}, 'calc_mld_dens')
@@ -75,12 +80,18 @@ for i = 1:2:length(varargin)-1
     elseif strcmpi(varargin{i}, 'temp_thresh') || ...
             strcmpi(varargin{i}, 'dens_thresh')
         varargpass = [varargpass, varargin{i:i+1}];
-   end
+    end
 end
 
 % DEFINE PRESSURE DATA AS 'X'
 try
+    assert(strcmp(raw, 'no'));
     X = Data.PRES_ADJUSTED;
+    good_vals = sum(isfinite(X));
+    % a somewhat arbitrary criterion: at least half of the profiles
+    % must have valid adjusted pressure values, or switch to
+    % raw pressure
+    assert(sum(good_vals) > 0.5 * length(good_vals));
 catch
     X = Data.PRES;
 end
@@ -93,8 +104,8 @@ xi = repmat(xi,1,size(X,2));
 vars = fieldnames(Data);
 for k=1:numel(vars)
     % CHECK FOR EXISTENCE OF FIELD
-    if startsWith(vars{k},Settings.avail_vars) && ~endsWith(vars{k},'_QC')
-        
+    if startsWith(vars{k},Settings.avail_vars) && ...
+            ~startsWith(vars{k}, 'PRES') && ~endsWith(vars{k},'_QC')
         % DEFINE DEPENDENT VARIABLE AS 'Y'
         Y = Data.(vars{k});
         
@@ -125,7 +136,7 @@ for k=1:numel(vars)
             end
         end
         Datai.(vars{k}) = yi; % ADD INTERPOLATED DEPENDENT VARIABLE TO OUTPUT
-    end    
+    end
 end
 
 Datai.PRES = xi; % ADD INTERPOLATED PRESSURE GRID TO OUTPUT
@@ -139,5 +150,5 @@ Datai.CYCLE_NUMBER = repmat(Data.CYCLE_NUMBER(1,:),size(xi,1),1);
 if calc_dens || calc_mld_dens || calc_mld_temp
     Datai = calc_auxil(Datai, 'calc_dens', 1, ...
         'calc_mld_dens', calc_mld_dens, 'calc_mld_temp', calc_mld_temp, ...
-        varargpass{:});
+        'raw', raw, varargpass{:});
 end

@@ -1,20 +1,22 @@
-function success = check_dir(ddir)
-% check_dir  This function is part of the
+function [ax1, ax2] = create_tiled_layout()
+% create_tiled_layout  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   success = check_dir(ddir)
+%   [ax1, ax2] = create_tiled_layout()
 %
 % DESCRIPTION:
-%   This function determines if a directory needs to be created and
-%   does so if necessary.
+%   This function creates two tiles with separate axes in the current
+%   plotting window.
 %
-% INPUT:
-%   ddir : directory (this can be a relative or absolute path)
+% PREREQUISITE:
+%   Plotting window must be open already.
 %
-% OUTPUT:
-%   success : 0 if ddir did not exist yet and cannot be created; 1
-%             otherwise
+% INPUT: None.
+%
+% OUTPUTS:
+%   ax1 : axes for first variable (left and bottom)
+%   ax2 : axes for second variable (right and top)
 %
 % AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
@@ -32,14 +34,18 @@ function success = check_dir(ddir)
 %
 % DATE: FEBRUARY 22, 2022  (Version 1.2)
 
-if nargin < 1
-    warning('Usage: check_dir(ddir)')
-    return
-end
+t = tiledlayout(1,1);
 
-if ~exist(ddir, 'dir') && ~mkdir(ddir)
-    warning('Could not create directory %s', ddir)
-    success = 0;
-else
-    success = 1;
-end
+ax1 = axes(t);
+ax2 = axes(t);
+
+ax2.XAxisLocation = 'top';
+ax2.YAxisLocation = 'right';
+ax2.Color = 'none';
+ax2.XColor = 'b';
+ax2.YColor = 'b';
+
+ax1.Box = 'off';
+ax2.Box = 'off';
+
+hold(ax2, 'on')

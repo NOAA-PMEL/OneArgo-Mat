@@ -1,5 +1,69 @@
 RELEASE NOTES FOR USERS OF THE BGC_ARGO_MAT TOOLBOX
 
+Version 1.2
+
+The select_profiles function can now be called with additional
+optional selection criteria: The DAC (data access center responsible
+for a float), multiple sensors, a minimum number of profiles matching
+all other search criteria, and a list of floats that must match the
+other specified criteria.
+
+Functions select_profiles, load_float_data, and show_trajectories
+will now all interpolate missing positions (marked with value 9
+in the POSITION_QC field) if possible from surrounding good
+postition values. This can be suppressed by adding option
+'interp_lonlat','no' to these function calls. Note that the
+values in the Sprof file are not modified by this interpolation.
+For trajectory plots, estimated positions (either done by the
+toolbox or if the POSITION_QC value in the Sprof file is 8)
+can be marked in gray (or another color, set in initialize_argo).
+
+This version adds a new type of plot (time series) that can be used
+either per float or with multiple floats in one plot. If it is used
+to plot each float's time series separately, a second variable can
+be plotted for comparison.
+
+For profile plots a second variable can be shown for comparison.
+(NOTE that this feature requires Matlab R2019b or later if the
+two variables are of different types, e.g., 'DOXY' and 'NITRATE'.
+Two variables of the same type, e.g., 'DOXY' and 'DOXY2' can
+be plotted with R2016b or later.)
+The color scheme for profile plots was modified and can now be
+easily adjusted by changing the default values in initialize_argo.
+A depth range can now be specified.
+
+For section plots start and end date as well as a depth range
+can now be spcecified.
+
+New options are available for trajectory plots: lines between
+profiles, size of the markers for profiles, and the legend can be
+suppressed.
+
+The tutorial script was renamed to Tutorial.m, and several other
+scripts were added to show additional features:
+Comp_doxy_doxy2.m
+Show_deep_floats.m
+Show_doxy_rmode.m
+Show_missing_lonlat.m
+Show_under_ice.m
+
+initialize_argo will now add sensors that were not listed in the code
+but were found in the index file.
+
+New function list_sensors shows either all available sensors across
+the fleet of all floats or the sensors that are available on all
+of the specified floats.
+
+New function download_meta_files downloads *meta.nc files from the
+GDAC. Extraction of information from these files must be performed
+outside of the toolbox.
+
+Auxiliary variables (density and mixed layer depth) will now be based
+on raw pressure, temperature, and salinity if the underlying plot
+uses raw variables. Potential density instead of in situ density
+is used now.
+
+
 Version 1.1 (December 1, 2021)
 
 The most important change since version 1.0 regards the evaluation of

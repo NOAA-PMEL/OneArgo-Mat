@@ -13,8 +13,8 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %   It does not download any files.
 %
 % INPUTS:
-% lon_lim    : longitude limits
-% lat_lim    : latitude limits
+%   lon_lim : longitude limits
+%   lat_lim : latitude limits
 %            * Latitude and longitude limits can be input as either
 %            two element vectors ([LON1 LON2], [LAT1 LAT2]) for maximum
 %            and minimum limits, or as same-sized vectors with at least
@@ -24,44 +24,62 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %            360 degree range that encloses all the desired longitude
 %            values, e.g., [-20 200])
 %            * Either or both values can be '[]' to indicate the full range
-% start_date : start date
-% end_date   : end date
+%   start_date : start date
+%   end_date : end date
 %            * Dates should be in one of the following formats:
 %            [YYYY MM DD HH MM SS] or [YYYY MM DD]
 %            * Both values can be '[]' to indicate the full range
 %
-% OPITONAL INPUTS (key,value pairs):
-% 'outside', 'none' 'time' 'space' 'both': By default, only float profiles
+% OPTIONAL INPUTS (key,value pairs):
+%   'dac',dac: Select by Data Assimilation Center reponsible for the floats.
+%           A single DAC can be entered as a string (e.g.: 'aoml'),
+%           multiple DACs can be entered as a cell array (e.g.:
+%           {'meds';'incois'}.
+%           Valid values are any of: {'aoml'; 'bodc'; 'coriolis'; ...
+%           'csio'; 'csiro'; 'incois'; 'jma'; 'kma'; 'kordi'; 'meds'}
+%   'depth',depth: Select profiles that reach at least this depth
+%           (positive downwards; in db)
+%   'floats',floats: Select profiles only from these floats that must
+%           match all other criteria
+%   'interp_lonlat', intp : if intp is 'yes' (default), missing lon/lat
+%           values (e.g., under ice) will be interpolated;
+%           set intp to 'no' to suppress interpolation
+%   'min_num_prof',num_prof: Select only floats that have at least
+%           num_prof profiles that meet all other criteria
+%   'mode',mode: Valid modes are 'R' (real-time), 'A' (adjusted), and
+%           'D', in any combination. Only profiles with the selected
+%           mode(s) will be listed in float_profs.
+%           Default is 'RAD' (all modes).
+%           If multiple sensors are specified, all of them must be in
+%           the selected mode(s).
+%           If 'sensor' option is not used, the 'mode' option is ignored.
+%   'ocean', ocean: Valid choices are 'A' (Atlantic), 'P' (Pacific), and
+%           'I' (Indian). This selection is in addition to the specified
+%           longitude and latitude limits. (To select all floats and
+%           profiles from one ocean basin, leave lon_lim and lat_lim
+%           empty.)
+%   'outside', 'none' 'time' 'space' 'both': By default, only float profiles
 %           that are within both the temporal and spatial constraints are
 %           returned ('none'); specify to also maintain profiles outside
 %           the temporal constraints ('time'), spatial constraints
 %           ('space'), or both constraints ('both')
-% 'sensor', 'SENSOR_TYPE': By default, all floats within the lon/lat/time
-%           limits are considered. This option allows the selection by 
+%   'sensor', SENSOR_TYPE: This option allows the selection by
 %           sensor type. Available are: PRES, PSAL, TEMP, DOXY, BBP,
 %           BBP470, BBP532, BBP700, TURBIDITY, CP, CP660, CHLA, CDOM,
 %           NITRATE, BISULFIDE, PH_IN_SITU_TOTAL, DOWN_IRRADIANCE,
-%           DOWN_IRRADIANCE380, DOWN_IRRADIANCE412, DOWN_IRRADIANCE443, 
-%           DOWN_IRRADIANCE490, DOWN_IRRADIANCE555, DOWN_IRRADIANCE670, 
+%           DOWN_IRRADIANCE380, DOWN_IRRADIANCE412, DOWN_IRRADIANCE443,
+%           DOWN_IRRADIANCE490, DOWN_IRRADIANCE555, DOWN_IRRADIANCE670,
 %           UP_RADIANCE, UP_RADIANCE412, UP_RADIANCE443, UP_RADIANCE490,
-%           UP_RADIANCE555, DOWNWELLING_PAR, DOXY2, DOXY3
-%           (Currently, only one sensor type can be selected.)
-% 'ocean', ocean: Valid choices are 'A' (Atlantic), 'P' (Pacific), and
-%           'I' (Indian). This selection is in addition to the specified
-%           longitude and latitude limits. (To select all floats and 
-%           profiles from one ocean basin, leave lon_lim and lat_lim
-%           empty.)
-% 'mode',mode: Valid modes are 'R' (real-time), 'A' (adjusted), and
-%           'D', in any combination. Only profiles with the selected
-%           mode(s) will be listed in float_profs.
-%           Default is 'RAD' (all modes).
-%           If 'sensor' option is not used, the 'mode' option is ignored.
+%           UP_RADIANCE555, DOWNWELLING_PAR, CNDC, DOXY2, DOXY3, BBP700_2
+%           (Full list can be displayed with the list_sensors function.)
+%           Multiple sensors can be entered as a cell array, e.g.:
+%           {'DOXY';'NITRATE'}
 %
 % OUTPUTS:
 %   float_ids   : array with the WMO IDs of all matching floats
 %   float_profs : cell array with the per-float indices of all matching profiles
 %
-% AUTHORS: 
+% AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -75,7 +93,7 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Float Settings Sprof;
 
@@ -85,10 +103,17 @@ if isempty(Settings)
 end
 
 % set defaults
+float_ids = [];
+float_profs = [];
 outside = 'none'; % if set, removes profiles outside time/space constraints
-sensor = []; % default: use all available profiles
+sensor = []; % default: use all profiles that match other criteria
 ocean = []; % default: any ocean basin
 mode = 'RAD';
+dac = [];
+floats = [];
+depth = [];
+min_num_prof = 0;
+interp_ll = 'yes';
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -100,16 +125,29 @@ for i = 1:2:length(varargin)-1
         ocean = upper(varargin{i+1}(1));
     elseif strcmpi(varargin{i}, 'mode')
         mode = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'dac')
+        dac = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'floats')
+        floats = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'depth')
+        depth = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'min_num_prof')
+        min_num_prof = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'interp_lonlat')
+        interp_ll = varargin{i+1};
+    else
+        warning('unknown option: %s', varargin{i});
     end
 end
 
-% check if specified sensor exists
-if ~isempty(sensor)
-    if ~any(strcmp(sensor, Settings.avail_vars))
-        warning('unknown sensor: %s', sensor)
-        pause(3)
-        sensor = [];
-    end
+% convert requested sensor(s) to cell array if necessary and
+% discard unknown sensors
+sensor = check_variables(sensor, 'warning', ...
+    'unknown sensor will be ignored');
+
+% only use mode if sensor was specified
+if isempty(sensor)
+    mode = [];
 end
 
 % check if specified ocean is correct
@@ -133,6 +171,19 @@ else
     mode = sort(new_mode); % standard order enables strcmp later
 end
 
+% check if specified dac(s) are correct
+if ischar(dac)
+    dac = cellstr(dac);
+end
+bad = zeros(length(dac), 1);
+for i = 1:length(dac)
+    if ~any(strcmp(dac{i}, Settings.dacs))
+        warning('no such dac: %s', dac{i});
+        bad(i) = 1;
+    end
+end
+dac(bad == 1) = [];
+
 % make sure Sprof is initialized
 if isempty(Sprof)
     initialize_argo();
@@ -153,22 +204,32 @@ if isempty(end_date)
 end
 
 % ADJUST INPUT DATES TO DATENUM FORMAT
-dn1 = datenum(start_date); 
+dn1 = datenum(start_date);
 dn2 = datenum(end_date);
+
+% adjust longitude to standard range of -180..180 degrees
+Sprof.lon(Sprof.lon > 180) = Sprof.lon(Sprof.lon > 180) - 360;
+Sprof.lon(Sprof.lon < -180) = Sprof.lon(Sprof.lon < -180) + 360;
 
 % GET INDEX OF PROFILES WITHIN USER-SPECIFIED GEOGRAPHIC POLYGON
 inpoly = get_inpolygon(Sprof.lon,Sprof.lat,lon_lim,lat_lim);
+
+% if interpolation of missing values is requested, include all missing
+% positions for now; actual interpolation will be performed in the
+% second round of matching after reading the Sprof files
+if strncmpi(interp_ll, 'yes', 1)
+    inpoly(isnan(Sprof.lon)) = 1;
+end
+
 if isempty(inpoly) || ~any(inpoly)
     warning('no matching profiles found')
-    float_ids = [];
-    float_profs = [];
     return
 end
 
 % Find index of dates that are within the time window
 date_inpoly = datenum(Sprof.date(inpoly), 'yyyymmddHHMMSS');
 indate_poly = date_inpoly >= dn1 & date_inpoly <= dn2;
-% now create an indate array of 0s/1s that has the same 
+% now create an indate array of 0s/1s that has the same
 % size as inpoly so that it can be used in the & operations below
 indate = zeros(size(inpoly));
 all_floats = 1:length(inpoly);
@@ -176,13 +237,16 @@ sel_floats_space = all_floats(inpoly);
 indate(sel_floats_space(indate_poly)) = 1;
 
 % SELECT BY SENSOR
-if isempty(sensor)
-    has_sensor = ones(size(indate)); % no sensor was selected
-else
-    has_sensor = contains(Sprof.sens, sensor);
+has_sensor = ones(size(indate));
+if ~isempty(sensor)
+    for i = 1:length(sensor)
+        has_sensor = has_sensor & cellfun(@(x) ...
+            any(strcmp(x, sensor{i})), Sprof.split_sens);
+    end
 end
 if ~any(has_sensor)
-    warning('no data found for sensor %s', sensor);
+    warning('no profiles found that have all specified sensors')
+    return
 end
 
 % select by ocean basin
@@ -192,30 +256,32 @@ else
     is_ocean = strcmp(Sprof.ocean, ocean);
 end
 
-% select by data mode
-if isempty(mode) || strcmp(mode, 'ADR')
-    has_mode = ones(size(inpoly));
-else
-    has_mode = zeros(size(inpoly));
-    is_good = inpoly & indate & has_sensor & is_ocean;
-    idx = all_floats(is_good);
-    for i = 1:length(idx)
-        pos = strcmp(split(Sprof.sens(idx(i))), sensor);
-        if any(pos)
-            str = cell2mat(Sprof.data_mode(idx(i)));
-            has_mode(idx(i)) = contains(mode, str(pos));
-        end
-    end
-end
+% Note: due to inconsistencies between index and Sprof files, selecting
+% by data mode  is not performed in the first round, only in the second
+% round below (based on Sprof files)
 
 % perform selection
 all_prof = 1:length(indate);
-profiles = all_prof(inpoly & indate & has_sensor & is_ocean & has_mode);
+profiles = all_prof(inpoly & indate & has_sensor & is_ocean);
 float_ids = unique(Sprof.wmo(profiles));
+
+% check for selected DACs if applicable (DACs are stored by float,
+% not by profile)
+if ~isempty(dac)
+    idx = arrayfun(@(x) find(Float.wmoid==x, 1), float_ids);
+    found_dacs = Float.dac(idx);
+    uses_dac = ismember(found_dacs, dac);
+    float_ids = float_ids(uses_dac);
+end
+
+if ~isempty(floats)
+    % select only those floats found so far that also were specified
+    float_ids = intersect(float_ids, floats);
+end
 
 % download Sprof files if necessary
 good_float_ids = download_multi_floats(float_ids);
- 
+
 % the information from the index file is only used for an initial
 % filtering of floats, the actual information from the Sprof files
 % is used in a second step
@@ -236,27 +302,54 @@ for fl = 1:length(good_float_ids)
     lon = ncread(filename, 'LONGITUDE');
     lat = ncread(filename, 'LATITUDE');
     juld = ncread(filename, 'JULD');
+    if strncmpi(interp_ll, 'yes', 1)
+        % build a minimal Data struct that can be used by function
+        % interp_lonlat
+        pos_qc = ncread(filename, 'POSITION_QC');
+        str_floatnum = sprintf('F%d', good_float_ids(fl));
+        Data = struct();
+        Data.(str_floatnum).LONGITUDE = lon';
+        Data.(str_floatnum).LATITUDE = lat';
+        Data.(str_floatnum).POSITION_QC = str2num(pos_qc)';
+        Data = interp_lonlat(Data, good_float_ids(fl));
+        lon = Data.(str_floatnum).LONGITUDE(1,:)';
+        lat = Data.(str_floatnum).LATITUDE(1,:)';
+        clear Data;
+    end
+    if isempty(depth)
+        has_press = ones(size(lon));
+    else
+        press = ncread(filename, 'PRES');
+        has_press = (max(press) >= depth)';
+    end
     if ~isempty(sensor) && ~strcmp(mode, 'ADR')
         params = ncread(filename, 'PARAMETER');
         param_names = cell(n_param, 1);
+        % find the index of a profile that has the most sensors available
+        tmp = sum(sum(params));
+        [~, pidx] = max(tmp(1,1,end,:), [], 4);
         for p = 1:n_param
-            param_names{p} = strtrim(params(:,p,1,1)');
+            param_names{p} = strtrim(params(:,p,1,pidx)');
         end
-        param_idx = find(strcmp(param_names, sensor), 1);
+        param_idx = zeros(length(sensor), 1);
+        for s = 1:length(sensor)
+            param_idx(s) = find(strcmp(param_names, sensor{s}), 1);
+        end
         data_mode = ncread(filename, 'PARAMETER_DATA_MODE');
     end
     date = datenum(juld) + datenum([1950 1 1]);
-
+    
     inpoly = get_inpolygon(lon,lat,lon_lim,lat_lim);
     indate = date >= dn1 & date <= dn2;
-
-    if isempty(sensor)
-        has_sensor = ones(size(inpoly));
-    else
+    
+    has_sensor = ones(size(inpoly));
+    if ~isempty(sensor)
         param = ncread(filename, 'PARAMETER');
-        has_sensor = zeros(size(inpoly));
         for p = 1:n_prof
-           has_sensor(p) = any(strcmp(cellstr(param(:,:,1,p)'), sensor));
+            for s = 1:length(sensor)
+                has_sensor(p) = has_sensor(p) & ...
+                    any(strcmp(cellstr(param(:,:,1,p)'), sensor{s}));
+            end
         end
     end
     if isempty(ocean)
@@ -268,34 +361,55 @@ for fl = 1:length(good_float_ids)
         is_ocean = strcmp(Sprof.ocean(idx),ocean);
         is_ocean(isnan(this_loc)) = 0;
     end
-    if isempty(mode) || strcmp(mode, 'ADR')
+    if strcmp(mode, 'ADR')
         has_mode = ones(size(inpoly));
     else
-        has_mode = zeros(size(inpoly));
-        for m = 1:length(mode)
-            has_mode = has_mode + (data_mode(param_idx,:)' == mode(m));
+        sens_has_mode = zeros(size(inpoly));
+        for s = 1:length(sensor)
+            for m = 1:length(mode)
+                sens_has_mode = sens_has_mode + ...
+                    (data_mode(param_idx(s),:)' == mode(m));
+            end
         end
+        % all sensors must be in one of the specified modes
+        has_mode = (sens_has_mode == length(sensor));
+    end
+    % special case: if interpolation is used, any float with missing
+    % positions is included in the initial search results
+    % if no floats match the geographic limits after interpolation,
+    % the float must be excluded
+    if strncmpi(interp_ll, 'y', 1) && ~any(inpoly)
+        % used for all settings of outside:
+        has_sensor = zeros(size(has_sensor));
     end
     % now apply the given constraints
     all_prof = 1:length(inpoly);
     if strcmp(outside, 'none')
         float_profs{fl} = all_prof(inpoly & indate & has_sensor & ...
-            is_ocean & has_mode);
+            is_ocean & has_mode & has_press);
     elseif strcmp(outside, 'time') % must meet space constraint
-        float_profs{fl} = all_prof(inpoly & has_sensor & is_ocean & has_mode);
+        float_profs{fl} = all_prof(inpoly & has_sensor & is_ocean & ...
+            has_mode & has_press);
     elseif strcmp(outside, 'space') % must meet time constraint
-        float_profs{fl} = all_prof(indate & has_sensor & is_ocean & has_mode);
+        float_profs{fl} = all_prof(indate & has_sensor & is_ocean & ...
+            has_mode & has_press);
     elseif strcmp(outside, 'both') % no time or space constraint
-        float_profs{fl} = all_prof(has_sensor & is_ocean & has_mode);
+        float_profs{fl} = all_prof(has_sensor & is_ocean & ...
+            has_mode & has_press);
     else
         warning('no such setting for "outside": %s', outside)
         float_profs{fl} = [];
     end
- 
+    
     if isempty(float_profs{fl})
-        warning('no matching profiles found for float %d', good_float_ids(fl))
         float_ids(float_ids == good_float_ids(fl)) = [];
     end
 end
 
 float_profs(cellfun(@isempty, float_profs)) = [];
+
+if min_num_prof
+    has_num = cellfun(@length, float_profs) >= min_num_prof;
+    float_ids = float_ids(has_num);
+    float_profs = float_profs(has_num);
+end

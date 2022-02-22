@@ -1,9 +1,11 @@
-function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
-% load_floats  This function is part of the
+function [Data, Mdata] = load_float_data(float_ids, variables, ...
+    float_profs, varargin)
+% load_float_data  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
+%   [Data, Mdata] = load_float_data(float_ids [, variables] ...
+%                                   [, float_profs], varargin)
 %
 % DESCRIPTION:
 %   This function loads data (at least one variable)
@@ -18,6 +20,9 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 %                 float)
 %   float_profs : cell array with indices of selected profiles (per float,
 %                 not global)
+%   'interp_lonlat', intp : if intp is 'yes' (default), missing lon/lat
+%                 values (e.g., under ice) will be interpolated;
+%                 set intp to 'no' to suppress interpolation
 %
 % OUTPUTS:
 %   Data        : struct with the requested variables (including QC flags.
@@ -25,7 +30,7 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 %                 (LONGITUDE, LATITUDE, JULD, etc.)
 %   Mdata       : struct with meta data (WMO_NUMBER, PI_NAME, etc.)
 %
-% AUTHORS: 
+% AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -39,7 +44,7 @@ function [Data, Mdata] = load_float_data(float_ids, variables, float_profs)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 
@@ -70,6 +75,16 @@ if nargin < 3
     float_profs = [];
 end
 
+interp_ll = 'y'; % by default, interpolate missing positions
+% parse optional arguments
+for i = 1:2:length(varargin)-1
+    if strcmpi(varargin{i}, 'interp_lonlat')
+        interp_ll = varargin{i+1};
+    else
+        warning('unknown option: %s', varargin{i+1});
+    end
+end
+
 % INITIALIZE STRUCTURES FOR OUTPUT
 Data = struct();
 Mdata = struct();
@@ -91,7 +106,7 @@ else
         variables{end+1} = 'PRES';
         base_vars{end+1} = 'PROFILE_PRES_QC';
     end
-
+    
     add_vars = ismember(Settings.avail_vars, variables);
     new_vars = Settings.avail_vars(add_vars);
     all_vars = combine_variables(base_vars, new_vars);
@@ -100,6 +115,11 @@ end
 % download Sprof files if necessary
 good_float_ids = download_multi_floats(float_ids);
 
+if length(good_float_ids) < length(float_ids) && ~isempty(float_profs)
+    [~, idx] = intersect(float_ids, good_float_ids, 'stable');
+    float_profs = float_profs(idx);
+end
+
 % LOOP TO IMPORT PROFILES AND EXTRACT VARIABLES
 for n = 1:length(good_float_ids)
     floatnum = good_float_ids(n);
@@ -107,7 +127,7 @@ for n = 1:length(good_float_ids)
     filename = sprintf('%s%d_Sprof.nc', Settings.prof_dir, floatnum);
     if use_all_vars
         info = ncinfo(filename); % Read netcdf information
-        these_vars = extractfield(info.Variables, 'Name');
+        these_vars = {info.Variables.('Name')};
         add_vars = ismember(Settings.avail_vars, these_vars);
         new_vars = Settings.avail_vars(add_vars);
         all_vars = combine_variables(base_vars, new_vars);
@@ -140,16 +160,19 @@ for n = 1:length(good_float_ids)
         elseif isequal(size(tmp), [n_prof 1])
             Data.(str_floatnum).(all_vars{l}) = repmat(tmp', n_levels, 1);
         else
-            chars = sum(sum(tmp));
-            idx = find(max(chars) == chars, 1);
+            chars = permute(sum(sum(tmp)), [3 4 1 2]);
+            [~, idx] = max(chars(end,:));
             Mdata.(str_floatnum).(all_vars{l}) = tmp(:,:,1,idx);
         end
         clear tmp;
     end
-        
+    if strncmpi(interp_ll, 'y', 1)
+        Data = interp_lonlat(Data, floatnum);
+    end
+    
     % Add WMO float number to metadata
     Mdata.(str_floatnum).WMO_NUMBER = floatnum;
-
+    
     % parse parameter names
     temp = cell(n_param, 1);
     % extract parameter names as coherent strings
@@ -187,7 +210,7 @@ for n = 1:length(good_float_ids)
         Mdata.(str_floatnum).(fields_mdata{f}) = ...
             strcat(this_field(:,end)');
     end
-
+    
     % CONVERT JULD VARIABLE TO SERIAL DATE (SINCE YEAR 1950)
     % AND SAVE AS 'TIME'
     Data.(str_floatnum).('TIME') = ...

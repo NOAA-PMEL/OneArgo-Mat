@@ -6,13 +6,17 @@ function initialize_argo()
 %   initialize_argo()
 %
 % DESCRIPTION:
-%   This function defines standard settings and paths and downloads 
+%   This function defines standard settings and paths and downloads
 %   index files. It must be called once before any other functions
 %   can be used, either directly or indirectly by calling any of
 %   the functions load_float_data, select_profiles, show_profiles,
 %   show_sections, or show_trajectories.
 %
-% AUTHORS: 
+% INPUT: None
+%
+% OUTPUT: None
+%
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -26,9 +30,9 @@ function initialize_argo()
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
-global Settings Sprof Float;
+global Settings Sprof Float Meta;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BEGINNING OF SECTION WITH USER SPECIFIC OPTIONS
@@ -48,7 +52,7 @@ Settings.verbose = 1;
 
 % Maximum number of plots that can be created with one call to
 % show_profiles etc.
-% Increase this number if necessary, if you are sure that 
+% Increase this number if necessary, if you are sure that
 % your system can handle it.
 Settings.max_plots = 20;
 
@@ -56,7 +60,10 @@ Settings.max_plots = 20;
 Settings.prof_dir = './Profiles/';
 
 % Index files are stored in subdirectory 'Index'
-Settings.index_dir = './Index/'; 
+Settings.index_dir = './Index/';
+
+% Meta files are stored in subdirectory 'Meta'
+Settings.meta_dir = './Meta/';
 
 Settings.demo_float = 5904021;
 
@@ -68,6 +75,31 @@ Settings.update = 3600; % time is given in seconds
 % default values for computation of mixed layer depth
 Settings.temp_thresh = 0.2;
 Settings.dens_thresh = 0.03;
+
+% default value for deviation from requested depth level for time series
+% plots - if exceeded, a warning will be issued
+Settings.depth_tol = 5;
+
+% Settings.colormap = 'jet'; % uncomment and change as needed
+
+% colors for profile plots ("range" is for individual profiles using the
+% 'all' method and mean +- std.dev. in the 'mean' method)
+Settings.color_var1_mean = [0, 0, 0]; % black
+Settings.color_var1_range = [0.7 0.7 0.7]; % light gray
+Settings.color_var2_mean = [0, 0, 1]; % blue
+Settings.color_var2_range = [0.5, 0.75, 1]; % light blue
+
+% color for estimated locations in trajectory plots
+Settings.color_estim_loc = [0.7 0.7 0.7]; % light gray
+
+% colors for data modes in trajectory plots:
+% blue for R, yellow for A, green for D
+Settings.traj_mode_colors = {[0, 0.4470, 0.7410]; ...
+    [0.9290, 0.6940, 0.1250]; [0.4660, 0.6740, 0.1880]};
+
+% amount of lon/lat padding in trajectory plots (in degrees)
+Settings.pad_lon = 5;
+Settings.pad_lat = 5;
 
 % Default: try US GDAC before French GDAC
 host_ifremer = 'https://data-argo.ifremer.fr/';
@@ -98,14 +130,19 @@ if ~check_dir(Settings.prof_dir)
 end
 
 % Full set of available variables (but not all floats have all sensors)
-Settings.avail_vars = {'PRES';'PSAL';'TEMP';'DOXY';'BBP';'BBP470';'BBP532';...
-    'BBP700';'TURBIDITY';'CP';'CP660';'CHLA';'CDOM';'NITRATE';'BISULFIDE';...
-    'PH_IN_SITU_TOTAL';'DOWN_IRRADIANCE';'DOWN_IRRADIANCE380';...
+% Additional sensors of existing types (e.g., DOXY2, BBP700_2) will
+% be added below if they are found in the index file
+Settings.avail_vars = {'PRES';'PSAL';'TEMP';'CNDC';'DOXY';'BBP';'BBP470';...
+    'BBP532';'BBP700';'TURBIDITY';'CP';'CP660';'CHLA';'CDOM';'NITRATE';...
+    'BISULFIDE';'PH_IN_SITU_TOTAL';'DOWN_IRRADIANCE';'DOWN_IRRADIANCE380';...
     'DOWN_IRRADIANCE412';'DOWN_IRRADIANCE443';'DOWN_IRRADIANCE490';...
-    'DOWN_IRRADIANCE555';'DOWN_IRRADIANCE670';'UP_RADIANCE';...
-    'UP_RADIANCE412';'UP_RADIANCE443';'UP_RADIANCE490';'UP_RADIANCE555';...
+    'DOWN_IRRADIANCE555';'DOWN_IRRADIANCE670';'DOWNWELLING_PAR';...
     'UP_RADIANCE';'UP_RADIANCE412';'UP_RADIANCE443';'UP_RADIANCE490';...
-    'UP_RADIANCE555';'DOWNWELLING_PAR';'DOXY2';'DOXY3'};
+    'UP_RADIANCE555';};
+
+% List of Data Assimilation Centers
+Settings.dacs = {'aoml'; 'bodc'; 'coriolis'; 'csio'; 'csiro'; 'incois'; ...
+    'jma'; 'kma'; 'kordi'; 'meds'};
 
 % Write Sprof index file from GDAC to Index directory
 sprof = 'argo_synthetic-profile_index.txt'; % file used locally
@@ -142,8 +179,25 @@ Sprof.ocean = H{5};
 % column 6: profiler type
 % column 7: institution
 Sprof.sens = H{8};
+Sprof.split_sens = cellfun(@split, Sprof.sens, 'UniformOutput', false);
 Sprof.data_mode = H{9};
 Sprof.date_update = H{10};
+
+% check for additional (e.g., DOXY2) and unknown sensors
+for i = 1:length(Sprof.sens)
+    sensors = split(Sprof.sens{i});
+    if ~all(ismember(sensors, Settings.avail_vars))
+        unknown_sensors = sensors(~ismember(sensors, Settings.avail_vars));
+        for s = 1:length(unknown_sensors)
+            main_sensor = get_sensor_number(unknown_sensors{s});
+            if isempty(main_sensor)
+                warning('unknown sensor in index file: %s', unknown_sensors{s})
+            else
+                Settings.avail_vars{end+1} = unknown_sensors{s};
+            end
+        end
+    end
+end
 
 % Extract unique floats
 Sprof.wmo = regexp(sprof_urls,'\d{7}','once','match');
@@ -167,6 +221,44 @@ Float.prof_idx1 = ia(1:end-1);
 Float.prof_idx2 = ia(2:end) - 1;
 % use the update date of the last profile
 Float.update = Sprof.date_update(Float.prof_idx2);
+
+% determine sensor availability by float
+nfloats = length(Float.wmoid);
+Float.min_sens = cell(nfloats, 1);
+Float.max_sens = cell(nfloats, 1);
+len_sens = cellfun(@length, Sprof.sens);
+for f = 1:nfloats
+    [~, idx1] = min(len_sens(Float.prof_idx1(f):Float.prof_idx2(f)));
+    [~, idx2] = max(len_sens(Float.prof_idx1(f):Float.prof_idx2(f)));
+    % assumption: the shortest string has sensors that are shared among all
+    % profiles and the longest string has the union of all available sensors
+    Float.min_sens{f} = Sprof.split_sens{Float.prof_idx1(f)+idx1-1};
+    Float.max_sens{f} = Sprof.split_sens{Float.prof_idx1(f)+idx2-1};
+end
+
+% Write meta index file from GDAC to Index directory
+% Since it is rather small, download the uncompressed file
+meta = 'ar_index_global_meta.txt';
+Settings.dest_path_meta = [Settings.index_dir, meta];
+if do_download(Settings.dest_path_meta)
+    if Settings.verbose
+        disp('meta index file will now be downloaded.')
+    end
+    if ~try_download(meta, Settings.dest_path_meta)
+        error('meta index file could not be downloaded')
+    end
+end
+
+% Extract information from meta index file
+fid = fopen(Settings.dest_path_meta);
+H = textscan(fid,'%s %s %s %s','headerlines',9,...
+    'delimiter',',','whitespace','');
+fclose(fid);
+Meta.file_path = H{1};
+meta_wmoid = regexp(Meta.file_path,'\d{7}','once','match');
+Meta.file_name = regexprep(meta_wmoid,'\d{7}','$0_meta.nc');
+Meta.update = H{4};
+Meta.wmoid = str2double(meta_wmoid);
 
 % Determine the availability of mapping functions
 if ~isempty(which('geobasemap'))

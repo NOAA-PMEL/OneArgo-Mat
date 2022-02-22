@@ -1,40 +1,35 @@
-function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
-    show_profiles(float_ids, variables, varargin)
-% show_profiles  This function is part of the
+function good_float_ids = show_timeseries(float_ids, variables, ...
+    depth, varargin)
+% show_timeseries  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   [good_float_ids, mean_prof, std_prof, mean_pres] = ...
-%       show_profiles(float_ids, variables, varargin)
+%   good_float_ids = show_timeseries(float_ids, variables, ...
+%       depth, varargin)
 %
 % DESCRIPTION:
-%   This an intermediary function that downloads profile(s) for the given
-%   float(s) and calls plot_profile to create the plot(s).
+%   This an intermediary function that downloads and loads data for the
+%   given float(s) and calls plot_timeseries to create the plot(s).
 %
 % INPUTS:
-%   float_ids  : WMO ID(s) of the float(s)
-%   variables  : cell array of variable(s) (i.e., sensor(s)) to show
-%                (if not set: {'DOXY'} (=O2) is used)
+%   float_ids      : WMO ID(s) of the float(s)
+%   variables      : cell array of variable(s) (i.e., sensor(s)) to show
+%   depth          : array of depth levels to plot
 %
 % OPTIONAL INPUTS:
-%   'depth',[min max] : minimum and maximum depth levels to plot
+%   'end',end_date : end date (in one of the following formats:
+%                   [YYYY MM DD HH MM SS] or [YYYY MM DD])
 %   'float_profs',fp : cell array with per-float indices of the profiles to
 %                   be shown, as returned by select_profiles
-%   'method',method : by default (method='all') all profiles from each float
-%                   are shown in one plot per variable;
-%                   use method='mean' to plot mean and standard deviation
-%                   across profiles instead
-%   'obs',on/off  : by default (same as: 'obs','off') only lines are shown
-%                   for each profile; 'obs','on' shows points on the profile
-%                   at which each measurement was made
-%   'per_float',per_float : show profiles separately for each float (1)
+%   'legend',legend: legend (string) can be 'yes' to show legend along with
+%                   plot (default) or 'no'
+%   'per_float',per_float : show time series separately for each float (1)
 %                   or all in one plot (0); default: 1
-%                   either option can be used with 'all' and 'mean' methods
 %   'png',basename: if basename is not empty, png files will be created
-%                   for all plots; if per_float is used, the file
-%                   names will be <basename>_<WMOID>_<variable>.png,
-%                   if per_float is not used, the file names will be
-%                   <basename>_<variable>.png
+%                   for all plots; the file names will be
+%                   <basename>_<WMOID>_<variable>_<depth>dbar.png if
+%                   per_float is 1 or <basename>_<variable>_<depth>dbar.png
+%                   if per_float is 0
 %   'qc',flags    : show only values with the given QC flags (as an array)
 %                   0: no QC was performed;
 %                   1: good data;
@@ -50,25 +45,24 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %                   https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
 %   'raw',raw     : plot raw, i.e., unadjusted data if set to 'yes';
 %                   default: 'no' (i.e., plot adjusted data if available)
-%   'title_add',text : add the given text to the end of all titles
-%   'var2',variable: if variable is not empty, profiles of this second
+%   'start',start_date : start date (in one of the following formats:
+%                   [YYYY MM DD HH MM SS] or [YYYY MM DD])
+%   'time_label',label : use either years ('y'), months ('m'), or days ('d');
+%                   default depends on length of time shown:
+%                   'd' for up to 60 days, 'm' for up to 18 months,
+%                   'y' otherwise
+%   'title',title : title for the plot (default: "Depth: .. dbar"); an
+%                   empty string ('') suppresses the title
+%   'var2',variable: if variable is not empty, time series of this second
 %                   variable will be plotted; if it is the same type as the
 %                   first variable (e.g., DOXY2 compared to DOXY), it will
-%                   be plotted using the same axes; otherwise, right and
-%                   top axes will be used for the second variable
+%                   be plotted using the same axes; otherwise, the right
+%                   axis will be used for the second variable;
+%                   this option can only be used with 'per_float',1
 %
-% OUTPUTS:
+% OUTPUT:
 %   good_float_ids : array of the float IDs whose Sprof files were
 %                   successfully downloaded or existed already
-%   mean_prof :     mean across profiles (cell array of cell arrays
-%                   ({variable}{float}) of column vectors if per_float
-%                   is set to 1,
-%                   cell array ({variable}) of column vectors if per_float
-%                   is set to 0)
-%   std_prof  :     standard deviation across profiles (same type as mean_prof)
-%   mean_pres :     mean pressure across profiles (cell array of column
-%                   vectors if per_float is set to 1,
-%                   column vector if per_float is 0)
 %
 % AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
@@ -95,9 +89,11 @@ end
 
 % assign empty arrays to all return values in case of early return
 good_float_ids = [];
-mean_prof = {};
-std_prof = {};
-mean_pres = {};
+
+if nargin < 3 || ~isnumeric(float_ids) || ~isnumeric(depth)
+    warning('Usage: show_timeseries(float_ids, variables, depth, varargin)')
+    return
+end
 
 if isempty(float_ids)
     warning('no floats specified')
@@ -105,9 +101,6 @@ if isempty(float_ids)
 end
 
 % set defaults
-if nargin < 2
-    variables = {'DOXY'};
-end
 float_profs = [];
 basename = [];
 var2 = [];
@@ -129,14 +122,14 @@ for i = 1:2:length(varargin)-1
             var2 = check_variables(varargin{i+1}, 'warning', ...
                 'unknown sensor will be ignored');
         end
-        varargpass = [varargpass, varargin{i:i+1}];
+        varargpass = [varargpass, varargin(i), varargin(i+1)];
     end
 end
 
 % convert requested variable to cell array if necessary and
 % discard unknown variables
 variables = check_variables(variables, 'warning', ...
-    'unknown sensor will be  ignored');
+    'unknown sensor will be ignored');
 
 % if float profiles were specified, make sure that there are no empty
 % arrays; if so, disregard these floats
@@ -157,6 +150,5 @@ if isempty(good_float_ids)
 else
     [Data, Mdata] = load_float_data(good_float_ids, [variables; var2], ...
         float_profs);
-    [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
-        variables, basename, varargpass{:});
+    plot_timeseries(Data, Mdata, variables, depth, basename, varargpass{:});
 end

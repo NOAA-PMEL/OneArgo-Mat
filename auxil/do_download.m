@@ -7,7 +7,7 @@ function tf = do_download(dest_path)
 %
 % DESCRIPTION:
 %   This function determines if a file should be downloaded or not
-%   (i.e., if it exists already at the given dest_path), based on the 
+%   (i.e., if it exists already at the given dest_path), based on the
 %   "update" option from the global Settings structure.
 %
 % INPUT:
@@ -18,7 +18,7 @@ function tf = do_download(dest_path)
 %               on the value of Settings.update and the existence and age
 %               of the file.)
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -32,12 +32,13 @@ function tf = do_download(dest_path)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 
 if nargin < 1
     warning('Usage: do_download(dest_path)')
+    return
 end
 
 if exist(dest_path, 'file') ~= 2

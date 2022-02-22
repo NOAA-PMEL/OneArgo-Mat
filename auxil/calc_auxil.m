@@ -4,7 +4,7 @@ function Data = calc_auxil(Data,varargin)
 %
 % USAGE:
 %   Data = calc_auxil(Data,varargin)
-% 
+%
 % DESCRIPTION:
 %   This function calculates various auxiliary variables from Argo
 %   float data: Density, mixed layer depth (MLD), based either on
@@ -16,7 +16,9 @@ function Data = calc_auxil(Data,varargin)
 %               interpolated pressure/depth axis)
 %
 % OPTIONAL INPUTS:
-%   'calc_dens', calc_dens:         if set, calculate in situ density
+%   'raw',raw                     : use raw data if 'yes', adjusted data
+%                                   if no (default: 'no')
+%   'calc_dens', calc_dens:         if set, calculate potential density
 %   'calc_mld_temp', calc_mld_temp: if set, compute MLD based on T threshold
 %   'temp_thresh', temp_threshold : temperature threshold for MLD calculation
 %                                   (default: 0.2 dg C); ignored if
@@ -42,7 +44,7 @@ function Data = calc_auxil(Data,varargin)
 %               calc_mld_dens: MLD_DENS (mixed layer depth based on a
 %                              density threshold)
 %
-% AUTHORS: 
+% AUTHORS:
 %   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -56,15 +58,17 @@ function Data = calc_auxil(Data,varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 global Settings;
 
 if nargin < 2
     warning('Usage: calc_auxil(Data,varargin)')
+    return
 end
 
 % set defaults
+raw = 'no';
 calc_dens = 0;
 calc_mld_temp = 0;
 calc_mld_dens = 0;
@@ -73,7 +77,9 @@ dens_thresh = Settings.dens_thresh;
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
-    if strcmpi(varargin{i}, 'calc_dens')
+    if strcmpi(varargin{i}, 'raw')
+        raw = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'calc_dens')
         calc_dens = varargin{i+1};
     elseif strcmpi(varargin{i}, 'calc_mld_temp')
         calc_mld_temp = varargin{i+1};
@@ -89,44 +95,47 @@ end
 % Calculate in situ density:
 if calc_dens
     try % Try with adjusted values first
+        assert(strcmp(raw, 'no'));
         Data.PSAL_ABS_ADJUSTED = gsw_SA_from_SP(Data.PSAL_ADJUSTED,...
             Data.PRES_ADJUSTED,...
             Data.LONGITUDE,Data.LATITUDE); % Calculate absolute salinity
         Data.TEMP_CNS_ADJUSTED = gsw_CT_from_t(Data.PSAL_ABS_ADJUSTED,...
             Data.TEMP_ADJUSTED,...
             Data.PRES_ADJUSTED); % Calculate conservative temperature
-        Data.DENS_ADJUSTED = gsw_rho(Data.PSAL_ABS_ADJUSTED,...
-            Data.TEMP_CNS_ADJUSTED,...
-            Data.PRES_ADJUSTED); % Calculate in situ density
+        Data.DENS_ADJUSTED = 1000 + gsw_sigma0(Data.PSAL_ABS_ADJUSTED,...
+            Data.TEMP_CNS_ADJUSTED); % Calculate potential density
     catch % Then try with unadjusted values
         Data.PSAL_ABS = gsw_SA_from_SP(Data.PSAL,Data.PRES,...
             Data.LONGITUDE,Data.LATITUDE); % Calculate absolute salinity
         Data.TEMP_CNS = gsw_CT_from_t(Data.PSAL_ABS,Data.TEMP,...
             Data.PRES); % Calculate conservative temperature
-        Data.DENS     = gsw_rho(Data.PSAL_ABS,Data.TEMP_CNS,...
-            Data.PRES); % Calculate in situ density
+        Data.DENS     = 1000 + gsw_sigma0(Data.PSAL_ABS,...
+            Data.TEMP_CNS); % Calculate in situ density
     end
 end
 
 if calc_mld_temp || calc_mld_dens
     try % Try with adjusted values first
+        assert(strcmp(raw, 'no'));
         temp = Data.TEMP_ADJUSTED;
     catch % Then try with unadjusted values
         temp = Data.TEMP;
     end
     try % Try with adjusted values first
+        assert(strcmp(raw, 'no'));
         pres = Data.PRES_ADJUSTED;
     catch % Then try with unadjusted values
         pres = Data.PRES;
     end
-end
-    
-if calc_mld_temp
     try % Try with adjusted values first
-        sal = Data.PSAL_ADJUSTED;
+        assert(strcmp(raw, 'no'));
+        salt = Data.PSAL_ADJUSTED;
     catch % Then try with unadjusted values
-        sal = Data.PSAL;
+        salt = Data.PSAL;
     end
+end
+
+if calc_mld_temp
     % Pre-allocate mixed layer
     Data.MLD_TEMP = nan(1,size(temp,2));
     % Calculate mixed layer depth based on temperature threshold
@@ -135,9 +144,9 @@ if calc_mld_temp
         % determine pressure closest to 10
         [~,ref_idx] = min(abs(pressure_prof-10));
         temperature_prof = temp(:,n); % extract temperature profile
-        sal_prof = sal(:,n); % same for salinity
+        salt_prof = salt(:,n); % same for salinity
         % compute potential temperature
-        ptemp_prof = gsw_pt0_from_t(sal_prof,temperature_prof,pressure_prof);
+        ptemp_prof = gsw_pt0_from_t(salt_prof,temperature_prof,pressure_prof);
         % define reference potential temperature as closest to P = 10
         ptemp_ref = ptemp_prof(ref_idx);
         under_ref = pressure_prof > pressure_prof(ref_idx); % index below reference
@@ -153,13 +162,10 @@ if calc_mld_temp
 end
 
 if calc_mld_dens
-    try % Try with adjusted values first
-        salt = Data.PSAL_ADJUSTED;
-    catch % Then try with unadjusted values
-        salt = Data.PSAL;
-    end
     % Calculate potential density with respect to surface pressure (=0)
-    pdensity = gsw_rho(salt,temp,zeros(size(temp)));
+    SA = gsw_SA_from_SP(salt,Data.PRES,Data.LONGITUDE,Data.LATITUDE);
+    CT = gsw_CT_from_t(SA,temp,Data.PRES);
+    pdensity = 1000 + gsw_sigma0(SA,CT);
     % Pre-allocate mixed layer
     Data.MLD_DENS = nan(1,size(pdensity,2));
     % Identify first instance of potential density that is

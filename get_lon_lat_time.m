@@ -3,7 +3,7 @@ function [lon, lat, time] = get_lon_lat_time(float_ids, float_profs)
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   [lon, lat, time] = get_lon_lat_time(float_ids, float_profs)
+%   [lon, lat, time] = get_lon_lat_time(float_ids [, float_profs])
 %
 % DESCRIPTION:
 %   This function loads longitude, latitude, and time information
@@ -19,10 +19,10 @@ function [lon, lat, time] = get_lon_lat_time(float_ids, float_profs)
 % OUTPUTS:
 %   lon  : cell array with longitude values for all specified floats
 %   lat  : cell array with latitude values for all specified floats
-%   time : cell array with time values for all specified floats (in 
-%          datenum format)   
+%   time : cell array with time values for all specified floats (in
+%          datenum format)
 %
-% AUTHORS: 
+% AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
 %   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
 %   and A. Gray (UW)
@@ -36,7 +36,7 @@ function [lon, lat, time] = get_lon_lat_time(float_ids, float_profs)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: DECEMBER 1, 2021  (Version 1.1)
+% DATE: FEBRUARY 22, 2022  (Version 1.2)
 
 if isempty(float_ids)
     warning('no floats specified');
@@ -62,4 +62,3 @@ for f = 1:nfloats
     lat{f} = Data.(str_floatnum).LATITUDE(1,:)';
     time{f} = Data.(str_floatnum).TIME(1,:)';
 end
-
