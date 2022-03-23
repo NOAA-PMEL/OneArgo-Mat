@@ -10,7 +10,10 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 % DESCRIPTION:
 %   This function returns the indices of profiles and floats that match
 %   the given criteria (spatial, temporal, sensor availability).
-%   It does not download any files.
+%   It calls function initialize_argo if necessary.
+%   Sprof files that match most criteria (except data mode, if specified)
+%   and those that have missing longitude/latitude values in the index file
+%   are downloaded from a GDAC.
 %
 % INPUTS:
 %   lon_lim : longitude limits
