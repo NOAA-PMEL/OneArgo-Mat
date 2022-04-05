@@ -10,7 +10,10 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 % DESCRIPTION:
 %   This function returns the indices of profiles and floats that match
 %   the given criteria (spatial, temporal, sensor availability).
-%   It does not download any files.
+%   It calls function initialize_argo if necessary.
+%   Sprof files that match most criteria (except data mode, if specified)
+%   and those that have missing longitude/latitude values in the index file
+%   are downloaded from a GDAC.
 %
 % INPUTS:
 %   lon_lim : longitude limits
@@ -74,6 +77,12 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           (Full list can be displayed with the list_sensors function.)
 %           Multiple sensors can be entered as a cell array, e.g.:
 %           {'DOXY';'NITRATE'}
+%   'type', type: Valid choices are 'bgc' (select BGC floats only; the 
+%           default), 'phys' (select core and deep floats only), and
+%           'all' (select all floats that match other criteria)
+%           If type is not specified, but sensors are, then the type will
+%           be set to 'all' if only pTS (PRES, PSAL, TEMP, CNDC) sensors
+%           are specified, and to 'bgc' otherwise.
 %
 % OUTPUTS:
 %   float_ids   : array with the WMO IDs of all matching floats
@@ -95,7 +104,7 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %
 % DATE: FEBRUARY 22, 2022  (Version 1.2)
 
-global Float Settings Sprof;
+global Float Prof Settings Sprof;
 
 % make sure Settings is initialized
 if isempty(Settings)
@@ -114,6 +123,7 @@ floats = [];
 depth = [];
 min_num_prof = 0;
 interp_ll = 'yes';
+type = []; % default assignment depends on sensor selection
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -135,6 +145,8 @@ for i = 1:2:length(varargin)-1
         min_num_prof = varargin{i+1};
     elseif strcmpi(varargin{i}, 'interp_lonlat')
         interp_ll = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'type')
+        type = varargin{i+1};
     else
         warning('unknown option: %s', varargin{i});
     end
@@ -148,6 +160,22 @@ sensor = check_variables(sensor, 'warning', ...
 % only use mode if sensor was specified
 if isempty(sensor)
     mode = [];
+end
+
+bgc_sensors = setdiff(sensor, {'PRES';'PSAL';'TEMP';'CNDC'});
+if ~isempty(bgc_sensors)
+    if strcmpi(type, 'phys')
+        warning('You specified BGC sensors and  type "phys".');
+        warning('Please revise either setting!');
+        return;
+    else
+        % setting may have been 'all', 'bgc', or no setting yet
+        % in any case, since BGC sensors are requested, only BGC
+        % floats will be considered
+        type = 'bgc';
+    end
+elseif isempty(type)
+    type = 'all'; % consider all floats
 end
 
 % check if specified ocean is correct
@@ -184,8 +212,8 @@ for i = 1:length(dac)
 end
 dac(bad == 1) = [];
 
-% make sure Sprof is initialized
-if isempty(Sprof)
+% make sure Prof and Sprof are initialized
+if isempty(Prof) || isempty(Sprof)
     initialize_argo();
 end
 
@@ -206,10 +234,6 @@ end
 % ADJUST INPUT DATES TO DATENUM FORMAT
 dn1 = datenum(start_date);
 dn2 = datenum(end_date);
-
-% adjust longitude to standard range of -180..180 degrees
-Sprof.lon(Sprof.lon > 180) = Sprof.lon(Sprof.lon > 180) - 360;
-Sprof.lon(Sprof.lon < -180) = Sprof.lon(Sprof.lon < -180) + 360;
 
 % GET INDEX OF PROFILES WITHIN USER-SPECIFIED GEOGRAPHIC POLYGON
 inpoly = get_inpolygon(Sprof.lon,Sprof.lat,lon_lim,lat_lim);
@@ -235,6 +259,16 @@ indate = zeros(size(inpoly));
 all_floats = 1:length(inpoly);
 sel_floats_space = all_floats(inpoly);
 indate(sel_floats_space(indate_poly)) = 1;
+
+% select by type of float
+is_type = ones(size(indate));
+if ~strcmp(type, 'all')
+    is_type = strcmp(Float.type, type);
+end
+if ~any(is_type)
+    warning('no floats of the selected type were found')
+    return
+end
 
 % SELECT BY SENSOR
 has_sensor = ones(size(indate));
@@ -289,8 +323,8 @@ float_ids = good_float_ids;
 float_profs = cell(length(good_float_ids), 1);
 
 for fl = 1:length(good_float_ids)
-    filename = sprintf('%s%d_Sprof.nc', Settings.prof_dir, ...
-        good_float_ids(fl));
+    filename = sprintf('%s%s', Settings.prof_dir, ...
+        Float.file_name{Float.wmoid == good_float_ids(fl)});
     [n_prof, n_param] = get_dims(filename);
     fl_idx = find(Float.wmoid == good_float_ids(fl), 1);
     n_prof_exp = Float.prof_idx2(fl_idx) - Float.prof_idx1(fl_idx) + 1;
