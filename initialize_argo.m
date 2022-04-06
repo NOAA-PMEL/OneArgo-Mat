@@ -145,21 +145,9 @@ Settings.dacs = {'aoml'; 'bodc'; 'coriolis'; 'csio'; 'csiro'; 'incois'; ...
     'jma'; 'kma'; 'kordi'; 'meds'};
 
 % Write Sprof index file from GDAC to Index directory
-sprof = 'argo_synthetic-profile_index.txt'; % file used locally
-sprof_gz = [sprof, '.gz']; % file that is available at GDAC
-Settings.dest_path_sprof = [Settings.index_dir, sprof];
-dest_path_sprof_gz = [Settings.index_dir, sprof_gz];
-if do_download(dest_path_sprof_gz)
-    if Settings.verbose
-        disp('Sprof index file will now be downloaded.')
-        disp('Depending on your internet connection, this may take a while.')
-    end
-    if ~try_download(sprof_gz, dest_path_sprof_gz)
-        error('Sprof index file could not be downloaded')
-    end
-    gunzip(dest_path_sprof_gz)
-elseif ~exist(Settings.dest_path_sprof, 'file')
-    gunzip(dest_path_sprof_gz)
+sprof = 'argo_synthetic-profile_index.txt'; % file at GDAC
+if ~download_index([sprof, '.gz'], 'Sprof')
+    error('Sprof index file could not be downloaded')
 end
 
 % Extract information from Sprof index file
@@ -167,7 +155,7 @@ end
 % file_path, file_name, dac, params, wmoid, update
 % Others will be kept per profile (struct Sprof):
 % date, lat, lon, sens(ors), data_mode
-fid = fopen(Settings.dest_path_sprof);
+fid = fopen([Settings.index_dir, sprof]);
 H = textscan(fid,'%s %s %f %f %s %d %s %s %s %s','headerlines',9,...
     'delimiter',',','whitespace','');
 fclose(fid);
@@ -207,31 +195,14 @@ end
 Sprof.wmo = regexp(sprof_urls,'\d{7}','once','match');
 [uwmo_sprof,ia] = unique(Sprof.wmo,'stable'); % keep list order
 Sprof.wmo = str2double(Sprof.wmo);
-ulist = sprof_urls(ia);
-dacs = regexp(ulist(:,1),'^\w+','once','match');
-Sprof_fnames = regexprep(uwmo_sprof,'\d{7}','$0_Sprof.nc');
-tmp = regexprep(ulist(:,1),'profiles.+','');
-Sprof_fp = strcat(tmp,Sprof_fnames);
 ia(end+1) = length(sprof_urls) + 1;
 bgc_prof_idx1 = ia(1:end-1);
 bgc_prof_idx2 = ia(2:end) - 1;
 
 % Write prof index file from GDAC to Index directory
-prof = 'ar_index_global_prof.txt'; % file used locally
-prof_gz = [prof, '.gz']; % gzipped file that is available at GDAC
-Settings.dest_path_prof = [Settings.index_dir, prof];
-dest_path_prof_gz = [Settings.index_dir, prof_gz];
-if do_download(dest_path_prof_gz)
-    if Settings.verbose
-        disp('prof index file will now be downloaded.')
-        disp('Depending on your internet connection, this may take a while.')
-    end
-    if ~try_download(prof_gz, dest_path_prof_gz)
-        error('prof index file could not be downloaded')
-    end
-    gunzip(dest_path_prof_gz)
-elseif ~exist(Settings.dest_path_prof, 'file')
-    gunzip(dest_path_prof_gz)
+prof = 'ar_index_global_prof.txt'; % file at GDAC
+if ~download_index([prof, '.gz'], 'prof')
+    error('prof index file could not be downloaded')
 end
 
 % Extract information from prof index file
@@ -239,7 +210,7 @@ end
 % file_path, file_name, dac, params, wmoid, update
 % Others will be kept per profile (struct Prof):
 % date, lat, lon, sens(ors), data_mode
-fid = fopen(Settings.dest_path_prof);
+fid = fopen([Settings.index_dir, prof]);
 H = textscan(fid,'%s %s %f %f %s %d %s %s','headerlines',9,...
     'delimiter',',','whitespace','');
 fclose(fid);
@@ -362,20 +333,14 @@ Float.update(strcmp(Float.type, 'bgc')) = ...
     Sprof.date_update(bgc_prof_idx2(is_true_bgc==1));
 
 % Write meta index file from GDAC to Index directory
-% Since it is rather small, download the uncompressed file
+% Since it is rather small, download the uncompressed file directly
 meta = 'ar_index_global_meta.txt';
-Settings.dest_path_meta = [Settings.index_dir, meta];
-if do_download(Settings.dest_path_meta)
-    if Settings.verbose
-        disp('meta index file will now be downloaded.')
-    end
-    if ~try_download(meta, Settings.dest_path_meta)
-        error('meta index file could not be downloaded')
-    end
+if ~download_index(meta, 'meta')
+    error('meta index file could not be downloaded')
 end
 
 % Extract information from meta index file
-fid = fopen(Settings.dest_path_meta);
+fid = fopen([Settings.index_dir, meta]);
 H = textscan(fid,'%s %s %s %s','headerlines',9,...
     'delimiter',',','whitespace','');
 fclose(fid);
