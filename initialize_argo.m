@@ -32,7 +32,7 @@ function initialize_argo()
 %
 % DATE: FEBRUARY 22, 2022  (Version 1.2)
 
-global Settings Prof Sprof Float Meta;
+global Settings Prof Sprof Float;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BEGINNING OF SECTION WITH USER SPECIFIC OPTIONS
@@ -64,6 +64,9 @@ Settings.index_dir = './Index/';
 
 % Meta files are stored in subdirectory 'Meta'
 Settings.meta_dir = './Meta/';
+
+% Tech files are stored in subdirectory 'Tech'
+Settings.tech_dir = './Tech/';
 
 Settings.demo_float = 5904021;
 
@@ -127,6 +130,16 @@ end
 % Create Profile directory if needed
 if ~check_dir(Settings.prof_dir)
     error('Profile directory could not be created')
+end
+
+% Create Meta directory if needed
+if ~check_dir(Settings.meta_dir)
+    error('Meta directory could not be created')
+end
+
+% Create Tech directory if needed
+if ~check_dir(Settings.tech_dir)
+    error('Tech directory could not be created')
 end
 
 % Full set of available variables (but not all floats have all sensors)
@@ -273,7 +286,7 @@ Float.file_name(strcmp(Float.type, 'bgc')) = ...
 Float.update(strcmp(Float.type, 'bgc')) = ...
     Sprof.date_update(bgc_prof_idx2(is_true_bgc==1));
 
-% Write meta index file from GDAC to Index directory
+% Download meta index file from GDAC to Index directory
 % Since it is rather small, download the uncompressed file directly
 meta = 'ar_index_global_meta.txt';
 if ~download_index(meta, 'meta')
@@ -282,6 +295,16 @@ end
 
 % Extract information from meta index file
 initialize_meta([Settings.index_dir, meta]);
+
+% Download tech index file from GDAC to Index directory
+% Since it is rather small, download the uncompressed file directly
+tech = 'ar_index_global_tech.txt';
+if ~download_index(tech, 'tech')
+    error('tech index file could not be downloaded')
+end
+
+% Extract information from tech index file
+initialize_tech([Settings.index_dir, tech]);
 
 % Determine the availability of mapping functions
 if ~isempty(which('geobasemap'))
