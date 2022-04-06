@@ -77,9 +77,9 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           (Full list can be displayed with the list_sensors function.)
 %           Multiple sensors can be entered as a cell array, e.g.:
 %           {'DOXY';'NITRATE'}
-%   'type', type: Valid choices are 'bgc' (select BGC floats only; the 
-%           default), 'phys' (select core and deep floats only), and
-%           'all' (select all floats that match other criteria)
+%   'type', type: Valid choices are 'bgc' (select BGC floats only),
+%           'phys' (select core and deep floats only), and 'all'
+%           (select all floats that match other criteria; the default)
 %           If type is not specified, but sensors are, then the type will
 %           be set to 'all' if only pTS (PRES, PSAL, TEMP, CNDC) sensors
 %           are specified, and to 'bgc' otherwise.
@@ -235,69 +235,20 @@ end
 dn1 = datenum(start_date);
 dn2 = datenum(end_date);
 
-% GET INDEX OF PROFILES WITHIN USER-SPECIFIED GEOGRAPHIC POLYGON
-inpoly = get_inpolygon(Sprof.lon,Sprof.lat,lon_lim,lat_lim);
-
-% if interpolation of missing values is requested, include all missing
-% positions for now; actual interpolation will be performed in the
-% second round of matching after reading the Sprof files
-if strncmpi(interp_ll, 'yes', 1)
-    inpoly(isnan(Sprof.lon)) = 1;
-end
-
-if isempty(inpoly) || ~any(inpoly)
-    warning('no matching profiles found')
-    return
-end
-
-% Find index of dates that are within the time window
-date_inpoly = datenum(Sprof.date(inpoly), 'yyyymmddHHMMSS');
-indate_poly = date_inpoly >= dn1 & date_inpoly <= dn2;
-% now create an indate array of 0s/1s that has the same
-% size as inpoly so that it can be used in the & operations below
-indate = zeros(size(inpoly));
-all_floats = 1:length(inpoly);
-sel_floats_space = all_floats(inpoly);
-indate(sel_floats_space(indate_poly)) = 1;
-
-% select by type of float
-is_type = ones(size(indate));
-if ~strcmp(type, 'all')
-    is_type = strcmp(Float.type, type);
-end
-if ~any(is_type)
-    warning('no floats of the selected type were found')
-    return
-end
-
-% SELECT BY SENSOR
-has_sensor = ones(size(indate));
-if ~isempty(sensor)
-    for i = 1:length(sensor)
-        has_sensor = has_sensor & cellfun(@(x) ...
-            any(strcmp(x, sensor{i})), Sprof.split_sens);
-    end
-end
-if ~any(has_sensor)
-    warning('no profiles found that have all specified sensors')
-    return
-end
-
-% select by ocean basin
-if isempty(ocean)
-    is_ocean = ones(size(indate)); % no ocean was selected
+% select bgc and phys floats separately, then combine the results
+if strcmp(type, 'bgc') || strcmp(type, 'all')
+    bgc_float_ids = select_profiles_per_type(Sprof, ...
+        lon_lim, lat_lim, dn1, dn2, interp_ll, type, sensor, ocean);
 else
-    is_ocean = strcmp(Sprof.ocean, ocean);
+    bgc_float_ids = [];
 end
-
-% Note: due to inconsistencies between index and Sprof files, selecting
-% by data mode  is not performed in the first round, only in the second
-% round below (based on Sprof files)
-
-% perform selection
-all_prof = 1:length(indate);
-profiles = all_prof(inpoly & indate & has_sensor & is_ocean);
-float_ids = unique(Sprof.wmo(profiles));
+if strcmp(type, 'phys') || strcmp(type, 'all')
+    phys_float_ids = select_profiles_per_type(Prof, ...
+        lon_lim, lat_lim, dn1, dn2, interp_ll, type, sensor, ocean);
+else
+    phys_float_ids = [];
+end
+float_ids = cat(1, bgc_float_ids, phys_float_ids);
 
 % check for selected DACs if applicable (DACs are stored by float,
 % not by profile)
@@ -313,11 +264,11 @@ if ~isempty(floats)
     float_ids = intersect(float_ids, floats);
 end
 
-% download Sprof files if necessary
+% download prof and Sprof files if necessary
 good_float_ids = download_multi_floats(float_ids);
 
 % the information from the index file is only used for an initial
-% filtering of floats, the actual information from the Sprof files
+% filtering of floats, the actual information from the prof/Sprof files
 % is used in a second step
 float_ids = good_float_ids;
 float_profs = cell(length(good_float_ids), 1);

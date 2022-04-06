@@ -252,6 +252,13 @@ Prof.profiler = H{6}; % profiler type
 % column 7: institution
 Prof.date_update = H{8};
 
+% the split_sens field is needed by select_profiles_per_type
+pT = {'PRES';'TEMP'}; % for old floats without salinity sensor
+pTS = {'PRES';'TEMP';'PSAL'}; % for all new core and deep floats
+Prof.split_sens = cell(length(prof_urls), 1);
+Prof.split_sens(:) = {pTS};
+Prof.split_sens(Prof.profiler == 845) = {pT};
+
 % adjust longitude to standard range of -180..180 degrees
 Prof.lon(Prof.lon > 180) = Prof.lon(Prof.lon > 180) - 360;
 Prof.lon(Prof.lon < -180) = Prof.lon(Prof.lon < -180) + 360;
