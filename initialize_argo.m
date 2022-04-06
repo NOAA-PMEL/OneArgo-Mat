@@ -144,7 +144,7 @@ Settings.avail_vars = {'PRES';'PSAL';'TEMP';'CNDC';'DOXY';'BBP';'BBP470';...
 Settings.dacs = {'aoml'; 'bodc'; 'coriolis'; 'csio'; 'csiro'; 'incois'; ...
     'jma'; 'kma'; 'kordi'; 'meds'};
 
-% Write Sprof index file from GDAC to Index directory
+% Download Sprof index file from GDAC to Index directory
 sprof = 'argo_synthetic-profile_index.txt'; % file at GDAC
 if ~download_index([sprof, '.gz'], 'Sprof')
     error('Sprof index file could not be downloaded')
@@ -155,51 +155,16 @@ end
 % file_path, file_name, dac, params, wmoid, update
 % Others will be kept per profile (struct Sprof):
 % date, lat, lon, sens(ors), data_mode
-fid = fopen([Settings.index_dir, sprof]);
-H = textscan(fid,'%s %s %f %f %s %d %s %s %s %s','headerlines',9,...
-    'delimiter',',','whitespace','');
-fclose(fid);
-sprof_urls = H{1};
-Sprof.date = H{2};
-Sprof.lat  = H{3};
-Sprof.lon  = H{4};
-Sprof.ocean = H{5};
-% Sprof.profiler = H{6}; % profiler type; not yet used
-% column 7: institution
-Sprof.sens = H{8};
-Sprof.split_sens = cellfun(@split, Sprof.sens, 'UniformOutput', false);
-Sprof.data_mode = H{9};
-Sprof.date_update = H{10};
-
-% adjust longitude to standard range of -180..180 degrees
-Sprof.lon(Sprof.lon > 180) = Sprof.lon(Sprof.lon > 180) - 360;
-Sprof.lon(Sprof.lon < -180) = Sprof.lon(Sprof.lon < -180) + 360;
-
-% check for additional (e.g., DOXY2) and unknown sensors
-for i = 1:length(Sprof.sens)
-    sensors = split(Sprof.sens{i});
-    if ~all(ismember(sensors, Settings.avail_vars))
-        unknown_sensors = sensors(~ismember(sensors, Settings.avail_vars));
-        for s = 1:length(unknown_sensors)
-            main_sensor = get_sensor_number(unknown_sensors{s});
-            if isempty(main_sensor)
-                warning('unknown sensor in index file: %s', unknown_sensors{s})
-            else
-                Settings.avail_vars{end+1} = unknown_sensors{s};
-            end
-        end
-    end
-end
+initialize_sprof([Settings.index_dir, sprof]);
 
 % Extract unique BGC floats
-Sprof.wmo = regexp(sprof_urls,'\d{7}','once','match');
 [uwmo_sprof,ia] = unique(Sprof.wmo,'stable'); % keep list order
 Sprof.wmo = str2double(Sprof.wmo);
-ia(end+1) = length(sprof_urls) + 1;
+ia(end+1) = length(Sprof.urls) + 1;
 bgc_prof_idx1 = ia(1:end-1);
 bgc_prof_idx2 = ia(2:end) - 1;
 
-% Write prof index file from GDAC to Index directory
+% Download prof index file from GDAC to Index directory
 prof = 'ar_index_global_prof.txt'; % file at GDAC
 if ~download_index([prof, '.gz'], 'prof')
     error('prof index file could not be downloaded')
@@ -210,37 +175,13 @@ end
 % file_path, file_name, dac, params, wmoid, update
 % Others will be kept per profile (struct Prof):
 % date, lat, lon, sens(ors), data_mode
-fid = fopen([Settings.index_dir, prof]);
-H = textscan(fid,'%s %s %f %f %s %d %s %s','headerlines',9,...
-    'delimiter',',','whitespace','');
-fclose(fid);
-prof_urls = H{1};
-Prof.date = H{2};
-Prof.lat  = H{3};
-Prof.lon  = H{4};
-Prof.ocean = H{5};
-Prof.profiler = H{6}; % profiler type
-% column 7: institution
-Prof.date_update = H{8};
-
-% the split_sens field is needed by select_profiles_per_type
-pT = {'PRES';'TEMP'}; % for old floats without salinity sensor
-pTS = {'PRES';'TEMP';'PSAL'}; % for all new core and deep floats
-Prof.split_sens = cell(length(prof_urls), 1);
-Prof.split_sens(:) = {pTS};
-Prof.split_sens(Prof.profiler == 845) = {pT};
-
-% adjust longitude to standard range of -180..180 degrees
-Prof.lon(Prof.lon > 180) = Prof.lon(Prof.lon > 180) - 360;
-Prof.lon(Prof.lon < -180) = Prof.lon(Prof.lon < -180) + 360;
+initialize_prof([Settings.index_dir, prof]);
 
 % Extract unique floats
 % note that older floats have 5-digit IDs
-Prof.wmo = extractBetween(prof_urls, '/', '/');
-
 [uwmo_prof,ia2] = unique(Prof.wmo,'stable'); % keep list order
 Prof.wmo = str2double(Prof.wmo);
-ulist = prof_urls(ia2);
+ulist = Prof.urls(ia2);
 dacs = regexp(ulist(:,1),'^\w+','once','match');
 prof_fnames = regexprep(uwmo_prof,'\d+','$0_prof.nc');
 tmp = regexprep(ulist(:,1),'profiles.+','');
@@ -263,7 +204,7 @@ Float.dac = dacs;
 Float.wmoid = str2double(uwmo_prof);
 Float.nfloats = length(uwmo_prof);
 % range of profile indices per float
-ia2(end+1) = length(prof_urls) + 1;
+ia2(end+1) = length(Prof.urls) + 1;
 Float.prof_idx1 = ia2(1:end-1);
 Float.prof_idx2 = ia2(2:end) - 1;
 Float.profiler = Prof.profiler(Float.prof_idx1);
@@ -340,15 +281,7 @@ if ~download_index(meta, 'meta')
 end
 
 % Extract information from meta index file
-fid = fopen([Settings.index_dir, meta]);
-H = textscan(fid,'%s %s %s %s','headerlines',9,...
-    'delimiter',',','whitespace','');
-fclose(fid);
-Meta.file_path = H{1};
-meta_wmoid = regexp(Meta.file_path,'\d{7}','once','match');
-Meta.file_name = regexprep(meta_wmoid,'\d{7}','$0_meta.nc');
-Meta.update = H{4};
-Meta.wmoid = str2double(meta_wmoid);
+initialize_meta([Settings.index_dir, meta]);
 
 % Determine the availability of mapping functions
 if ~isempty(which('geobasemap'))
