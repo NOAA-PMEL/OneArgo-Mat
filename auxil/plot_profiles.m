@@ -280,6 +280,11 @@ for v = 1:nvars
         try
             assert(strcmp(raw, 'no')) % use PRES if raw values are used
             PRES = Data.(floats{f}).PRES_ADJUSTED;
+            good_vals = sum(isfinite(PRES));
+            % a somewhat arbitrary criterion: at least half of the profiles
+            % must have valid adjusted pressure values, or switch to
+            % raw pressure
+            assert(sum(good_vals) > 0.5 * length(good_vals));
         catch
             PRES = Data.(floats{f}).PRES;
         end

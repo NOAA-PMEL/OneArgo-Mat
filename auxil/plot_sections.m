@@ -125,9 +125,9 @@ calc_dens = ~isequal(plot_isopyc, 0);
 
 % unless 'raw' is specified, plot adjusted data
 if strncmpi(raw,'y',1)
-    title_add = ' [raw values]';
+    [title_added{1:nvars}] = deal(' [raw values]');
 else
-    title_add = '';
+    [title_added{1:nvars}] = deal(''); % default; may change later
     for v = 1:nvars
         % if all floats have adjusted values available for a variable,
         % they will be used instead of raw values
@@ -142,7 +142,7 @@ else
                 warning(['adjusted values for %s for float %s are not available,',...
                     ' showing raw value profiles instead'], ...
                     variables{v}, floats{f});
-                title_add = ' [raw values]';
+                title_added{v} = ' [raw values]';
             end
         end
         if has_adj == nfloats
@@ -208,8 +208,8 @@ for f = 1:nfloats
             ylim(depth);
         end
         title(sprintf('Float %d: %s %s%s', ...
-            Mdata.(float_ids{f}).WMO_NUMBER, long_name, units, title_add),...
-            'FontSize',14);
+            Mdata.(float_ids{f}).WMO_NUMBER, long_name, units, ...
+            title_added{v}), 'FontSize', 14);
         ylabel('Pressure (dbar)');
         set(gca,'Ydir','reverse');
         colorbar;

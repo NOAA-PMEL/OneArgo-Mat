@@ -51,9 +51,9 @@ for h = 1:length(Settings.hosts)
     catch
         if Settings.verbose
             fprintf('failure!\n');
-            if exist([dest_path, '.html'], 'file')
-                delete([dest_path, '.html']);
-            end
+        end
+        if exist([dest_path, '.html'], 'file')
+            delete([dest_path, '.html']);
         end
         if h == length(Settings.hosts)
             if exist(dest_path, 'file') ~= 2

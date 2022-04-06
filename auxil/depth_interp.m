@@ -87,6 +87,11 @@ end
 try
     assert(strcmp(raw, 'no'));
     X = Data.PRES_ADJUSTED;
+    good_vals = sum(isfinite(X));
+    % a somewhat arbitrary criterion: at least half of the profiles
+    % must have valid adjusted pressure values, or switch to
+    % raw pressure
+    assert(sum(good_vals) > 0.5 * length(good_vals));
 catch
     X = Data.PRES;
 end
