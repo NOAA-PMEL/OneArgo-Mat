@@ -78,7 +78,9 @@ Show_under_ice.m         : shows marking of estimated positions in show_trajecto
 At least MATLAB R2016b (or any newer release) is needed to use these functions without modifications.<br/>
 At least MATLAB R2019b is needed to overlay profiles of two different types of variables.<br/>
 An Internet connection is needed to get the latest versions of index and Sprof files; but the repository includes versions of these files so that it can be run offline.<br/>
-Memory requirements depend on the number of profiles and variables that are simultaneously loaded into memory.
+Memory requirements depend on the number of profiles and variables that are simultaneously loaded into memory.<br/>
+Up to 10 GB local disk space is needed to store all Sprof files of BGC floats.<br/>
+Up to 50 GB local disk space is needed to store all prof files of core and deep floats.
 
 ## COMMENTS, BUGS etc.?
 Please feel free to use the GitHub Issues and Pull Requests features to report any problems with this code and to suggest bug fixes or additional features.
