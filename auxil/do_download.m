@@ -38,6 +38,7 @@ global Settings;
 
 if nargin < 1
     warning('Usage: do_download(dest_path)')
+    tf = 1;
     return
 end
 

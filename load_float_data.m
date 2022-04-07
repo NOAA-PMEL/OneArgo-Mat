@@ -142,7 +142,6 @@ for n = 1:length(good_float_ids)
     for l = 1:n_vars
         if ~is_bgc_float && (strcmp(all_vars{l}, 'PARAMETER_DATA_MODE') ...
                 || endsWith(all_vars{l}, '_dPRES'))
-            all_vars{l}
             continue; % these variables are only in Sprof files
         end
         try
@@ -206,7 +205,6 @@ for n = 1:length(good_float_ids)
                     n_levels,1);
             end
         end
-
         % clear both parameter and parameter data mode from metadata
         Mdata.(str_floatnum) = rmfield(Mdata.(str_floatnum),...
             {'PARAMETER','PARAMETER_DATA_MODE'});

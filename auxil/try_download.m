@@ -52,6 +52,8 @@ for h = 1:length(Settings.hosts)
         if Settings.verbose
             fprintf('failure!\n');
         end
+        % delete bogus file if it was created during failed download
+        % attempt
         if exist([dest_path, '.html'], 'file')
             delete([dest_path, '.html']);
         end
