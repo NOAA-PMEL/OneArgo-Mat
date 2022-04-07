@@ -162,6 +162,11 @@ for f = 1:nfloats
     Datai = depth_interp(Data.(floats{f}), qc_flags, ...
         'calc_dens', calc_dens, 'raw', raw, varargs{:});
     for v = 1:nvars
+        if ~isfield(Datai, variables{v})
+            warning('Sensor %s not found for float %s', ...
+                variables{v}, floats{f})
+            continue;
+        end
         if isempty(find(isfinite(Datai.PRES) & ...
                 isfinite(Datai.(variables{v})), 1))
             warning('no valid data found for %s of float %s', ...
@@ -179,7 +184,7 @@ for f = 1:nfloats
             scatter(Data.(floats{f}).TIME(index), Data.(floats{f}).PRES(index),...
                 1,'.k','MarkerFaceAlpha',0.2,'MarkerEdgeAlpha',0.2);
         end
-        if ~isequal(plot_isopyc, 0)
+        if ~isequal(plot_isopyc, 0) && isfield(Datai, 'DENS')
             try
                 dens = Datai.DENS_ADJUSTED;
             catch
