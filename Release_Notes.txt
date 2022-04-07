@@ -1,5 +1,32 @@
 RELEASE NOTES FOR USERS OF THE BGC_ARGO_MAT TOOLBOX
 
+Version 1.3
+
+This version expands access to all Argo float data. The select_profiles
+function now has an additional optional argument 'type', whose value can
+be set to either 'bgc', 'phys' (core and deep),  or 'all' (the default).
+If the type is not specified, but sensors are, the type will be set
+appropriately - if only pressure, temperature, and/or salinity are
+selected, type will be set to 'all', otherwise, it will be 'bgc'.
+
+In previous versions, all floats that are listed in the Sprof index
+file were considered BGC floats. However, there are (183, as of
+April 2022) floats that are listed in the Sprof index file, but
+have only physical (pressure, temperature, salinity) sensors. These
+will now be labeled as physical floats.
+
+For BGC floats, only Sprof (not prof) files will be used, even if
+only physical variables (p, T, S) are used.
+
+Note that there is no distinction between core and deep floats in the
+index files. Therefore, if a search for deep floats is conducted,
+an appropriate depth value must be specified as an argument to the
+select_profiles function (>2000 dbar).
+
+New functions download_tech_files and download_traj_files download
+*tech.nc and *traj files from the GDAC. Extraction of information
+from these files must be performed outside of the toolbox.
+
 Version 1.2
 
 The select_profiles function can now be called with additional
