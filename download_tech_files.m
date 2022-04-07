@@ -44,11 +44,6 @@ if isempty(Settings)
     initialize_argo();
 end
 
-% Create Tech directory if needed
-if ~check_dir(Settings.tech_dir)
-    error('Tech directory could not be created')
-end
-
 is_good = ones(length(float_ids), 1);
 not_found = '';
 count = 0;

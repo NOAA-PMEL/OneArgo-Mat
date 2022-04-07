@@ -68,6 +68,9 @@ Settings.meta_dir = './Meta/';
 % Tech files are stored in subdirectory 'Tech'
 Settings.tech_dir = './Tech/';
 
+% Traj files are stored in subdirectory 'Traj'
+Settings.traj_dir = './Traj/';
+
 Settings.demo_float = 5904021;
 
 % By default, don't update index files if they are less than 1 hour old
@@ -122,25 +125,12 @@ addpath([filepath, '/auxil'])
 addpath(genpath([filepath, '/m_map']))
 addpath(genpath([filepath, '/gsw']))
 
-% Create Index directory if needed
-if ~check_dir(Settings.index_dir)
-    error('Index directory could not be created')
-end
-
-% Create Profile directory if needed
-if ~check_dir(Settings.prof_dir)
-    error('Profile directory could not be created')
-end
-
-% Create Meta directory if needed
-if ~check_dir(Settings.meta_dir)
-    error('Meta directory could not be created')
-end
-
-% Create Tech directory if needed
-if ~check_dir(Settings.tech_dir)
-    error('Tech directory could not be created')
-end
+% Create subdirectories if needed
+if ~check_dir(Settings.index_dir) || ~check_dir(Settings.prof_dir) || ...
+        ~check_dir(Settings.meta_dir) || ~check_dir(Settings.tech_dir) || ...
+        ~check_dir(Settings.traj_dir)
+    error('Sibdirectories could not be created')
+end 
 
 % Full set of available variables (but not all floats have all sensors)
 % Additional sensors of existing types (e.g., DOXY2, BBP700_2) will
@@ -275,6 +265,8 @@ fprintf('Note: %d floats from Sprof index file do not have BGC sensors\n', ...
 % instead of prof files
 idx_bgc = strcmp(Float.type, 'bgc');
 fprintf('%d "true" BGC floats were found\n', sum(idx_bgc));
+idx_phys = strcmp(Float.type, 'phys');
+fprintf('%d core and deep floats were found\n', sum(idx_phys));
 Float.file_path(strcmp(Float.type, 'bgc')) = ...
     cellfun(@(x) strrep(x, 'prof', 'Sprof'), ...
     Float.file_path(strcmp(Float.type, 'bgc')), 'UniformOutput', false);
@@ -305,6 +297,16 @@ end
 
 % Extract information from tech index file
 initialize_tech([Settings.index_dir, tech]);
+
+% Download traj index file from GDAC to Index directory
+% Since it is rather small, download the uncompressed file directly
+traj = 'ar_index_global_traj.txt';
+if ~download_index(traj, 'traj')
+    error('traj index file could not be downloaded')
+end
+
+% Extract information from traj index file
+initialize_traj([Settings.index_dir, traj]);
 
 % Determine the availability of mapping functions
 if ~isempty(which('geobasemap'))
