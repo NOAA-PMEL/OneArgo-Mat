@@ -37,7 +37,7 @@ function success = download_float(floatid, file_type)
 %
 % DATE: FEBRUARY 22, 2022  (Version 1.2)
 
-global Settings Float Meta Tech;
+global Settings Float Meta Tech Traj;
 
 if nargin < 1
     disp('Usage: download_float(WMO_ID [, file_type])')
@@ -63,6 +63,9 @@ elseif strcmp(file_type, 'meta')
 elseif strcmp(file_type, 'tech')
     ind = 1:length(Tech.wmoid);
     float_idx = ind(Tech.wmoid == floatid);
+elseif strcmp(file_type, 'traj')
+    ind = 1:length(Traj.wmoid);
+    float_idx = ind(Traj.wmoid == floatid);
 else
     warning('unknown file type: %s', file_type)
     return
@@ -85,6 +88,10 @@ elseif strcmp(file_type, 'tech')
     local_path = [Settings.tech_dir, Tech.file_name{float_idx}];
     url_path = ['dac/', Tech.file_path{float_idx}];
     remote_file_update = datenum(Tech.update(float_idx), 'yyyymmddHHMMSS');
+elseif strcmp(file_type, 'traj')
+    local_path = [Settings.traj_dir, Traj.file_name{float_idx}];
+    url_path = ['dac/', Traj.file_path{float_idx}];
+    remote_file_update = datenum(Traj.update(float_idx), 'yyyymmddHHMMSS');
 end
 
 % now check if the specified file exists locally already,
