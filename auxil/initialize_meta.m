@@ -6,7 +6,7 @@ function initialize_meta(file_name)
 %   initialize_meta(file_name)
 %
 % DESCRIPTION:
-%   This function initializes the global struct meta by reading
+%   This function initializes the global struct Meta by reading
 %   the index file and processing its information.
 %
 % INPUTS:
@@ -37,7 +37,7 @@ H = textscan(fid,'%s %s %s %s','headerlines',9,...
     'delimiter',',','whitespace','');
 fclose(fid);
 Meta.file_path = H{1};
-meta_wmoid = regexp(Meta.file_path,'\d{7}','once','match');
-Meta.file_name = regexprep(meta_wmoid,'\d{7}','$0_meta.nc');
+meta_wmoid = regexp(Meta.file_path,'\d+','once','match');
+Meta.file_name = regexprep(Meta.file_path, '[a-z]+/\d+/', '');
 Meta.update = H{4};
 Meta.wmoid = str2double(meta_wmoid);
