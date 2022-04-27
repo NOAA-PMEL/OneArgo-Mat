@@ -129,7 +129,7 @@ addpath(genpath([filepath, '/gsw']))
 if ~check_dir(Settings.index_dir) || ~check_dir(Settings.prof_dir) || ...
         ~check_dir(Settings.meta_dir) || ~check_dir(Settings.tech_dir) || ...
         ~check_dir(Settings.traj_dir)
-    error('Sibdirectories could not be created')
+    error('Subdirectories could not be created')
 end 
 
 % Full set of available variables (but not all floats have all sensors)
@@ -206,7 +206,7 @@ Float.file_name = prof_fnames;
 Float.dac = dacs;
 Float.wmoid = str2double(uwmo_prof);
 Float.nfloats = length(uwmo_prof);
-% range of profile indices per float
+% range of profile indices per float, referring to the Prof struct
 ia2(end+1) = length(Prof.urls) + 1;
 Float.prof_idx1 = ia2(1:end-1);
 Float.prof_idx2 = ia2(2:end) - 1;
@@ -259,6 +259,16 @@ for f = 1:Float.nfloats
 end
 fprintf('Note: %d floats from Sprof index file do not have BGC sensors\n', ...
     count);
+% assign index of first and last profile to true BGC floats only, referring
+% to the indices within the Sprof struct
+% these variables should never be used for non-BGC floats, so their value
+% of 0 serves as a flag that would result in an out-of-bounds error
+Float.bgc_prof_idx1 = zeros(size(Float.prof_idx1));
+Float.bgc_prof_idx2 = Float.bgc_prof_idx1;
+bgc_prof_idx1 = bgc_prof_idx1(is_true_bgc == 1);
+bgc_prof_idx2 = bgc_prof_idx2(is_true_bgc == 1);
+Float.bgc_prof_idx1(strcmp(Float.type, 'bgc')) = bgc_prof_idx1;
+Float.bgc_prof_idx2(strcmp(Float.type, 'bgc')) = bgc_prof_idx2;
 
 % for all "true" BGC floats, i.e., those that are listed in the Sprof
 % index file and have more than pTS sensors, Sprof files will be used
@@ -274,9 +284,8 @@ Float.file_name(strcmp(Float.type, 'bgc')) = ...
     cellfun(@(x) strrep(x, 'prof', 'Sprof'), ...
     Float.file_name(strcmp(Float.type, 'bgc')), 'UniformOutput', false);
 
-% determine profile indices per float for all "true" BGC floats
-Float.update(strcmp(Float.type, 'bgc')) = ...
-    Sprof.date_update(bgc_prof_idx2(is_true_bgc==1));
+% use the update date of the last profile of each float
+Float.update(strcmp(Float.type, 'bgc')) = Sprof.date_update(bgc_prof_idx2);
 
 % Download meta index file from GDAC to Index directory
 % Since it is rather small, download the uncompressed file directly
