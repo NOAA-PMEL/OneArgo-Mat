@@ -11,9 +11,9 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %   This function returns the indices of profiles and floats that match
 %   the given criteria (spatial, temporal, sensor availability).
 %   It calls function initialize_argo if necessary.
-%   Sprof files that match most criteria (except data mode, if specified)
-%   and those that have missing longitude/latitude values in the index file
-%   are downloaded from a GDAC.
+%   prof and Sprof files that match most criteria (except data mode, if
+%   specified) and those that have missing longitude/latitude values in the
+%   index file are downloaded from a GDAC.
 %
 % INPUTS:
 %   lon_lim : longitude limits
@@ -238,17 +238,20 @@ dn2 = datenum(end_date);
 % select bgc and phys floats separately, then combine the results
 if strcmp(type, 'bgc') || strcmp(type, 'all')
     bgc_float_ids = select_profiles_per_type(Sprof, ...
-        lon_lim, lat_lim, dn1, dn2, interp_ll, type, sensor, ocean);
+        lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean);
 else
     bgc_float_ids = [];
 end
 if strcmp(type, 'phys') || strcmp(type, 'all')
+    % this will also find bgc floats; so they need to be filtered out
     phys_float_ids = select_profiles_per_type(Prof, ...
-        lon_lim, lat_lim, dn1, dn2, interp_ll, type, sensor, ocean);
+        lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean);
+    [~,phys_float_idx] = intersect(Float.wmoid, phys_float_ids);
+    phys_float_ids(~strcmp(Float.type(phys_float_idx), 'phys')) = [];
 else
     phys_float_ids = [];
 end
-float_ids = cat(1, bgc_float_ids, phys_float_ids);
+float_ids = unique(cat(1, bgc_float_ids, phys_float_ids)); % includes sorting
 
 % check for selected DACs if applicable (DACs are stored by float,
 % not by profile)
@@ -267,7 +270,7 @@ end
 % download prof and Sprof files if necessary
 good_float_ids = download_multi_floats(float_ids);
 
-% the information from the index file is only used for an initial
+% the information from the index files is only used for an initial
 % filtering of floats, the actual information from the prof/Sprof files
 % is used in a second step
 float_ids = good_float_ids;

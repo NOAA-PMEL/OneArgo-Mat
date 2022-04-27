@@ -1,11 +1,11 @@
 function float_ids = select_profiles_per_type(Profiles, ...
-    lon_lim, lat_lim, dn1, dn2, interp_ll, type, sensor, ocean)
+    lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean)
 % select_profiles_per_type  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
 %   float_ids = select_profiles_per_type(Profiles, ...
-%       lon_lim, lat_lim, dn1, dn2, interp_ll, type, sensor, ocean)
+%       lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean)
 %
 % DESCRIPTION:
 %   This function returns the IDs of floats that match
@@ -30,9 +30,6 @@ function float_ids = select_profiles_per_type(Profiles, ...
 %   dn1 : start date (in datenum format)
 %   dn2 : end date (in datenum format)
 %   interp_ll : if 'yes', missing lon/lat values will be interpolated
-%   type :  Valid choices are 'bgc' (select BGC floats only; the
-%           default), 'phys' (select core and deep floats only), and
-%           'all' (select all floats that match other criteria)
 %   sensor : This option allows the selection by
 %           sensor type. Available are: PRES, PSAL, TEMP, DOXY, BBP,
 %           BBP470, BBP532, BBP700, TURBIDITY, CP, CP660, CHLA, CDOM,
@@ -67,8 +64,6 @@ function float_ids = select_profiles_per_type(Profiles, ...
 %
 % DATE: FEBRUARY 22, 2022  (Version 1.2)
 
-global Float;
-
 float_ids = []; % default return value
 
 % GET INDEX OF PROFILES WITHIN USER-SPECIFIED GEOGRAPHIC POLYGON
@@ -95,16 +90,6 @@ indate = zeros(size(inpoly));
 all_floats = 1:length(inpoly);
 sel_floats_space = all_floats(inpoly);
 indate(sel_floats_space(indate_poly)) = 1;
-
-% select by type of float
-is_type = ones(size(indate));
-if ~strcmp(type, 'all')
-    is_type = strcmp(Float.type, type);
-end
-if ~any(is_type)
-    warning('no floats of the selected type were found')
-    return
-end
 
 % select by sensor
 has_sensor = ones(size(indate));
