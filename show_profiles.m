@@ -119,15 +119,15 @@ for i = 1:2:length(varargin)-1
         float_profs = varargin{i+1};
     elseif strcmpi(varargin{i}, 'png')
         basename = varargin{i+1};
+    elseif strcmp(varargin{i}, 'var2')
+        var2 = check_variables(varargin{i+1}, 'warning', ...
+            'unknown sensor will be ignored');
     else
         if strcmpi(varargin{i}, 'qc')
             if min(varargin{i+1}) < 0 || max(varargin{i+1}) > 9
                 warning('only QC flags 0..9 are allowed!')
                 continue; % don't add it to varargpass
             end
-        elseif strcmp(varargin{i}, 'var2')
-            var2 = check_variables(varargin{i+1}, 'warning', ...
-                'unknown sensor will be ignored');
         end
         varargpass = [varargpass, varargin{i:i+1}];
     end
@@ -149,14 +149,18 @@ if ~isempty(float_profs)
     end
 end
 
-% download Sprof files if necessary
+% download prof and Sprof files if necessary
 good_float_ids = download_multi_floats(float_ids);
 
 if isempty(good_float_ids)
     warning('no valid floats found')
 else
-    [Data, Mdata] = load_float_data(good_float_ids, [variables; var2], ...
+    avail_vars = check_float_variables(good_float_ids, variables, ...
+        'warning', 'Not available in all specified floats');
+    var2 = check_float_variables(good_float_ids, var2, 'warning', ...
+        'Not available in all specified floats');
+    [Data, Mdata] = load_float_data(good_float_ids, [avail_vars; var2], ...
         float_profs);
     [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
-        variables, basename, varargpass{:});
+        avail_vars, basename, 'var2', var2, varargpass{:});
 end

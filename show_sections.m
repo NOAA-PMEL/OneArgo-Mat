@@ -146,17 +146,19 @@ good_float_ids = download_multi_floats(float_ids);
 if isempty(good_float_ids)
     warning('no valid floats found')
 else
-    nvars = length(variables);
+    avail_vars = check_float_variables(good_float_ids, variables, ...
+        'warning', 'Not available in all specified floats');
+    nvars = length(avail_vars);
     % add the necessary variables now, but don't plot their profiles
     if ~isequal(plot_isopyc, 0) || plot_mld
-        if ~any(strcmp(variables,'TEMP'))
-            variables{end+1} = 'TEMP';
+        if ~any(strcmp(avail_vars,'TEMP'))
+            avail_vars{end+1} = 'TEMP';
         end
-        if ~any(strcmp(variables,'PSAL'))
-            variables{end+1} = 'PSAL';
+        if ~any(strcmp(avail_vars,'PSAL'))
+            avail_vars{end+1} = 'PSAL';
         end
     end
-    [Data, Mdata] = load_float_data(good_float_ids, variables, float_profs);
-    plot_sections(Data, Mdata, variables, nvars, plot_isopyc, plot_mld, ...
+    [Data, Mdata] = load_float_data(good_float_ids, avail_vars, float_profs);
+    plot_sections(Data, Mdata, avail_vars, nvars, plot_isopyc, plot_mld, ...
         time_label, depth, raw, obs, basename, varargpass{:})
 end
