@@ -234,6 +234,11 @@ for d = 1:ndepths
     end
 end
 
+% these variables will only be needed if there are floats with just
+% one data point
+colors = get(gca,'ColorOrder');
+n_colors = size(colors,1);
+
 for v = 1:nvars
     if ~isempty(var2_orig)
         same_var_type = strncmp(variables{v}, var2{v}, ...
@@ -261,11 +266,23 @@ for v = 1:nvars
                 set(gca,'ColorOrderIndex',1);
                 hold(gca, 'on')
             end
-            plt1 = plot(Datai.(floats{f}).TIME(1,:), ...
-                Datai.(floats{f}).(variables{v})(idx{f,d},:), 'LineWidth', 2);
             % good values between missing values will not be connected by
             % a line, so plot them individually as points as well
-            color1 = get(plt1, 'color');
+            if length(Datai.(floats{f}).TIME(1,:)) == 1
+                index  = get(gca,'ColorOrderIndex');
+                if index > n_colors
+                    index = 1;
+                end
+                color1 = colors(index,:);
+                sc1 = scatter(Datai.(floats{f}).TIME(1,:), ...
+                    Datai.(floats{f}).(variables{v})(idx{f,d},:), 7, ...
+                    color1, 'filled');
+            else
+                plt1 = plot(Datai.(floats{f}).TIME(1,:), ...
+                    Datai.(floats{f}).(variables{v})(idx{f,d},:), ...
+                    'LineWidth', 2);
+                color1 = get(plt1, 'color');
+            end
             if find(isnan(Datai.(floats{f}).(variables{v})(idx{f,d},:)), 1)
                 sc1 = scatter(Datai.(floats{f}).TIME(1,:), ...
                     Datai.(floats{f}).(variables{v})(idx{f,d},:), 7, ...
@@ -279,9 +296,21 @@ for v = 1:nvars
                 if ~same_var_type
                     yyaxis right;
                 end
-                plt2 = plot(Datai.(floats{f}).TIME(1,:), ...
-                    Datai.(floats{f}).(var2{v})(idx{f,d},:), 'LineWidth', 2);
-                color2 = get(plt2, 'color');
+                if length(Datai.(floats{f}).TIME(1,:)) == 1
+                    index  = get(gca,'ColorOrderIndex');
+                    if index > n_colors
+                        index = 1;
+                    end
+                    color2 = colors(index,:);
+                    sc2 = scatter(Datai.(floats{f}).TIME(1,:), ...
+                        Datai.(floats{f}).(var2{v})(idx{f,d},:), 7, ...
+                        color2, 'filled');
+                else
+                    plt2 = plot(Datai.(floats{f}).TIME(1,:), ...
+                        Datai.(floats{f}).(var2{v})(idx{f,d},:), ...
+                        'LineWidth', 2);
+                    color2 = get(plt2, 'color');
+                end
                 if find(isnan(Datai.(floats{f}).(var2{v})(idx{f,d},:)), 1)
                     sc2 = scatter(Datai.(floats{f}).TIME(1,:), ...
                         Datai.(floats{f}).(var2{v})(idx{f,d},:), 7, ...
