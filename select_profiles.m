@@ -283,9 +283,13 @@ for fl = 1:length(good_float_ids)
     fl_idx = find(Float.wmoid == good_float_ids(fl), 1);
     n_prof_exp = Float.prof_idx2(fl_idx) - Float.prof_idx1(fl_idx) + 1;
     if n_prof_exp > n_prof
+        type = 'prof'; % default
+        if contains(filename, 'Sprof')
+            type = 'Sprof';
+        end
         warning(['The index file lists %d profiles for float %d, ', ...
-            'but the Sprof file has only %d profiles.'], ...
-            n_prof_exp, good_float_ids(fl), n_prof)
+            'but the %s file has only %d profiles.'], ...
+            n_prof_exp, good_float_ids(fl), type, n_prof)
     end
     lon = ncread(filename, 'LONGITUDE');
     lat = ncread(filename, 'LATITUDE');
@@ -343,10 +347,10 @@ for fl = 1:length(good_float_ids)
     if isempty(ocean)
         is_ocean = ones(size(inpoly));
     else
-        sprof_loc = Sprof.lon + 1i * Sprof.lat;
+        prof_loc = Prof.lon + 1i * Prof.lat;
         this_loc = lon + 1i * lat;
-        [~,idx] = min(abs(bsxfun(@minus,sprof_loc(:),this_loc(:).')));
-        is_ocean = strcmp(Sprof.ocean(idx),ocean);
+        [~,idx] = min(abs(bsxfun(@minus,prof_loc(:),this_loc(:).')));
+        is_ocean = strcmp(Prof.ocean(idx),ocean);
         is_ocean(isnan(this_loc)) = 0;
     end
     if strcmp(mode, 'ADR')
