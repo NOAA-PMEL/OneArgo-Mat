@@ -116,8 +116,8 @@ nfloats = length(floats);
 % not requested - they will not be counted in nvars)
 nplots = nfloats * nvars;
 if nplots > Settings.max_plots
-    warning(['too many plots requested - use fewer profiles and/or ', ...
-        'variables\nor increase Settings.max_plots if possible'])
+    warning('too many plots requested - use fewer profiles and/or variables\n%s', ...
+        'or increase Settings.max_plots if possible')
     return
 end
 
@@ -203,7 +203,9 @@ for f = 1:nfloats
         end
         if plot_mld == 1
             plot(Datai.TIME,Datai.MLD_TEMP(1,:),'k','LineWidth',2);
-        elseif plot_mld == 2
+        elseif plot_mld == 2 && isfield(Datai, 'MLD_DENS')
+            % some old core floats don't have PSAL and therefore
+            % density cannot be computed
             plot(Datai.TIME,Datai.MLD_DENS(1,:),'k','LineWidth',2);
         end
         hold off
