@@ -78,6 +78,11 @@ Settings.demo_float = 5904021;
 % locally already) or 1 (always update)
 Settings.update = 3600; % time is given in seconds
 
+% to ensure compatibility with BGC-Argo-Mat, the default type is
+% set here to 'bgc'; set it to 'all' to use it instead as the
+% default type in searches with the select_profiles function
+Settings.default_type = 'bgc';
+
 % default values for computation of mixed layer depth
 Settings.temp_thresh = 0.2;
 Settings.dens_thresh = 0.03;

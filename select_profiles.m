@@ -77,12 +77,14 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           (Full list can be displayed with the list_sensors function.)
 %           Multiple sensors can be entered as a cell array, e.g.:
 %           {'DOXY';'NITRATE'}
-%   'type', type: Valid choices are 'bgc' (select BGC floats only;
-%           the default), 'phys' (select core and deep floats only),
-%           and 'all' (select all floats that match other criteria)
+%   'type', type: Valid choices are 'bgc' (select BGC floats only),
+%           'phys' (select core and deep floats only),
+%           and 'all' (select all floats that match other criteria).
 %           If type is not specified, but sensors are, then the type will
-%           be set to 'all' if only pTS (PRES, PSAL, TEMP, CNDC) sensors
-%           are specified, and to 'bgc' otherwise.
+%           be set to 'bgc' if sensors other than PRES, PSAL, TEMP, or CNDC
+%           are specified.
+%           In all other cases the default type is Settings.default_type,
+%           which is set in initialize_argo.
 %
 % OUTPUTS:
 %   float_ids   : array with the WMO IDs of all matching floats
@@ -175,7 +177,7 @@ if ~isempty(bgc_sensors)
         type = 'bgc';
     end
 elseif isempty(type)
-    type = 'bgc'; % consider only BGC floats
+    type = Settings.default_type; % assigned in initialize_argo
 end
 
 % check if specified ocean is correct
