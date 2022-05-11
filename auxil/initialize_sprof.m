@@ -46,7 +46,7 @@ Sprof.ocean = H{5};
 Sprof.sens = H{8};
 Sprof.split_sens = cellfun(@split, Sprof.sens, 'UniformOutput', false);
 Sprof.data_mode = H{9};
-Sprof.date_update = H{10};
+Sprof.update = H{10};
 
 % adjust longitude to standard range of -180..180 degrees
 Sprof.lon(Sprof.lon > 180) = Sprof.lon(Sprof.lon > 180) - 360;

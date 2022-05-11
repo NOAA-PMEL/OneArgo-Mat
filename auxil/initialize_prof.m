@@ -43,7 +43,7 @@ Prof.lon  = H{4};
 Prof.ocean = H{5};
 Prof.profiler = H{6}; % profiler type
 % column 7: institution
-Prof.date_update = H{8};
+Prof.update = H{8};
 
 % the split_sens field is needed by select_profiles_per_type
 pT = {'PRES';'TEMP'}; % for old floats without salinity sensor

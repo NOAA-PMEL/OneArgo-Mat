@@ -217,7 +217,7 @@ Float.prof_idx1 = ia2(1:end-1);
 Float.prof_idx2 = ia2(2:end) - 1;
 Float.profiler = Prof.profiler(Float.prof_idx1);
 % use the update date of the last profile
-Float.update = Prof.date_update(Float.prof_idx2);
+Float.update = Prof.update(Float.prof_idx2);
 Float.type = cell(Float.nfloats, 1);
 Float.type(cellfun(@isempty, Float.type)) = {'phys'};
 Float.type(is_uniq_bgc) = {'bgc'};
@@ -290,7 +290,7 @@ Float.file_name(strcmp(Float.type, 'bgc')) = ...
     Float.file_name(strcmp(Float.type, 'bgc')), 'UniformOutput', false);
 
 % use the update date of the last profile of each float
-Float.update(strcmp(Float.type, 'bgc')) = Sprof.date_update(bgc_prof_idx2);
+Float.update(strcmp(Float.type, 'bgc')) = Sprof.update(bgc_prof_idx2);
 
 % Download meta index file from GDAC to Index directory
 % Since it is rather small, download the uncompressed file directly
