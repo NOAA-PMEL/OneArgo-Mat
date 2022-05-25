@@ -78,9 +78,10 @@ Settings.demo_float = 5904021;
 % locally already) or 1 (always update)
 Settings.update = 3600; % time is given in seconds
 
-% to ensure compatibility with BGC-Argo-Mat, the default type is
-% set here to 'bgc'; set it to 'all' to use it instead as the
-% default type in searches with the select_profiles function
+% To ensure compatibility with earlier versions of BGC-Argo-Mat,
+% the default type is set here to 'bgc'; it can also be set to 
+% 'all' or 'phys' instead as the default type in searches with the
+% select_profiles function.
 Settings.default_type = 'bgc';
 
 % default values for computation of mixed layer depth
