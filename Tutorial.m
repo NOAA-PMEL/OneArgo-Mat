@@ -202,7 +202,8 @@ t2=[2019 12 31];
 
 %% Select floats and profiles based on those limits
 [HW_floats,HW_float_profs] = select_profiles(lonlim,latlim,t1,t2,...
-    'outside','none'); % exclude profiles outside the time and space limits
+    'outside','none', ... % exclude profiles outside the time and space limits
+    'type','bgc');
 
 % display the number of matching floats and profiles
 disp(' ');
