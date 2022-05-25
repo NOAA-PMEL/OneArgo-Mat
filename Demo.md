@@ -26,7 +26,8 @@ All necessary initializations are performed during the execution of the select_p
 
 ```matlab:Code
 [HW_floats,HW_float_profs] = select_profiles(lonlim,latlim,t1,t2,...
-    'outside','none'); % exclude profiles outside the time and space limits
+    'outside','none', ... % exclude profiles outside the time and space limits
+    'type', 'bgc');
 ```
 
 ```text:Output
