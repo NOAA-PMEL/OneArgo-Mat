@@ -1,15 +1,18 @@
-function good_variables = check_variables(variables, varargin)
-% check_variables  This function is part of the
+function avail_variables = check_float_variables(float_ids, variables, ...
+    varargin)
+% check_float_variables  This function is part of the
 % MATLAB toolbox for accessing BGC Argo float data.
 %
 % USAGE:
-%   good_variables = check_variables(variables, varargin)
+%   avail_variables = check_float_variables(float_ids, variables, varargin)
 %
 % DESCRIPTION:
-%   This function checks if the specified variable(s) are available.
+%   This function checks if the specified variable(s) are available for
+%   all of the specified floats.
 %   The available variables are returned.
 %
 % INPUT:
+%   float_ids : array with WMO ID(s) of the float(s)
 %   variables : cell array of variable(s) (or one variable as a string)
 %
 % OPTIONAL INPUT:
@@ -18,7 +21,7 @@ function good_variables = check_variables(variables, varargin)
 %               available
 %
 % OUTPUT:
-%   good_variables : cell array of available variable(s)
+%   avail_variables : cell array of available variable(s)
 %
 % AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW),
@@ -36,9 +39,10 @@ function good_variables = check_variables(variables, varargin)
 %
 % DATE: MAY 26, 2022  (Version 1.3)
 
-global Settings;
+global Settings Float;
 
 % set defaults
+avail_variables = [];
 warn = [];
 
 % parse optional arguments
@@ -55,17 +59,31 @@ if isempty(Settings)
     initialize_argo();
 end
 
+if isempty(float_ids)
+    warning('No floats specified!');
+    return
+end
+
 if ischar(variables)
     variables = cellstr(variables);
 end
 
-good_variables = variables;
+% download proif and Sprof files if necessary
+good_float_ids = download_multi_floats(float_ids);
 
-for i = 1:length(variables)
-    if ~any(strcmp(variables{i}, Settings.avail_vars))
-        if ~isempty(warn)
-            warning('%s: %s', warn, variables{i});
+avail_variables = variables; % default assumption: all are available
+
+for f = 1:length(good_float_ids)
+    filename = sprintf('%s%s', Settings.prof_dir, ...
+        Float.file_name{Float.wmoid == good_float_ids(f)});
+    info = ncinfo(filename); % Read netcdf information
+    these_vars = {info.Variables.('Name')};
+    for i = 1:length(avail_variables)
+        if ~any(strcmp(variables{i}, these_vars))
+            if ~isempty(warn)
+                warning('%s: %s', warn, variables{i});
+            end
+            avail_variables(strcmp(variables{i}, avail_variables)) = [];
         end
-        good_variables(strcmp(variables{i}, good_variables)) = [];
     end
 end

@@ -11,9 +11,9 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %   This function returns the indices of profiles and floats that match
 %   the given criteria (spatial, temporal, sensor availability).
 %   It calls function initialize_argo if necessary.
-%   Sprof files that match most criteria (except data mode, if specified)
-%   and those that have missing longitude/latitude values in the index file
-%   are downloaded from a GDAC.
+%   prof and Sprof files that match most criteria (except data mode, if
+%   specified) and those that have missing longitude/latitude values in the
+%   index file are downloaded from a GDAC.
 %
 % INPUTS:
 %   lon_lim : longitude limits
@@ -77,6 +77,14 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           (Full list can be displayed with the list_sensors function.)
 %           Multiple sensors can be entered as a cell array, e.g.:
 %           {'DOXY';'NITRATE'}
+%   'type', type: Valid choices are 'bgc' (select BGC floats only),
+%           'phys' (select core and deep floats only),
+%           and 'all' (select all floats that match other criteria).
+%           If type is not specified, but sensors are, then the type will
+%           be set to 'bgc' if sensors other than PRES, PSAL, TEMP, or CNDC
+%           are specified.
+%           In all other cases the default type is Settings.default_type,
+%           which is set in initialize_argo.
 %
 % OUTPUTS:
 %   float_ids   : array with the WMO IDs of all matching floats
@@ -96,9 +104,9 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
-global Float Settings Sprof;
+global Float Prof Settings Sprof;
 
 % make sure Settings is initialized
 if isempty(Settings)
@@ -117,6 +125,7 @@ floats = [];
 depth = [];
 min_num_prof = 0;
 interp_ll = 'yes';
+type = []; % default assignment depends on sensor selection
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -138,6 +147,8 @@ for i = 1:2:length(varargin)-1
         min_num_prof = varargin{i+1};
     elseif strcmpi(varargin{i}, 'interp_lonlat')
         interp_ll = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'type')
+        type = varargin{i+1};
     else
         warning('unknown option: %s', varargin{i});
     end
@@ -151,6 +162,22 @@ sensor = check_variables(sensor, 'warning', ...
 % only use mode if sensor was specified
 if isempty(sensor)
     mode = [];
+end
+
+bgc_sensors = setdiff(sensor, {'PRES';'PSAL';'TEMP';'CNDC'});
+if ~isempty(bgc_sensors)
+    if strcmpi(type, 'phys')
+        warning('You specified BGC sensors and  type "phys".');
+        warning('Please revise either setting!');
+        return;
+    else
+        % setting may have been 'all', 'bgc', or no setting yet
+        % in any case, since BGC sensors are requested, only BGC
+        % floats will be considered
+        type = 'bgc';
+    end
+elseif isempty(type)
+    type = Settings.default_type; % assigned in initialize_argo
 end
 
 % check if specified ocean is correct
@@ -187,8 +214,8 @@ for i = 1:length(dac)
 end
 dac(bad == 1) = [];
 
-% make sure Sprof is initialized
-if isempty(Sprof)
+% make sure Prof and Sprof are initialized
+if isempty(Prof) || isempty(Sprof)
     initialize_argo();
 end
 
@@ -210,63 +237,23 @@ end
 dn1 = datenum(start_date);
 dn2 = datenum(end_date);
 
-% adjust longitude to standard range of -180..180 degrees
-Sprof.lon(Sprof.lon > 180) = Sprof.lon(Sprof.lon > 180) - 360;
-Sprof.lon(Sprof.lon < -180) = Sprof.lon(Sprof.lon < -180) + 360;
-
-% GET INDEX OF PROFILES WITHIN USER-SPECIFIED GEOGRAPHIC POLYGON
-inpoly = get_inpolygon(Sprof.lon,Sprof.lat,lon_lim,lat_lim);
-
-% if interpolation of missing values is requested, include all missing
-% positions for now; actual interpolation will be performed in the
-% second round of matching after reading the Sprof files
-if strncmpi(interp_ll, 'yes', 1)
-    inpoly(isnan(Sprof.lon)) = 1;
-end
-
-if isempty(inpoly) || ~any(inpoly)
-    warning('no matching profiles found')
-    return
-end
-
-% Find index of dates that are within the time window
-date_inpoly = datenum(Sprof.date(inpoly), 'yyyymmddHHMMSS');
-indate_poly = date_inpoly >= dn1 & date_inpoly <= dn2;
-% now create an indate array of 0s/1s that has the same
-% size as inpoly so that it can be used in the & operations below
-indate = zeros(size(inpoly));
-all_floats = 1:length(inpoly);
-sel_floats_space = all_floats(inpoly);
-indate(sel_floats_space(indate_poly)) = 1;
-
-% SELECT BY SENSOR
-has_sensor = ones(size(indate));
-if ~isempty(sensor)
-    for i = 1:length(sensor)
-        has_sensor = has_sensor & cellfun(@(x) ...
-            any(strcmp(x, sensor{i})), Sprof.split_sens);
-    end
-end
-if ~any(has_sensor)
-    warning('no profiles found that have all specified sensors')
-    return
-end
-
-% select by ocean basin
-if isempty(ocean)
-    is_ocean = ones(size(indate)); % no ocean was selected
+% select bgc and phys floats separately, then combine the results
+if strcmp(type, 'bgc') || strcmp(type, 'all')
+    bgc_float_ids = select_profiles_per_type(Sprof, ...
+        lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean);
 else
-    is_ocean = strcmp(Sprof.ocean, ocean);
+    bgc_float_ids = [];
 end
-
-% Note: due to inconsistencies between index and Sprof files, selecting
-% by data mode  is not performed in the first round, only in the second
-% round below (based on Sprof files)
-
-% perform selection
-all_prof = 1:length(indate);
-profiles = all_prof(inpoly & indate & has_sensor & is_ocean);
-float_ids = unique(Sprof.wmo(profiles));
+if strcmp(type, 'phys') || strcmp(type, 'all')
+    % this will also find bgc floats; so they need to be filtered out
+    phys_float_ids = select_profiles_per_type(Prof, ...
+        lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean);
+    [~,phys_float_idx] = intersect(Float.wmoid, phys_float_ids);
+    phys_float_ids(~strcmp(Float.type(phys_float_idx), 'phys')) = [];
+else
+    phys_float_ids = [];
+end
+float_ids = unique(cat(1, bgc_float_ids, phys_float_ids)); % includes sorting
 
 % check for selected DACs if applicable (DACs are stored by float,
 % not by profile)
@@ -282,25 +269,29 @@ if ~isempty(floats)
     float_ids = intersect(float_ids, floats);
 end
 
-% download Sprof files if necessary
+% download prof and Sprof files if necessary
 good_float_ids = download_multi_floats(float_ids);
 
-% the information from the index file is only used for an initial
-% filtering of floats, the actual information from the Sprof files
+% the information from the index files is only used for an initial
+% filtering of floats, the actual information from the prof/Sprof files
 % is used in a second step
 float_ids = good_float_ids;
 float_profs = cell(length(good_float_ids), 1);
 
 for fl = 1:length(good_float_ids)
-    filename = sprintf('%s%d_Sprof.nc', Settings.prof_dir, ...
-        good_float_ids(fl));
+    filename = sprintf('%s%s', Settings.prof_dir, ...
+        Float.file_name{Float.wmoid == good_float_ids(fl)});
     [n_prof, n_param] = get_dims(filename);
     fl_idx = find(Float.wmoid == good_float_ids(fl), 1);
     n_prof_exp = Float.prof_idx2(fl_idx) - Float.prof_idx1(fl_idx) + 1;
     if n_prof_exp > n_prof
+        type = 'prof'; % default
+        if contains(filename, 'Sprof')
+            type = 'Sprof';
+        end
         warning(['The index file lists %d profiles for float %d, ', ...
-            'but the Sprof file has only %d profiles.'], ...
-            n_prof_exp, good_float_ids(fl), n_prof)
+            'but the %s file has only %d profiles.'], ...
+            n_prof_exp, good_float_ids(fl), type, n_prof)
     end
     lon = ncread(filename, 'LONGITUDE');
     lat = ncread(filename, 'LATITUDE');
@@ -358,10 +349,10 @@ for fl = 1:length(good_float_ids)
     if isempty(ocean)
         is_ocean = ones(size(inpoly));
     else
-        sprof_loc = Sprof.lon + 1i * Sprof.lat;
+        prof_loc = Prof.lon + 1i * Prof.lat;
         this_loc = lon + 1i * lat;
-        [~,idx] = min(abs(bsxfun(@minus,sprof_loc(:),this_loc(:).')));
-        is_ocean = strcmp(Sprof.ocean(idx),ocean);
+        [~,idx] = min(abs(bsxfun(@minus,prof_loc(:),this_loc(:).')));
+        is_ocean = strcmp(Prof.ocean(idx),ocean);
         is_ocean(isnan(this_loc)) = 0;
     end
     if strcmp(mode, 'ADR')

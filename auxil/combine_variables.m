@@ -31,7 +31,7 @@ function all_vars = combine_variables(base_vars, new_vars)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 cnt_vars = length(base_vars);
 

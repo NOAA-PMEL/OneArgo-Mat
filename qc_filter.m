@@ -46,7 +46,7 @@ function Data_good = qc_filter(Data, variables, qc_flags, varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 % assign default qc_flags if none provided as input
 if nargin < 3

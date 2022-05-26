@@ -31,7 +31,7 @@ function [long_name, units] = get_var_name_units(short_name)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 if nargin < 1
     warning('Usage: get_var_name_units(short_name)')

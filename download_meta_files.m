@@ -30,7 +30,7 @@ function good_float_ids = download_meta_files(float_ids)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 global Settings;
 
@@ -42,11 +42,6 @@ end
 % make sure Settings is initialized
 if isempty(Settings)
     initialize_argo();
-end
-
-% Create Meta directory if needed
-if ~check_dir(Settings.meta_dir)
-    error('Meta directory could not be created')
 end
 
 is_good = ones(length(float_ids), 1);

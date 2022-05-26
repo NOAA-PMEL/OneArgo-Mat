@@ -40,7 +40,7 @@ function [lon_lim, lat_lim, Data] = get_lon_lat_lims(Data)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 floats = fieldnames(Data);
 nfloats = length(floats);

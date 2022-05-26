@@ -9,13 +9,14 @@ function success = download_float(floatid, file_type)
 %   It downloads the Sprof or meta file for one float with a given floatid.
 %
 % PREREQUISITE:
-%   The Sprof and Meta index files must have been downloaded already.
+%   The Sprof, Prof, Meta, and Tech index files must have been
+%   downloaded already.
 %
 % INPUT:
 %   floatid   : WMO ID of a float (integer)
 %
 % OPTIONAL INPUT:
-%   file_type : either 'Sprof' (default) or 'meta'
+%   file_type : 'prof' (default), 'Sprof', 'meta', or 'tech'
 %
 % OUTPUT:
 %   success   : 1 for success, 0 for failure
@@ -34,16 +35,16 @@ function success = download_float(floatid, file_type)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
-global Settings Float Meta;
+global Settings Float Meta Tech Traj;
 
 if nargin < 1
     disp('Usage: download_float(WMO_ID [, file_type])')
     return
 end
 if nargin < 2
-    file_type = 'Sprof';
+    file_type = 'prof';
 end
 
 success = 0; % set to 1 after successful download
@@ -53,14 +54,19 @@ if isempty(Float)
     initialize_argo();
 end
 
-if strcmp(file_type, 'Sprof')
+if contains(file_type, 'prof')
     ind = 1:Float.nfloats;
     float_idx = ind(Float.wmoid == floatid);
 elseif strcmp(file_type, 'meta')
     ind = 1:length(Meta.wmoid);
     float_idx = ind(Meta.wmoid == floatid);
+elseif strcmp(file_type, 'tech')
+    ind = 1:length(Tech.wmoid);
+    float_idx = ind(Tech.wmoid == floatid);
+elseif strcmp(file_type, 'traj')
+    ind = 1:length(Traj.wmoid);
+    float_idx = ind(Traj.wmoid == floatid);
 else
-    % so far 'meta' is the only other allowed file type
     warning('unknown file type: %s', file_type)
     return
 end
@@ -70,7 +76,7 @@ if isempty(float_idx)
     return
 end
 
-if strcmp(file_type, 'Sprof')
+if contains(file_type, 'prof')
     local_path = [Settings.prof_dir, Float.file_name{float_idx}];
     url_path = ['dac/', Float.file_path{float_idx}];
     remote_file_update = datenum(Float.update(float_idx), 'yyyymmddHHMMSS');
@@ -78,6 +84,14 @@ elseif strcmp(file_type, 'meta')
     local_path = [Settings.meta_dir, Meta.file_name{float_idx}];
     url_path = ['dac/', Meta.file_path{float_idx}];
     remote_file_update = datenum(Meta.update(float_idx), 'yyyymmddHHMMSS');
+elseif strcmp(file_type, 'tech')
+    local_path = [Settings.tech_dir, Tech.file_name{float_idx}];
+    url_path = ['dac/', Tech.file_path{float_idx}];
+    remote_file_update = datenum(Tech.update(float_idx), 'yyyymmddHHMMSS');
+elseif strcmp(file_type, 'traj')
+    local_path = [Settings.traj_dir, Traj.file_name{float_idx}];
+    url_path = ['dac/', Traj.file_path{float_idx}];
+    remote_file_update = datenum(Traj.update(float_idx), 'yyyymmddHHMMSS');
 end
 
 % now check if the specified file exists locally already,

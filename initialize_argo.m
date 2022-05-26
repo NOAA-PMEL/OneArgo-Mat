@@ -30,9 +30,9 @@ function initialize_argo()
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
-global Settings Sprof Float Meta;
+global Settings Prof Sprof Float;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BEGINNING OF SECTION WITH USER SPECIFIC OPTIONS
@@ -65,12 +65,24 @@ Settings.index_dir = './Index/';
 % Meta files are stored in subdirectory 'Meta'
 Settings.meta_dir = './Meta/';
 
+% Tech files are stored in subdirectory 'Tech'
+Settings.tech_dir = './Tech/';
+
+% Traj files are stored in subdirectory 'Traj'
+Settings.traj_dir = './Traj/';
+
 Settings.demo_float = 5904021;
 
-% By default, don't update if files are less than 1 hour old
+% By default, don't update index files if they are less than 1 hour old
 % alternative settings are 0 (don't update at all if files exist
 % locally already) or 1 (always update)
 Settings.update = 3600; % time is given in seconds
+
+% To ensure compatibility with earlier versions of BGC-Argo-Mat,
+% the default type is set here to 'bgc'; it can also be set to 
+% 'all' or 'phys' instead as the default type in searches with the
+% select_profiles function.
+Settings.default_type = 'bgc';
 
 % default values for computation of mixed layer depth
 Settings.temp_thresh = 0.2;
@@ -119,15 +131,12 @@ addpath([filepath, '/auxil'])
 addpath(genpath([filepath, '/m_map']))
 addpath(genpath([filepath, '/gsw']))
 
-% Create Index directory if needed
-if ~check_dir(Settings.index_dir)
-    error('Index directory could not be created')
-end
-
-% Create Profile directory if needed
-if ~check_dir(Settings.prof_dir)
-    error('Profile directory could not be created')
-end
+% Create subdirectories if needed
+if ~check_dir(Settings.index_dir) || ~check_dir(Settings.prof_dir) || ...
+        ~check_dir(Settings.meta_dir) || ~check_dir(Settings.tech_dir) || ...
+        ~check_dir(Settings.traj_dir)
+    error('Subdirectories could not be created')
+end 
 
 % Full set of available variables (but not all floats have all sensors)
 % Additional sensors of existing types (e.g., DOXY2, BBP700_2) will
@@ -144,22 +153,10 @@ Settings.avail_vars = {'PRES';'PSAL';'TEMP';'CNDC';'DOXY';'BBP';'BBP470';...
 Settings.dacs = {'aoml'; 'bodc'; 'coriolis'; 'csio'; 'csiro'; 'incois'; ...
     'jma'; 'kma'; 'kordi'; 'meds'};
 
-% Write Sprof index file from GDAC to Index directory
-sprof = 'argo_synthetic-profile_index.txt'; % file used locally
-sprof_gz = [sprof, '.gz']; % file that is available at GDAC
-Settings.dest_path_sprof = [Settings.index_dir, sprof];
-dest_path_sprof_gz = [Settings.index_dir, sprof_gz];
-if do_download(dest_path_sprof_gz)
-    if Settings.verbose
-        disp('Sprof index file will now be downloaded.')
-        disp('Depending on your internet connection, this may take a while.')
-    end
-    if ~try_download(sprof_gz, dest_path_sprof_gz)
-        error('Sprof index file could not be downloaded')
-    end
-    gunzip(dest_path_sprof_gz)
-elseif ~exist(Settings.dest_path_sprof, 'file')
-    gunzip(dest_path_sprof_gz)
+% Download Sprof index file from GDAC to Index directory
+sprof = 'argo_synthetic-profile_index.txt'; % file at GDAC
+if ~download_index([sprof, '.gz'], 'Sprof')
+    error('Sprof index file could not be downloaded')
 end
 
 % Extract information from Sprof index file
@@ -167,98 +164,164 @@ end
 % file_path, file_name, dac, params, wmoid, update
 % Others will be kept per profile (struct Sprof):
 % date, lat, lon, sens(ors), data_mode
-fid = fopen(Settings.dest_path_sprof);
-H = textscan(fid,'%s %s %f %f %s %d %s %s %s %s','headerlines',9,...
-    'delimiter',',','whitespace','');
-fclose(fid);
-sprof_urls = H{1};
-Sprof.date = H{2};
-Sprof.lat  = H{3};
-Sprof.lon  = H{4};
-Sprof.ocean = H{5};
-% column 6: profiler type
-% column 7: institution
-Sprof.sens = H{8};
-Sprof.split_sens = cellfun(@split, Sprof.sens, 'UniformOutput', false);
-Sprof.data_mode = H{9};
-Sprof.date_update = H{10};
+initialize_sprof([Settings.index_dir, sprof]);
 
-% check for additional (e.g., DOXY2) and unknown sensors
-for i = 1:length(Sprof.sens)
-    sensors = split(Sprof.sens{i});
-    if ~all(ismember(sensors, Settings.avail_vars))
-        unknown_sensors = sensors(~ismember(sensors, Settings.avail_vars));
-        for s = 1:length(unknown_sensors)
-            main_sensor = get_sensor_number(unknown_sensors{s});
-            if isempty(main_sensor)
-                warning('unknown sensor in index file: %s', unknown_sensors{s})
-            else
-                Settings.avail_vars{end+1} = unknown_sensors{s};
-            end
+% Extract unique BGC floats
+[uwmo_sprof,ia] = unique(Sprof.wmo,'stable'); % keep list order
+Sprof.wmo = str2double(Sprof.wmo);
+ia(end+1) = length(Sprof.urls) + 1;
+bgc_prof_idx1 = ia(1:end-1);
+bgc_prof_idx2 = ia(2:end) - 1;
+
+% Download prof index file from GDAC to Index directory
+prof = 'ar_index_global_prof.txt'; % file at GDAC
+if ~download_index([prof, '.gz'], 'prof')
+    error('prof index file could not be downloaded')
+end
+
+% Extract information from prof index file
+% NOTE that some quantities will be kept per float (struct Float):
+% file_path, file_name, dac, params, wmoid, update
+% Others will be kept per profile (struct Prof):
+% date, lat, lon, sens(ors), data_mode
+initialize_prof([Settings.index_dir, prof]);
+
+% Extract unique floats
+% note that older floats have 5-digit IDs
+[uwmo_prof,ia2] = unique(Prof.wmo,'stable'); % keep list order
+Prof.wmo = str2double(Prof.wmo);
+ulist = Prof.urls(ia2);
+dacs = regexp(ulist(:,1),'^\w+','once','match');
+prof_fnames = regexprep(uwmo_prof,'\d+','$0_prof.nc');
+tmp = regexprep(ulist(:,1),'profiles.+','');
+prof_fp = strcat(tmp,prof_fnames);
+
+% need to find out which floats are phys (in Prof only) and bgc (in Sprof)
+is_uniq_bgc = ismember(uwmo_prof,uwmo_sprof);
+nbgc = sum(is_uniq_bgc); % # of bgc floats (this may be revised later)
+
+% determine index pointers from prof to Sprof files for all BGC floats
+% (this needs to be done before the type is changed for those floats
+% that are listed in Sprof index file but don't have BGC sensors)
+bgc_idx_full = zeros(size(is_uniq_bgc));
+bgc_idx_full(is_uniq_bgc) = 1:nbgc;
+
+% Put per-float information into global struct Float
+Float.file_path = prof_fp;
+Float.file_name = prof_fnames;
+Float.dac = dacs;
+Float.wmoid = str2double(uwmo_prof);
+Float.nfloats = length(uwmo_prof);
+% range of profile indices per float, referring to the Prof struct
+ia2(end+1) = length(Prof.urls) + 1;
+Float.prof_idx1 = ia2(1:end-1);
+Float.prof_idx2 = ia2(2:end) - 1;
+Float.profiler = Prof.profiler(Float.prof_idx1);
+% use the update date of the last profile
+Float.update = Prof.update(Float.prof_idx2);
+Float.type = cell(Float.nfloats, 1);
+Float.type(cellfun(@isempty, Float.type)) = {'phys'};
+Float.type(is_uniq_bgc) = {'bgc'};
+
+% determine types of sensors/variables that are present for some and for
+% all profiles of any given float; also re-flag floats from BGC to phys
+% if they don't have any BGC variables available
+Float.min_sens = cell(Float.nfloats, 1); % pre-allocate cell arrays
+Float.max_sens = cell(Float.nfloats, 1);
+len_sens = cellfun(@length, Sprof.sens);
+count = 0;
+index_bgc = 0;
+is_true_bgc = ones(length(bgc_prof_idx1), 1);
+for f = 1:Float.nfloats
+    if strcmp(Float.type{f}, 'phys')
+        % ar_index_global_prof.txt does not contain information about
+        % the available sensors per profile
+        if Float.profiler(f) == 845
+            Float.min_sens{f} = {'PRES';'TEMP'};
+        else
+            Float.min_sens{f} = {'PRES';'TEMP';'PSAL'};
+        end
+        Float.max_sens{f} = Float.min_sens{f};
+    else % BGC float
+        index_bgc = index_bgc + 1;
+        f2 = bgc_idx_full(f);
+        [~, idx1] = min(len_sens(bgc_prof_idx1(f2):bgc_prof_idx2(f2)));
+        [~, idx2] = max(len_sens(bgc_prof_idx1(f2):bgc_prof_idx2(f2)));
+        % assumption: the shortest string has sensors that are shared among all
+        % profiles and the longest string has the union of all available sensors
+        Float.min_sens{f} = Sprof.split_sens{bgc_prof_idx1(f2) + idx1 - 1};
+        Float.max_sens{f} = Sprof.split_sens{bgc_prof_idx1(f2) + idx2 - 1};
+        % if there are no profiles for this float with any BGC sensors
+        % set its type to 'phys'
+        bgc_sensors = Float.max_sens{f};
+        bgc_sensors(ismember(bgc_sensors, ...
+            {'PRES';'TEMP';'PSAL';'CNDC'})) = [];
+        if isempty(bgc_sensors)
+            Float.type{f} = 'phys';
+            count = count + 1;
+            is_true_bgc(index_bgc) = 0;
         end
     end
 end
+fprintf('Note: %d floats from Sprof index file do not have BGC sensors\n', ...
+    count);
+% assign index of first and last profile to true BGC floats only, referring
+% to the indices within the Sprof struct
+% these variables should never be used for non-BGC floats, so their value
+% of 0 serves as a flag that would result in an out-of-bounds error
+Float.bgc_prof_idx1 = zeros(size(Float.prof_idx1));
+Float.bgc_prof_idx2 = Float.bgc_prof_idx1;
+bgc_prof_idx1 = bgc_prof_idx1(is_true_bgc == 1);
+bgc_prof_idx2 = bgc_prof_idx2(is_true_bgc == 1);
+Float.bgc_prof_idx1(strcmp(Float.type, 'bgc')) = bgc_prof_idx1;
+Float.bgc_prof_idx2(strcmp(Float.type, 'bgc')) = bgc_prof_idx2;
 
-% Extract unique floats
-Sprof.wmo = regexp(sprof_urls,'\d{7}','once','match');
-[uwmo,ia] = unique(Sprof.wmo,'stable'); % keep list order
-Sprof.wmo = str2double(Sprof.wmo);
-ulist = sprof_urls(ia);
-dacs = regexp(ulist(:,1),'^\w+','once','match');
-Sprof_fnames = regexprep(uwmo,'\d{7}','$0_Sprof.nc');
-tmp = regexprep(ulist(:,1),'profiles.+','');
-Sprof_fp = strcat(tmp,Sprof_fnames);
+% for all "true" BGC floats, i.e., those that are listed in the Sprof
+% index file and have more than pTS sensors, Sprof files will be used
+% instead of prof files
+idx_bgc = strcmp(Float.type, 'bgc');
+fprintf('%d "true" BGC floats were found\n', sum(idx_bgc));
+idx_phys = strcmp(Float.type, 'phys');
+fprintf('%d core and deep floats were found\n', sum(idx_phys));
+Float.file_path(strcmp(Float.type, 'bgc')) = ...
+    cellfun(@(x) strrep(x, 'prof', 'Sprof'), ...
+    Float.file_path(strcmp(Float.type, 'bgc')), 'UniformOutput', false);
+Float.file_name(strcmp(Float.type, 'bgc')) = ...
+    cellfun(@(x) strrep(x, 'prof', 'Sprof'), ...
+    Float.file_name(strcmp(Float.type, 'bgc')), 'UniformOutput', false);
 
-% Put per-float information into global struct Float
-Float.file_path = Sprof_fp;
-Float.file_name = Sprof_fnames;
-Float.dac = dacs;
-Float.wmoid = str2double(uwmo);
-Float.nfloats = length(uwmo);
-% range of profile indices per float
-ia(end+1) = length(sprof_urls) + 1;
-Float.prof_idx1 = ia(1:end-1);
-Float.prof_idx2 = ia(2:end) - 1;
-% use the update date of the last profile
-Float.update = Sprof.date_update(Float.prof_idx2);
+% use the update date of the last profile of each float
+Float.update(strcmp(Float.type, 'bgc')) = Sprof.update(bgc_prof_idx2);
 
-% determine sensor availability by float
-nfloats = length(Float.wmoid);
-Float.min_sens = cell(nfloats, 1);
-Float.max_sens = cell(nfloats, 1);
-len_sens = cellfun(@length, Sprof.sens);
-for f = 1:nfloats
-    [~, idx1] = min(len_sens(Float.prof_idx1(f):Float.prof_idx2(f)));
-    [~, idx2] = max(len_sens(Float.prof_idx1(f):Float.prof_idx2(f)));
-    % assumption: the shortest string has sensors that are shared among all
-    % profiles and the longest string has the union of all available sensors
-    Float.min_sens{f} = Sprof.split_sens{Float.prof_idx1(f)+idx1-1};
-    Float.max_sens{f} = Sprof.split_sens{Float.prof_idx1(f)+idx2-1};
-end
-
-% Write meta index file from GDAC to Index directory
-% Since it is rather small, download the uncompressed file
+% Download meta index file from GDAC to Index directory
+% Since it is rather small, download the uncompressed file directly
 meta = 'ar_index_global_meta.txt';
-Settings.dest_path_meta = [Settings.index_dir, meta];
-if do_download(Settings.dest_path_meta)
-    if Settings.verbose
-        disp('meta index file will now be downloaded.')
-    end
-    if ~try_download(meta, Settings.dest_path_meta)
-        error('meta index file could not be downloaded')
-    end
+if ~download_index(meta, 'meta')
+    error('meta index file could not be downloaded')
 end
 
 % Extract information from meta index file
-fid = fopen(Settings.dest_path_meta);
-H = textscan(fid,'%s %s %s %s','headerlines',9,...
-    'delimiter',',','whitespace','');
-fclose(fid);
-Meta.file_path = H{1};
-meta_wmoid = regexp(Meta.file_path,'\d{7}','once','match');
-Meta.file_name = regexprep(meta_wmoid,'\d{7}','$0_meta.nc');
-Meta.update = H{4};
-Meta.wmoid = str2double(meta_wmoid);
+initialize_meta([Settings.index_dir, meta]);
+
+% Download tech index file from GDAC to Index directory
+% Since it is rather small, download the uncompressed file directly
+tech = 'ar_index_global_tech.txt';
+if ~download_index(tech, 'tech')
+    error('tech index file could not be downloaded')
+end
+
+% Extract information from tech index file
+initialize_tech([Settings.index_dir, tech]);
+
+% Download traj index file from GDAC to Index directory
+% Since it is rather small, download the uncompressed file directly
+traj = 'ar_index_global_traj.txt';
+if ~download_index(traj, 'traj')
+    error('traj index file could not be downloaded')
+end
+
+% Extract information from traj index file
+initialize_traj([Settings.index_dir, traj]);
 
 % Determine the availability of mapping functions
 if ~isempty(which('geobasemap'))

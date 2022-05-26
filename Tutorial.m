@@ -22,7 +22,7 @@
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 %% Close figures, clean up workspace, clear command window
 close all; clear; clc
@@ -47,10 +47,15 @@ do_pause();
 global Sprof Float Settings;
 
 % Example: Look at the profile ID numbers and available sensors for the
-% profiles that have been executed by new GO-BGC float #5906439.
+% profiles that have been executed by GO-BGC float #5906439.
 float_idx = (Float.wmoid == 5906439); % index for float #5906439
-prof_ids = Float.prof_idx1(float_idx):Float.prof_idx2(float_idx); % profile IDs for float #5906439
-dates = datestr(datenum(Sprof.date(prof_ids), 'yyyymmddHHMMSS')) % dates of each profile from float #5906439
+% determine the profile IDs for float #5906439 within the Sprof struct
+% Note that bgc_prof_idx1 and bgc_prof_idx2 as well as the Sprof struct
+% should be used for BGC floats, but prof_idx1, prof_idx2, and the Prof
+% struct should be used for core and deep floats.
+prof_ids = Float.bgc_prof_idx1(float_idx):Float.bgc_prof_idx2(float_idx);
+% dates of each profile from float #5906439
+dates = datestr(datenum(Sprof.date(prof_ids), 'yyyymmddHHMMSS')) 
 list_sensors(5906439); % sensors available for float #5906439
 do_pause();
 
@@ -82,7 +87,8 @@ do_pause();
 %% We see that NITRATE is available, so load it (along with TEMP and PSAL) from the NetCDF
 [data,mdata] = load_float_data(WMO,... % specify WMO number
     {'PSAL','TEMP','NITRATE'}); % specify variables
-data.(['F' num2str(WMO)]) % show data that has been loaded into MATLAB
+data.(['F' num2str(WMO)]) % show data that have been loaded into MATLAB
+mdata.(['F' num2str(WMO)]) % show meta data that have been loaded into MATLAB
 do_pause();
 
 %% Show the trajectory of the downloaded float, with estimated values
@@ -196,7 +202,8 @@ t2=[2019 12 31];
 
 %% Select floats and profiles based on those limits
 [HW_floats,HW_float_profs] = select_profiles(lonlim,latlim,t1,t2,...
-    'outside','none'); % exclude profiles outside the time and space limits
+    'outside','none', ... % exclude profiles outside the time and space limits
+    'type','bgc');
 
 % display the number of matching floats and profiles
 disp(' ');

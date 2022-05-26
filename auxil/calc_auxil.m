@@ -58,7 +58,7 @@ function Data = calc_auxil(Data,varargin)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 global Settings;
 
@@ -94,23 +94,27 @@ end
 
 % Calculate in situ density:
 if calc_dens
-    try % Try with adjusted values first
-        assert(strcmp(raw, 'no'));
-        Data.PSAL_ABS_ADJUSTED = gsw_SA_from_SP(Data.PSAL_ADJUSTED,...
-            Data.PRES_ADJUSTED,...
-            Data.LONGITUDE,Data.LATITUDE); % Calculate absolute salinity
-        Data.TEMP_CNS_ADJUSTED = gsw_CT_from_t(Data.PSAL_ABS_ADJUSTED,...
-            Data.TEMP_ADJUSTED,...
-            Data.PRES_ADJUSTED); % Calculate conservative temperature
-        Data.DENS_ADJUSTED = 1000 + gsw_sigma0(Data.PSAL_ABS_ADJUSTED,...
-            Data.TEMP_CNS_ADJUSTED); % Calculate potential density
-    catch % Then try with unadjusted values
-        Data.PSAL_ABS = gsw_SA_from_SP(Data.PSAL,Data.PRES,...
-            Data.LONGITUDE,Data.LATITUDE); % Calculate absolute salinity
-        Data.TEMP_CNS = gsw_CT_from_t(Data.PSAL_ABS,Data.TEMP,...
-            Data.PRES); % Calculate conservative temperature
-        Data.DENS     = 1000 + gsw_sigma0(Data.PSAL_ABS,...
-            Data.TEMP_CNS); % Calculate in situ density
+    if ~isfield(Data, 'PSAL')
+        warning('No salinity data found, skipping density calculation');
+    else
+        try % Try with adjusted values first
+            assert(strcmp(raw, 'no'));
+            Data.PSAL_ABS_ADJUSTED = gsw_SA_from_SP(Data.PSAL_ADJUSTED,...
+                Data.PRES_ADJUSTED,...
+                Data.LONGITUDE,Data.LATITUDE); % Calculate absolute salinity
+            Data.TEMP_CNS_ADJUSTED = gsw_CT_from_t(Data.PSAL_ABS_ADJUSTED,...
+                Data.TEMP_ADJUSTED,...
+                Data.PRES_ADJUSTED); % Calculate conservative temperature
+            Data.DENS_ADJUSTED = 1000 + gsw_sigma0(Data.PSAL_ABS_ADJUSTED,...
+                Data.TEMP_CNS_ADJUSTED); % Calculate potential density
+        catch % Then try with unadjusted values
+            Data.PSAL_ABS = gsw_SA_from_SP(Data.PSAL,Data.PRES,...
+                Data.LONGITUDE,Data.LATITUDE); % Calculate absolute salinity
+            Data.TEMP_CNS = gsw_CT_from_t(Data.PSAL_ABS,Data.TEMP,...
+                Data.PRES); % Calculate conservative temperature
+            Data.DENS     = 1000 + gsw_sigma0(Data.PSAL_ABS,...
+                Data.TEMP_CNS); % Calculate in situ density
+        end
     end
 end
 
@@ -127,11 +131,15 @@ if calc_mld_temp || calc_mld_dens
     catch % Then try with unadjusted values
         pres = Data.PRES;
     end
-    try % Try with adjusted values first
-        assert(strcmp(raw, 'no'));
-        salt = Data.PSAL_ADJUSTED;
-    catch % Then try with unadjusted values
-        salt = Data.PSAL;
+    if ~isfield(Data, 'PSAL')
+        warning('No salinity data found, skipping MLD calculation');
+    else
+        try % Try with adjusted values first
+            assert(strcmp(raw, 'no'));
+            salt = Data.PSAL_ADJUSTED;
+        catch % Then try with unadjusted values
+            salt = Data.PSAL;
+        end
     end
 end
 
@@ -161,7 +169,7 @@ if calc_mld_temp
     end
 end
 
-if calc_mld_dens
+if calc_mld_dens && isfield(Data, 'PSAL')
     % Calculate potential density with respect to surface pressure (=0)
     SA = gsw_SA_from_SP(salt,Data.PRES,Data.LONGITUDE,Data.LATITUDE);
     CT = gsw_CT_from_t(SA,temp,Data.PRES);

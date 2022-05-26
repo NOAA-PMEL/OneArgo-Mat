@@ -77,7 +77,7 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 global Settings;
 
@@ -116,8 +116,8 @@ nfloats = length(floats);
 % not requested - they will not be counted in nvars)
 nplots = nfloats * nvars;
 if nplots > Settings.max_plots
-    warning(['too many plots requested - use fewer profiles and/or ', ...
-        'variables\nor increase Settings.max_plots if possible'])
+    warning('too many plots requested - use fewer profiles and/or variables\n%s', ...
+        'or increase Settings.max_plots if possible')
     return
 end
 
@@ -162,6 +162,11 @@ for f = 1:nfloats
     Datai = depth_interp(Data.(floats{f}), qc_flags, ...
         'calc_dens', calc_dens, 'raw', raw, varargs{:});
     for v = 1:nvars
+        if ~isfield(Datai, variables{v})
+            warning('Sensor %s not found for float %s', ...
+                variables{v}, floats{f})
+            continue;
+        end
         if isempty(find(isfinite(Datai.PRES) & ...
                 isfinite(Datai.(variables{v})), 1))
             warning('no valid data found for %s of float %s', ...
@@ -179,7 +184,7 @@ for f = 1:nfloats
             scatter(Data.(floats{f}).TIME(index), Data.(floats{f}).PRES(index),...
                 1,'.k','MarkerFaceAlpha',0.2,'MarkerEdgeAlpha',0.2);
         end
-        if ~isequal(plot_isopyc, 0)
+        if ~isequal(plot_isopyc, 0) && isfield(Datai, 'DENS')
             try
                 dens = Datai.DENS_ADJUSTED;
             catch
@@ -198,7 +203,9 @@ for f = 1:nfloats
         end
         if plot_mld == 1
             plot(Datai.TIME,Datai.MLD_TEMP(1,:),'k','LineWidth',2);
-        elseif plot_mld == 2
+        elseif plot_mld == 2 && isfield(Datai, 'MLD_DENS')
+            % some old core floats don't have PSAL and therefore
+            % density cannot be computed
             plot(Datai.TIME,Datai.MLD_DENS(1,:),'k','LineWidth',2);
         end
         hold off
