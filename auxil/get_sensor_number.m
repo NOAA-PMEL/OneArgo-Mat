@@ -33,7 +33,7 @@ function [main_sensor, sensor_number] = get_sensor_number(sensor_name)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 % first case: main sensor does not contain numbers,
 % e.g. if sensor_name is 'DOXY' or 'DOXY2'

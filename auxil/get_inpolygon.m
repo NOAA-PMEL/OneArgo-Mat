@@ -38,7 +38,7 @@ function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 % longitude limits can be specified in -180..180 or 0..360 degree formats,
 % or any other 360 degree range that encloses all the desired longitude

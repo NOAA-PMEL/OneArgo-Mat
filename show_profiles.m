@@ -84,7 +84,7 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 global Settings;
 

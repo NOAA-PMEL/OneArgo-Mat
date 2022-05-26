@@ -62,7 +62,7 @@ function float_ids = select_profiles_per_type(Profiles, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 float_ids = []; % default return value
 

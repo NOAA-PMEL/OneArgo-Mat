@@ -32,7 +32,7 @@ function datenum_value = check_datenum(date_value)
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 if isnumeric(date_value) && ...
         (length(date_value) == 3 || length(date_value) == 6)

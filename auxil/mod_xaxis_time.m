@@ -44,7 +44,7 @@ function mod_xaxis_time(min_time, max_time, start_date, end_date, ...
 %
 % LICENSE: bgc_argo_mat_license.m
 %
-% DATE: FEBRUARY 22, 2022  (Version 1.2)
+% DATE: MAY 26, 2022  (Version 1.3)
 
 if max_time > min_time
     xlim([min_time, max_time]); % tight layout
