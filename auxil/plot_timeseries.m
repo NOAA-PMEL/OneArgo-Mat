@@ -236,7 +236,9 @@ end
 
 % these variables will only be needed if there are floats with just
 % one data point
+f1 = figure(); % dummy figure, only used to get the color order
 colors = get(gca,'ColorOrder');
+close(f1);
 n_colors = size(colors,1);
 
 for v = 1:nvars
