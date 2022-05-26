@@ -1,9 +1,14 @@
 # BGC-Argo Toolbox for MATLAB (BGC-Argo-Mat)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4971318.svg)](https://doi.org/10.5281/zenodo.4971318)
 
+
+## IMPORTANT NOTE
+
+This is the final release of this toolbox under the BGC-Argo-Mat name. All future development will be done under the [OneArgo-Mat](https://github.com/NOAA-PMEL/OneArgo-Mat) name.
+
 ## ABOUT
 
-This toolbox contains a variety of functions for accessing, processing, and visualizing [Biogeochemical Argo](https://biogeochemical-argo.org) data. Functions are designed to be maximally efficient, to provide access to the most up-to-date data available, and to allow for downloading and plotting of those data based on numerous user-defined conditions.
+This toolbox contains a variety of functions for accessing, processing, and visualizing [Biogeochemical Argo](https://biogeochemical-argo.org) data. Functions are designed to be maximally efficient, to provide access to the most up-to-date data available, and to allow for downloading and plotting of those data based on numerous user-defined conditions. Release 1.3 of this toolbox allows access to all [Argo](https://argo.ucsd.edu/) data.
 
 ## QUICK DEMO
 
@@ -21,7 +26,9 @@ For an overview of how to use this toolbox, step through the Tutorial script (us
 
 ### Main functions (to be called from script or command window):
 
-download_meta_files.m    : downloads <WMOID_meta.nc files from GDAC<br/>
+download_meta_files.m    : downloads <WMOID>_meta.nc files from GDAC<br/>
+download_tech_files.m    : downloads <WMOID>_tech.nc files from GDAC<br/>
+download_traj_files.m    : downloads <WMOID>_traj.nc files from GDAC<br/>
 get_lon_lat_time.m       : returns longitude, latitude, time for selected floats and profiles<br/>
 initialize_argo.m        : defines standard settings and paths and downloads synthetic profile index file<br/>
 list_sensors.m           : shows available sensors across fleet or for specified floats<br/>
@@ -40,20 +47,27 @@ Use "help function_name" in the MATLAB command window to see a full description 
 calc_auxil.m             : calculates various auxiliary variables from Argo float data<br/>
 check_datenum.m          : checks if input matches datenum format<br/>
 check_dir.m              : determines if a directory needs to be created and does so if necessary<br/>
+check_float_variables.m  : checks if specified variables are available for the specified floats<br/>
 check_variables.m        : checks if specified variables are available<br/>
 combine_variables.m      : creates a cell array with variables names (basic and extended sets)<br/>
 create_tiled_layout.m    : creates tiled layout in a profile plot with two different variables<br/>
 depth_interp.m           : interpolates values for BGC-Argo parameters against depth<br/>
 do_download.m            : determines if a file should be downloaded or not<br/>
 do_pause.m               : pauses execution of main_workshop (if used without desktop)<br/>
-download_float.m         : downloads the Sprof or meta NetCDF file for one float<br/>
-download_multi_floats.m  : calls download_float to download Sprof NetCDF files for multiple floats<br/>
+download_float.m         : downloads the prof, Sprof or other NetCDF file for one float from the GDAC<br/>
+download_index.m         : downloads one index file from the GDAC<br/>
+download_multi_floats.m  : calls download_float to download NetCDF files from the GDAC for multiple floats<br/>
 get_dims.m               : returns number of profiles, parameters, and depth levels of one Sprof file<br/>
 get_inpolygon.m          : determines which of the given points are within the specified lon/lat limits<br/>
 get_lon_lat_lims.m       : obtains maximum/minimum latitude and longitude values from input data<br/>
 get_multi_profile_mean.m : calculates the mean profile of multiple profiles<br/>
 get_sensor_number.m      : determines sensor name and number from input<br/>
 get_var_name_units.m     : returns the long variable name and units name for a given short parameter name input<br/>
+initialize_meta.m        : reads the meta index file and initializes the global Meta struct<br/>
+initialize_prof.m        : reads the prof index file and initializes the global Prof struct<br/>
+initialize_sprof.m       : reads the sprof index file and initializes the global Sprof struct<br/>
+initialize_tech.m        : reads the tech index file and initializes the global Tech struct<br/>
+initialize_traj.m        : reads the traj index file and initializes the global Traj struct<br/>
 interp_lonlat.m          : interpolates missing positions if possible<br/>
 mod_xaxis_time.m         : sets length and labels for x axis (time) in time series and section plots<br/>
 plot_one_profile.m       : plots one profile<br/>
@@ -61,6 +75,7 @@ plot_profiles.m          : plots profiles of one or more specified float(s) for 
 plot_sections.m          : plots sections of one or more specified float(s) for the specified variable(s)<br/>
 plot_timeseries.m        : plots time series of one or more specified float(s)<br/>
 plot_trajectories.m      : plots trajectories of one or more specified float(s)<br/>
+select_profiles_per_type.m : helper function of select_profiles that selects one type of floats<br/>
 set_xlim.m               : sets xlimits of current plot (if start/end dates were specified)<br/>
 try_download.m           : attempts to download a file from any of the specified GDACs<br/>
 
