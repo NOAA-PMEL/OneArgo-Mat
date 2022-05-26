@@ -10,14 +10,19 @@ to 'bgc' if sensors other than pressure, temperature, and/or salinity are
 selected. In all other cases the default type is Settings.default_type,
 which is set in initialize_argo ('bgc' by default).
 
+Previously written scripts that use select_profiles calls that implicitly
+assume BGC only floats (but not specify BGC sensors) should either have
+Settings.default_type set to 'bgc' or have 'type','bgc' added to
+the calls to the select_profiles function.
+
 In previous versions, all floats that are listed in the Sprof index
 file were considered BGC floats. However, there are (183, as of
 April 2022) floats that are listed in the Sprof index file, but
 have only physical (pressure, temperature, salinity) sensors. These
 will now be labeled as physical floats.
 
-For BGC floats, only Sprof (not prof) files will be used, even if
-only physical variables (p, T, S) are used.
+For BGC floats, only Sprof (not prof) files will be downloaded and used,
+even if only physical variables (p, T, S) are currently used for plots etc.
 
 Note that there is no distinction between core and deep floats in the
 index files. Therefore, if a search for deep floats is conducted,
