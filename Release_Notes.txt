@@ -1,3 +1,14 @@
+RELEASE NOTES FOR USERS OF THE OneArgo-Mat TOOLBOX
+
+Version 1.0.1
+
+This version is almost identical to version 1.3 of the BGC-Argo-Mat
+toolbox (described below). The only change is that the assigned setting
+of Settings.default_type in initialize_argo was changed from
+'bgc' to 'all', and the header was adapted to OneArgo-Mat.
+
+==========================================================================
+
 RELEASE NOTES FOR USERS OF THE BGC_ARGO_MAT TOOLBOX
 
 Version 1.3

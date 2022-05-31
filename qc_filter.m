@@ -32,21 +32,16 @@ function Data_good = qc_filter(Data, variables, qc_flags, varargin)
 %              unchanged)
 %
 % AUTHORS:
-%   N. Buzby (UW), H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL),
-%   J. Plant, T. Maurer, Y. Takeshita (MBARI), D. Nicholson (WHOI),
-%   and A. Gray (UW)
+%   N. Buzby (UW), H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL)
 %
 % CITATION:
-%   H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer,
-%   Y. Takeshita, D. Nicholson, N. Buzby, A. Gray, 2021.
-%   BGC-Argo-Mat: A MATLAB toolbox for accessing and
-%   visualizing Biogeochemical Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.4971318.
-%   (*These authors contributed equally to the code.)
+%   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
+%   A MATLAB toolbox for accessing and visualizing Argo data.
+%   Zenodo. https://doi.org/10.5281/zenodo.6588042
 %
-% LICENSE: bgc_argo_mat_license.m
+% LICENSE: oneargo_mat_license.m
 %
-% DATE: MAY 26, 2022  (Version 1.3)
+% DATE: JUNE 1, 2022  (Version 1.0.1)
 
 % assign default qc_flags if none provided as input
 if nargin < 3

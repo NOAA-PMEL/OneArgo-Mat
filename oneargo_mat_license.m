@@ -694,6 +694,6 @@
 % <https://www.gnu.org/licenses/why-not-lgpl.html>.
 
 more on
-help bgc_argo_mat_license
+help oneargo_mat_license
 more off
 return

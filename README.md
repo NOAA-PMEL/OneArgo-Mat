@@ -1,18 +1,18 @@
-# BGC-Argo Toolbox for MATLAB (BGC-Argo-Mat)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4971318.svg)](https://doi.org/10.5281/zenodo.4971318)
+# Argo Toolbox for MATLAB (OneArgo-Mat)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6588041.svg)](https://doi.org/10.5281/zenodo.6588041)
 
 
-## IMPORTANT NOTE
+## NOTE
 
-This is the final release of this toolbox under the BGC-Argo-Mat name. All future development will be done under the [OneArgo-Mat](https://github.com/NOAA-PMEL/OneArgo-Mat) name.
+This is the first release of this toolbox under the OneArgo-Mat name. It is a further development of the [BGC-Argo-Mat](https://github.com/NOAA-PMEL/BGC_Argo_Mat_Toolbox) toolbox.
 
 ## ABOUT
 
-This toolbox contains a variety of functions for accessing, processing, and visualizing [Biogeochemical Argo](https://biogeochemical-argo.org) data. Functions are designed to be maximally efficient, to provide access to the most up-to-date data available, and to allow for downloading and plotting of those data based on numerous user-defined conditions. Release 1.3 of this toolbox allows access to all [Argo](https://argo.ucsd.edu/) data.
+This toolbox contains a variety of functions for accessing, processing, and visualizing [Argo](https://argo.ucsd.edu) data, including Core, Deep, and Biogeochemical Argo. Functions are designed to be maximally efficient, to provide access to the most up-to-date data available, and to allow for downloading and plotting of those data based on numerous user-defined conditions.
 
 ## QUICK DEMO
 
-This <a href="Demo.md">sample code</a> shows an example of selecting floats that match geographic and temporal limits and visualizing some of the data.
+This <a href="Demo.md">sample code</a> shows an example of selecting BGC floats that match geographic and temporal limits and visualizing some of the data.
 
 ## INSTALLATION AND USE
 
@@ -92,7 +92,7 @@ Show_under_ice.m         : shows marking of estimated positions in show_trajecto
 ## REQUIREMENTS
 At least MATLAB R2016b (or any newer release) is needed to use these functions without modifications.<br/>
 At least MATLAB R2019b is needed to overlay profiles of two different types of variables.<br/>
-An Internet connection is needed to get the latest versions of index and Sprof files; but the repository includes versions of these files so that it can be run offline.<br/>
+An Internet connection is needed to get the latest versions of index and profile files; but analysis and visualization functions can be run offline.<br/>
 Memory requirements depend on the number of profiles and variables that are simultaneously loaded into memory.<br/>
 Up to 10 GB local disk space is needed to store all Sprof files of BGC floats.<br/>
 Up to 50 GB local disk space is needed to store all prof files of core and deep floats.<br/>
@@ -110,7 +110,7 @@ H. C. Bittig et al., 2019. Front. Mar. Sci. https://doi.org/10.3389/fmars.2019.0
 
 ## TOOLBOX IN OTHER LANGUAGES
 This toolbox has been translated to R:<br/>
-[R toolbox](https://github.com/euroargodev/BGC-ARGO_R_WORKSHOP)
+[R toolbox](https://github.com/NOAA-PMEL/OneArgo-R)
 
 A similar toolbox in Python:<br/>
 [Python toolbox](https://github.com/go-bgc/workshop-python)
@@ -121,9 +121,7 @@ A similar toolbox in Python:<br/>
 
 Please cite this toolbox as:
 
-H. Frenzel*, J. Sharp*, A. Fassbender, N. Buzby, J. Plant, T. Maurer, Y. Takeshita, D. Nicholson, A. Gray, 2021. BGC-Argo-Mat: A MATLAB toolbox for accessing and visualizing Biogeochemical Argo data. Zenodo. https://doi.org/10.5281/zenodo.4971318.
-
-*These authors contributed equally to the code.
+H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat: A MATLAB toolbox for accessing and visualizing Argo data. Zenodo. https://doi.org/10.5281/zenodo.6588041
 
 ## LEGAL DISCLAIMER
 
