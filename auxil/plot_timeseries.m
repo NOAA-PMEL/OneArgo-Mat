@@ -105,7 +105,7 @@ for i = 1:2:length(varargin)-1
     elseif strcmpi(varargin{i}, 'qc')
         qc_flags = varargin{i+1};
     elseif strcmpi(varargin{i}, 'var2')
-        var2_orig = varargin{i+1};
+        var2_orig = char(varargin{i+1});
     elseif strcmpi(varargin{i}, 'legend')
         lgnd = varargin{i+1};
     elseif strcmpi(varargin{i}, 'time_label')
