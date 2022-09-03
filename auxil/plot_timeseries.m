@@ -250,11 +250,11 @@ for v = 1:nvars
             % reset color order
             set(gca,'ColorOrderIndex',1);
             hold(gca, 'on')
-            min_time = Datai.(floats{1}).TIME(1,1);
-            max_time = Datai.(floats{1}).TIME(1,end);
-            for f = 2:nfloats
+            min_time = Inf;
+            max_time = -Inf;
+            for f = 1:nfloats
                 min_time = min(min_time, Datai.(floats{f}).TIME(1,1));
-                max_time = max(max_time, Datai.(floats{f}).TIME(1,1));
+                max_time = max(max_time, Datai.(floats{f}).TIME(1,end));
             end
         end
         for f = 1:nfloats
