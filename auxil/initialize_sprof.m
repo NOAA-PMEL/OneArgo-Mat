@@ -37,7 +37,7 @@ Sprof.date = H{2};
 Sprof.lat  = H{3};
 Sprof.lon  = H{4};
 Sprof.ocean = H{5};
-% Sprof.profiler = H{6}; % profiler type; not yet used
+Sprof.profiler = H{6}; % profiler type
 % column 7: institution
 Sprof.sens = H{8};
 Sprof.split_sens = cellfun(@split, Sprof.sens, 'UniformOutput', false);

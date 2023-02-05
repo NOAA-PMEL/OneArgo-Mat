@@ -164,6 +164,7 @@ initialize_sprof([Settings.index_dir, sprof]);
 
 % Extract unique BGC floats
 [uwmo_sprof,ia] = unique(Sprof.wmo,'stable'); % keep list order
+Sprof_wmo = Sprof.wmo; % needed later if sprof_only is not empty
 Sprof.wmo = str2double(Sprof.wmo);
 ia(end+1) = length(Sprof.urls) + 1;
 bgc_prof_idx1 = ia(1:end-1);
@@ -185,12 +186,49 @@ initialize_prof([Settings.index_dir, prof]);
 % Extract unique floats
 % note that older floats have 5-digit IDs
 [uwmo_prof,ia2] = unique(Prof.wmo,'stable'); % keep list order
+Prof_wmo = Prof.wmo; % needed later if sprof_only is not empty
 Prof.wmo = str2double(Prof.wmo);
 ulist = Prof.urls(ia2);
-dacs = regexp(ulist(:,1),'^\w+','once','match');
+dacs = regexp(ulist(:),'^\w+','once','match');
 prof_fnames = regexprep(uwmo_prof,'\d+','$0_prof.nc');
-tmp = regexprep(ulist(:,1),'profiles.+','');
+tmp = regexprep(ulist(:),'profiles.+','');
 prof_fp = strcat(tmp,prof_fnames);
+
+% are there any floats that have only Sprof files, but not prof files?
+sprof_only = setdiff(uwmo_sprof, uwmo_prof);
+if ~isempty(sprof_only)
+    n_sprof_only = length(sprof_only);
+    fprintf('The following %d floats have only Sprof files, not prof files:\n', ...
+        n_sprof_only)
+    disp(cell2mat(sprof_only))
+    disp('') % empty line in command window
+    idx_sprof_only = cellfun(@(x) find(strcmp(Sprof_wmo, x), 1), sprof_only);
+    add_dacs = regexp(Sprof.urls(idx_sprof_only),'^\w+','once','match');
+    % since the float type is 'bgc', prof will be replaced by Sprof later
+    add_fnames = regexprep(sprof_only,'\d+','$0_prof.nc');
+    tmp = regexprep(Sprof.urls(idx_sprof_only),'profiles.+','');
+    add_fp = strcat(tmp, add_fnames);
+    % add them to other variables so Float structure will have them
+    prof_fp = [prof_fp; add_fp];
+    prof_fnames = [prof_fnames; add_fnames];
+    dacs = [dacs; add_dacs];
+    wmo_sprof_only = str2double(sprof_only);
+    idx_in_sprof = cell2mat(arrayfun(@(x) find(Sprof.wmo == x), ...
+        wmo_sprof_only, 'UniformOutput', false));
+    % add all fields from the "special" floats into the Prof structure
+    Prof.urls = [Prof.urls; Sprof.urls(idx_in_sprof)];
+    Prof.date = [Prof.date; Sprof.date(idx_in_sprof)];
+    Prof.lat = [Prof.lat; Sprof.lat(idx_in_sprof)];
+    Prof.lon = [Prof.lon; Sprof.lon(idx_in_sprof)];
+    Prof.ocean = [Prof.ocean; Sprof.ocean(idx_in_sprof)];
+    Prof.profiler = [Prof.profiler; Sprof.profiler(idx_in_sprof)];
+    Prof.update = [Prof.update; Sprof.update(idx_in_sprof)];
+    Prof.split_sens = [Prof.split_sens; Sprof.split_sens(idx_in_sprof)];
+    Prof.wmo = [Prof.wmo; Sprof.wmo(idx_in_sprof)];
+    Prof_wmo = [Prof_wmo; Sprof_wmo(idx_in_sprof)];
+    [uwmo_prof,ia2] = unique(Prof_wmo,'stable');
+end
+
 
 % need to find out which floats are phys (in Prof only) and bgc (in Sprof)
 is_uniq_bgc = ismember(uwmo_prof,uwmo_sprof);
@@ -271,6 +309,15 @@ bgc_prof_idx1 = bgc_prof_idx1(is_true_bgc == 1);
 bgc_prof_idx2 = bgc_prof_idx2(is_true_bgc == 1);
 Float.bgc_prof_idx1(strcmp(Float.type, 'bgc')) = bgc_prof_idx1;
 Float.bgc_prof_idx2(strcmp(Float.type, 'bgc')) = bgc_prof_idx2;
+% add this check in case that files without prof files do not have
+% any BGC sensors, so that they will be classified as 'phys' floats
+% but Sprof files need to be read anyway
+Float.has_prof_file = ones(length(Float.type), 1);
+if ~isempty(sprof_only)
+    idx_in_float = cell2mat(arrayfun(@(x) find(Float.wmoid == x), ...
+        wmo_sprof_only, 'UniformOutput', false));
+    Float.has_prof_file(idx_in_float) = 0;
+end
 
 % for all "true" BGC floats, i.e., those that are listed in the Sprof
 % index file and have more than pTS sensors, Sprof files will be used
@@ -279,12 +326,14 @@ idx_bgc = strcmp(Float.type, 'bgc');
 fprintf('%d "true" BGC floats were found\n', sum(idx_bgc));
 idx_phys = strcmp(Float.type, 'phys');
 fprintf('%d core and deep floats were found\n', sum(idx_phys));
-Float.file_path(strcmp(Float.type, 'bgc')) = ...
+Float.file_path(strcmp(Float.type, 'bgc') | ~Float.has_prof_file) = ...
     cellfun(@(x) strrep(x, 'prof', 'Sprof'), ...
-    Float.file_path(strcmp(Float.type, 'bgc')), 'UniformOutput', false);
-Float.file_name(strcmp(Float.type, 'bgc')) = ...
+    Float.file_path(strcmp(Float.type, 'bgc') | ~Float.has_prof_file), ...
+    'UniformOutput', false);
+Float.file_name(strcmp(Float.type, 'bgc') | ~Float.has_prof_file) = ...
     cellfun(@(x) strrep(x, 'prof', 'Sprof'), ...
-    Float.file_name(strcmp(Float.type, 'bgc')), 'UniformOutput', false);
+    Float.file_name(strcmp(Float.type, 'bgc') | ~Float.has_prof_file), ...
+    'UniformOutput', false);
 
 % use the update date of the last profile of each float
 Float.update(strcmp(Float.type, 'bgc')) = Sprof.update(bgc_prof_idx2);
