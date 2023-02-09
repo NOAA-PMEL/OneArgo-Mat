@@ -139,9 +139,10 @@ variables = check_variables(variables, 'warning', ...
 if ~isempty(float_profs)
     no_profs = cellfun(@isempty, float_profs);
     if any(no_profs)
-        warning('No profiles specified for float(s) %s', ...
-            num2str(float_ids(no_profs)))
+        warning('No profiles specified for float(s):');
+        disp(float_ids(no_profs))
         float_ids(no_profs) = [];
+        float_profs(no_profs) = [];
     end
 end
 
