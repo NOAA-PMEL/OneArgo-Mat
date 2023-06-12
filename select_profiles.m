@@ -46,7 +46,9 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           match all other criteria
 %   'interp_lonlat', intp : if intp is 'yes' (default), missing lon/lat
 %           values (e.g., under ice) will be interpolated;
-%           set intp to 'no' to suppress interpolation
+%           set intp to 'no' to suppress interpolation;
+%           the default is taken from Settings.interp_lonlat (defined
+%           in initialize_argo.m)
 %   'min_num_prof',num_prof: Select only floats that have at least
 %           num_prof profiles that meet all other criteria
 %   'mode',mode: Valid modes are 'R' (real-time), 'A' (adjusted), and
@@ -99,7 +101,7 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -123,7 +125,7 @@ dac = [];
 floats = [];
 depth = [];
 min_num_prof = 0;
-interp_ll = 'yes';
+interp_ll = Settings.interp_lonlat;
 type = []; % default assignment depends on sensor selection
 
 % parse optional arguments
@@ -159,7 +161,7 @@ sensor = check_variables(sensor, 'warning', ...
     'unknown sensor will be ignored');
 
 % only use mode if sensor was specified
-if ~isempty(mode) && isempty(sensor) && ~strcmp(type, 'phys')
+if ~strcmp(sort(mode), 'ADR') && isempty(sensor) && ~strcmp(type, 'phys')
     warning('Since neither ''sensor'' nor ''type'',''phys'' was specified, the mode will be ignored.')
     disp('All floats and profiles matching the other criteria will be selected.')
     pause(3);

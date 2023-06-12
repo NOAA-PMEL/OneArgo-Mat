@@ -22,7 +22,9 @@ function [Data, Mdata] = load_float_data(float_ids, variables, ...
 %                 not global)
 %   'interp_lonlat', intp : if intp is 'yes' (default), missing lon/lat
 %                 values (e.g., under ice) will be interpolated;
-%                 set intp to 'no' to suppress interpolation
+%                 set intp to 'no' to suppress interpolation;
+%                 the default is taken from Settings.interp_lonlat (defined
+%                 in initialize_argo.m)
 %
 % OUTPUTS:
 %   Data        : struct with the requested variables (including QC flags.
@@ -36,7 +38,7 @@ function [Data, Mdata] = load_float_data(float_ids, variables, ...
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -71,7 +73,7 @@ if nargin < 3
     float_profs = [];
 end
 
-interp_ll = 'y'; % by default, interpolate missing positions
+interp_ll = Settings.interp_lonlat;
 % parse optional arguments
 for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'interp_lonlat')

@@ -32,9 +32,11 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   don't want to plot the full trajectories of the
 %                   given floats, but only those locations that match
 %                   spatial and/or temporal constraints
-%   'interp_lonlat', intp : if intp is 'yes' (default), missing lon/lat
+%   'interp_lonlat', intp : if intp is 'yes', missing lon/lat
 %                   values (typically under ice) will be interpolated;
-%                   set intp to 'no' to suppress interpolation
+%                   set intp to 'no' to suppress interpolation;
+%                   the default is taken from Settings.interp_lonlat
+%                   (defined in initialize_argo.m)
 %   'mark_estim',mark: if mark is 'yes', show estimated locations in
 %                   light gray (set by Settings.color_estim_loc);
 %                   if 'no' (default) use the same color for known and
@@ -63,7 +65,7 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -90,7 +92,7 @@ lines = 'no';
 lgnd = 'yes';
 sz = 36;
 mark_estim = 'no';
-interp_lonlat = 'yes';
+interp_lonlat = Settings.interp_lonlat;
 sensor = [];
 
 % parse optional arguments
