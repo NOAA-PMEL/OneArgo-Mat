@@ -22,7 +22,7 @@ function initialize_argo()
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -115,6 +115,9 @@ host_godae = 'https://usgodae.org/ftp/outgoing/argo/';
 % Additional hosts could be added here
 Settings.hosts = {host_godae;host_ifremer};
 % Settings.hosts = {host_ifremer;host_godae}; % alternate order of hosts
+
+% Default: do not interpolate missing lon/lat values
+Settings.interp_lonlat = 'no';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % END OF SECTION WITH USER SPECIFIC OPTIONS
