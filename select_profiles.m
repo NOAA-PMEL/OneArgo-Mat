@@ -281,13 +281,13 @@ for fl = 1:length(good_float_ids)
     fl_idx = find(Float.wmoid == good_float_ids(fl), 1);
     n_prof_exp = Float.prof_idx2(fl_idx) - Float.prof_idx1(fl_idx) + 1;
     if n_prof_exp > n_prof
-        type = 'prof'; % default
+        file_type = 'prof'; % default
         if contains(filename, 'Sprof')
-            type = 'Sprof';
+            file_type = 'Sprof';
         end
         warning(['The index file lists %d profiles for float %d, ', ...
             'but the %s file has only %d profiles.'], ...
-            n_prof_exp, good_float_ids(fl), type, n_prof)
+            n_prof_exp, good_float_ids(fl), file_type, n_prof)
     end
     lon = ncread(filename, 'LONGITUDE');
     lat = ncread(filename, 'LATITUDE');
