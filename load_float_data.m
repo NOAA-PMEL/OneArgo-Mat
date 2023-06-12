@@ -89,7 +89,7 @@ fields_mdata = {'PROJECT_NAME';'PI_NAME';'DATA_CENTRE'};
 % only some variables are always loaded, others only by request
 base_vars = {'CYCLE_NUMBER'; 'DIRECTION'; 'JULD'; 'JULD_QC'; ...
     'JULD_LOCATION'; 'LATITUDE'; 'LONGITUDE'; 'POSITION_QC'; ...
-    'PARAMETER_DATA_MODE'; 'PARAMETER'};
+    'PARAMETER_DATA_MODE'; 'PARAMETER'; 'DATA_MODE'};
 
 if ~isempty(variables) && strcmp(variables{1}, 'ALL')
     use_all_vars = 1;
@@ -140,6 +140,9 @@ for n = 1:length(good_float_ids)
                 || endsWith(all_vars{l}, '_dPRES'))
             continue; % these variables are only in Sprof files
         end
+        if is_bgc_float && strcmp(all_vars{l}, 'DATA_MODE')
+            continue; % this variable is only in prof files
+        end
         try
             tmp = ncread(filename,all_vars{l});
         catch
@@ -160,7 +163,13 @@ for n = 1:length(good_float_ids)
         if isequal(size(tmp), [n_levels, n_prof])
             Data.(str_floatnum).(all_vars{l}) = tmp;
         elseif isequal(size(tmp), [n_prof 1])
-            Data.(str_floatnum).(all_vars{l}) = repmat(tmp', n_levels, 1);
+            if strcmp(all_vars{l}, 'DATA_MODE')
+                % emulate the setup for bgc floats
+                Mdata.(str_floatnum).PARAMETER_DATA_MODE = ...
+                    repmat(tmp',[n_param, 1]);
+            else
+                Data.(str_floatnum).(all_vars{l}) = repmat(tmp', n_levels, 1);
+            end
         else
             chars = permute(sum(sum(tmp)), [3 4 1 2]);
             [~, idx] = max(chars(end,:));
@@ -186,27 +195,23 @@ for n = 1:length(good_float_ids)
     Mdata.(str_floatnum).('PARAMETER') = temp(params_keep);
     clear temp;
     
-    if is_bgc_float
-        % parse parameter data modes
-        % create data mode variable for each parameter
-        % expand that variable to match size of data matrix
-        p = 0; % index of parameters actually used
-        for m = 1:n_param
-            if params_keep(m)
-                p = p + 1;
-                Data.(str_floatnum).(...
-                    [cell2mat(Mdata.(str_floatnum).PARAMETER(p)),...
-                    '_DATA_MODE']) = ...
-                    repmat(Mdata.(str_floatnum).('PARAMETER_DATA_MODE')(m,:),...
-                    n_levels,1);
-            end
+    % parse parameter data modes
+    % create data mode variable for each parameter
+    % expand that variable to match size of data matrix
+    p = 0; % index of parameters actually used
+    for m = 1:n_param
+        if params_keep(m)
+            p = p + 1;
+            Data.(str_floatnum).(...
+                [cell2mat(Mdata.(str_floatnum).PARAMETER(p)),...
+                '_DATA_MODE']) = ...
+                repmat(Mdata.(str_floatnum).('PARAMETER_DATA_MODE')(m,:),...
+                n_levels,1);
         end
-        % clear both parameter and parameter data mode from metadata
-        Mdata.(str_floatnum) = rmfield(Mdata.(str_floatnum),...
-            {'PARAMETER','PARAMETER_DATA_MODE'});
-    else
-        Mdata.(str_floatnum) = rmfield(Mdata.(str_floatnum), 'PARAMETER');
     end
+    % clear both parameter and parameter data mode from metadata
+    Mdata.(str_floatnum) = rmfield(Mdata.(str_floatnum),...
+        {'PARAMETER','PARAMETER_DATA_MODE'});
     
     % add information about deploying organization and PI to meta data
     for f = 1:length(fields_mdata)

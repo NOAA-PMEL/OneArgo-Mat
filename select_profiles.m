@@ -55,7 +55,10 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           Default is 'RAD' (all modes).
 %           If multiple sensors are specified, all of them must be in
 %           the selected mode(s).
-%           If 'sensor' option is not used, the 'mode' option is ignored.
+%           If 'sensor' option is not used, the 'mode' option is ignored,
+%           unless 'type','phys' is specified (for non-BGC floats,
+%           pressure, temperature, and salinity are always in the same
+%           mode).
 %   'ocean', ocean: Valid choices are 'A' (Atlantic), 'P' (Pacific), and
 %           'I' (Indian). This selection is in addition to the specified
 %           longitude and latitude limits. (To select all floats and
@@ -156,7 +159,10 @@ sensor = check_variables(sensor, 'warning', ...
     'unknown sensor will be ignored');
 
 % only use mode if sensor was specified
-if isempty(sensor)
+if ~isempty(mode) && isempty(sensor) && ~strcmp(type, 'phys')
+    warning('Since neither ''sensor'' nor ''type'',''phys'' was specified, the mode will be ignored.')
+    disp('All floats and profiles matching the other criteria will be selected.')
+    pause(3);
     mode = [];
 end
 
@@ -312,7 +318,9 @@ for fl = 1:length(good_float_ids)
         press = ncread(filename, 'PRES');
         has_press = (max(press) >= depth)';
     end
-    if ~isempty(sensor) && ~strcmp(mode, 'ADR')
+    float_type = Float.type{Float.wmoid == good_float_ids(fl)};
+    if ~strcmp(mode, 'ADR') && ...
+            (~isempty(sensor) || strcmp(float_type, 'phys'))
         params = ncread(filename, 'PARAMETER');
         param_names = cell(n_param, 1);
         % find the index of a profile that has the most sensors available
@@ -322,10 +330,15 @@ for fl = 1:length(good_float_ids)
             param_names{p} = strtrim(params(:,p,1,pidx)');
         end
         param_idx = zeros(length(sensor), 1);
-        for s = 1:length(sensor)
-            param_idx(s) = find(strcmp(param_names, sensor{s}), 1);
+        if strcmp(float_type, 'phys')
+            data_mode = ncread(filename, 'DATA_MODE')';
+            param_idx = ones(3, 1); % for TEMP, PSAL, PRES
+        else       
+            for s = 1:length(sensor)
+                param_idx(s) = find(strcmp(param_names, sensor{s}), 1);
+            end
+            data_mode = ncread(filename, 'PARAMETER_DATA_MODE');
         end
-        data_mode = ncread(filename, 'PARAMETER_DATA_MODE');
     end
     date = datenum(juld) + datenum([1950 1 1]);
     
@@ -353,6 +366,12 @@ for fl = 1:length(good_float_ids)
     end
     if strcmp(mode, 'ADR')
         has_mode = ones(size(inpoly));
+    elseif strcmp(type, 'phys')
+        has_mode = zeros(size(inpoly));
+        for m = 1:length(mode)
+            has_mode = has_mode + ...
+                (data_mode(1,:)' == mode(m));
+        end
     else
         sens_has_mode = zeros(size(inpoly));
         for s = 1:length(sensor)
