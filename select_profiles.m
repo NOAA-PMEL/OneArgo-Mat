@@ -241,23 +241,50 @@ end
 dn1 = datenum(start_date);
 dn2 = datenum(end_date);
 
+if isempty(floats)
+    Sprof_sel = Sprof;
+    Prof_sel = Prof;
+else
+    % filter out the selected floats before running other selections
+    tmp = arrayfun(@(x) find(Sprof.wmo==x), floats, 'UniformOutput', false);
+    idx_sprof = vertcat(tmp{:});
+    sprof_fields = fieldnames(Sprof);
+    for i = 1:length(sprof_fields)
+        Sprof_sel.(sprof_fields{i}) = Sprof.(sprof_fields{i})(idx_sprof);
+    end
+    tmp = arrayfun(@(x) find(Prof.wmo==x), floats, 'UniformOutput', false);
+    idx_prof = vertcat(tmp{:});
+    prof_fields = fieldnames(Prof);
+    for i = 1:length(prof_fields)
+        Prof_sel.(prof_fields{i}) = Prof.(prof_fields{i})(idx_prof);
+    end
+end
+
 % select bgc and phys floats separately, then combine the results
 if strcmp(type, 'bgc') || strcmp(type, 'all')
-    bgc_float_ids = select_profiles_per_type(Sprof, ...
+    bgc_float_ids = select_profiles_per_type(Sprof_sel, ...
         lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean);
 else
     bgc_float_ids = [];
 end
 if strcmp(type, 'phys') || strcmp(type, 'all')
     % this will also find bgc floats; so they need to be filtered out
-    phys_float_ids = select_profiles_per_type(Prof, ...
+    phys_float_ids = select_profiles_per_type(Prof_sel, ...
         lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean);
     [~,phys_float_idx] = intersect(Float.wmoid, phys_float_ids);
     phys_float_ids(~strcmp(Float.type(phys_float_idx), 'phys')) = [];
+    if isempty(phys_float_ids)
+        phys_float_ids = []; % go from size 1x0 to 0x0 for cat below
+    end
 else
     phys_float_ids = [];
 end
 float_ids = unique(cat(1, bgc_float_ids, phys_float_ids)); % includes sorting
+
+if isempty(float_ids)
+    warning('No matching floats were found')
+    return
+end
 
 % check for selected DACs if applicable (DACs are stored by float,
 % not by profile)
@@ -266,11 +293,6 @@ if ~isempty(dac)
     found_dacs = Float.dac(idx);
     uses_dac = ismember(found_dacs, dac);
     float_ids = float_ids(uses_dac);
-end
-
-if ~isempty(floats)
-    % select only those floats found so far that also were specified
-    float_ids = intersect(float_ids, floats);
 end
 
 % download prof and Sprof files if necessary
