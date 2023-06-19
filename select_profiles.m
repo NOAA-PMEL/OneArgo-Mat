@@ -259,6 +259,7 @@ else
         Prof_sel.(prof_fields{i}) = Prof.(prof_fields{i})(idx_prof);
     end
 end
+clear Sprof Prof;
 
 % select bgc and phys floats separately, then combine the results
 if strcmp(type, 'bgc') || strcmp(type, 'all')
@@ -382,10 +383,16 @@ for fl = 1:length(good_float_ids)
     if isempty(ocean)
         is_ocean = ones(size(inpoly));
     else
-        prof_loc = Prof.lon + 1i * Prof.lat;
+        if contains(filename, 'Sprof')
+            this_Prof = Sprof_sel;
+        else
+            this_Prof = Prof_sel;
+        end
+        this_fl_idx = find(this_Prof.wmo == good_float_ids(fl));
+        prof_loc = this_Prof.lon(this_fl_idx) + 1i * this_Prof.lat(this_fl_idx);
         this_loc = lon + 1i * lat;
         [~,idx] = min(abs(bsxfun(@minus,prof_loc(:),this_loc(:).')));
-        is_ocean = strcmp(Prof.ocean(idx),ocean);
+        is_ocean = strcmp(this_Prof.ocean(this_fl_idx(idx)),ocean);
         is_ocean(isnan(this_loc)) = 0;
     end
     if strcmp(mode, 'ADR')
