@@ -1,7 +1,7 @@
 function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
     show_profiles(float_ids, variables, varargin)
 % show_profiles  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   [good_float_ids, mean_prof, std_prof, mean_pres] = ...
@@ -12,7 +12,8 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %   float(s) and calls plot_profile to create the plot(s).
 %
 % INPUTS:
-%   float_ids  : WMO ID(s) of the float(s)
+%   float_ids  : WMO ID(s) of the float(s); or the Data struct as 
+%                returned by the load_float_data function
 %   variables  : cell array of variable(s) (i.e., sensor(s)) to show
 %                (if not set: {'DOXY'} (=O2) is used)
 %
@@ -20,6 +21,7 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %   'depth',[min max] : minimum and maximum depth levels to plot
 %   'float_profs',fp : cell array with per-float indices of the profiles to
 %                   be shown, as returned by select_profiles
+%                   (ignored if Data struct was passed in as first argument)
 %   'method',method : by default (method='all') all profiles from each float
 %                   are shown in one plot per variable;
 %                   use method='mean' to plot mean and standard deviation
@@ -76,7 +78,7 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -134,20 +136,36 @@ end
 variables = check_variables(variables, 'warning', ...
     'unknown sensor will be  ignored');
 
-% if float profiles were specified, make sure that there are no empty
-% arrays; if so, disregard these floats
-if ~isempty(float_profs)
-    no_profs = cellfun(@isempty, float_profs);
-    if any(no_profs)
-        warning('No profiles specified for float(s):');
-        disp(float_ids(no_profs))
-        float_ids(no_profs) = [];
-        float_profs(no_profs) = [];
+% check if alternate first argument (Data instead of float_ids) was used
+if isstruct(float_ids)
+    Data = float_ids;
+    clear float_ids;
+    % need to construct good_float_ids as a numerical array and
+    % the Mdata struct with WMO_NUMBER entries
+    Mdata = struct();
+    str_floats = fieldnames(Data);
+    nfloats = length(str_floats);
+    good_float_ids = nan(nfloats, 1);
+    for f = 1:nfloats
+        good_float_ids(f) = str2double(str_floats{f}(2:end));
+        Mdata.(str_floats{f}).WMO_NUMBER = good_float_ids(f);
     end
+else
+    Data = [];
+    % if float profiles were specified, make sure that there are no empty
+    % arrays; if so, disregard these floats
+    if ~isempty(float_profs)
+        no_profs = cellfun(@isempty, float_profs);
+        if any(no_profs)
+            warning('No profiles specified for float(s):');
+            disp(float_ids(no_profs))
+            float_ids(no_profs) = [];
+            float_profs(no_profs) = [];
+        end
+    end
+    % download prof and Sprof files if necessary
+    good_float_ids = download_multi_floats(float_ids);
 end
-
-% download prof and Sprof files if necessary
-good_float_ids = download_multi_floats(float_ids);
 
 if isempty(good_float_ids)
     warning('no valid floats found')
@@ -156,8 +174,10 @@ else
         'warning', 'Not available in all specified floats');
     var2 = check_float_variables(good_float_ids, var2, 'warning', ...
         'Not available in all specified floats');
-    [Data, Mdata] = load_float_data(good_float_ids, [avail_vars; var2], ...
-        float_profs);
+    if isempty(Data)
+        [Data, Mdata] = load_float_data(good_float_ids, [avail_vars; var2], ...
+            float_profs);
+    end
     [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
         avail_vars, basename, 'var2', var2, varargpass{:});
 end

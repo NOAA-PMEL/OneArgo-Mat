@@ -1,6 +1,6 @@
 function good_float_ids = show_sections(float_ids, variables, varargin)
 % show_sections  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   good_float_ids = show_sections(float_ids, variables, varargin)
@@ -11,7 +11,8 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %
 % INPUTS:
 %   float_ids  : WMO ID(s) of one or more floats
-%                (if not set: Settings.demo_float is used)
+%                (if not set: Settings.demo_float is used); or 
+%                the Data struct as returned by the load_float_data function
 %   variables  : cell array of variable(s) (i.e., sensor(s)) to show
 %                (if not set: {'DOXY'} (=O2) is used)
 %
@@ -21,6 +22,7 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 %   'depth',[min max]  : mininum and maximum depth to plot (default: all)
 %   'float_profs',fp   : per-float indices of the profiles to be shown,
 %                        as returned by select_profiles
+%                        (ignored if Data struct was passed in as first argument)
 %   'isopyc',isopyc    : plot isopycnal lines if non-zero (default: 1=on)
 %                        using a value of 1 will result in plotting
 %                        isopycnal lines at default values (24:27);
@@ -68,7 +70,7 @@ function good_float_ids = show_sections(float_ids, variables, varargin)
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -136,8 +138,25 @@ end
 variables = check_variables(variables, 'warning', ...
     'unknown sensor will be ignored');
 
-% download Sprof files if necessary
-good_float_ids = download_multi_floats(float_ids);
+% check if alternate first argument (Data instead of float_ids) was used
+if isstruct(float_ids)
+    Data = float_ids;
+    clear float_ids;
+    % need to construct good_float_ids as a numerical array and
+    % the Mdata struct with WMO_NUMBER entries
+    Mdata = struct();
+    str_floats = fieldnames(Data);
+    nfloats = length(str_floats);
+    good_float_ids = nan(nfloats, 1);
+    for f = 1:nfloats
+        good_float_ids(f) = str2double(str_floats{f}(2:end));
+        Mdata.(str_floats{f}).WMO_NUMBER = good_float_ids(f);
+    end
+else
+    Data = [];
+    % download Sprof files if necessary
+    good_float_ids = download_multi_floats(float_ids);
+end
 
 if isempty(good_float_ids)
     warning('no valid floats found')
@@ -154,7 +173,9 @@ else
             avail_vars{end+1} = 'PSAL';
         end
     end
-    [Data, Mdata] = load_float_data(good_float_ids, avail_vars, float_profs);
+    if isempty(Data)
+        [Data, Mdata] = load_float_data(good_float_ids, avail_vars, float_profs);
+    end
     plot_sections(Data, Mdata, avail_vars, nvars, plot_isopyc, plot_mld, ...
         time_label, depth, raw, obs, basename, varargpass{:})
 end

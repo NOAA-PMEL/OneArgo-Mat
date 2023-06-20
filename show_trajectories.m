@@ -1,6 +1,6 @@
 function good_float_ids = show_trajectories(float_ids,varargin)
 % show_trajectories  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   good_float_ids = show_trajectories(float_ids,varargin)
@@ -11,7 +11,8 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %
 % INPUT:
 %   float_ids : WMO ID(s) of one or more floats
-%               (if not set: Settings.demo_float is used as a demo)
+%               (if not set: Settings.demo_float is used as a demo); or 
+%               the Data struct as returned by the load_float_data function
 %
 % OPTIONAL INPUTS:
 %   'color',color : color (string) can be either 'multiple' (different
@@ -32,6 +33,7 @@ function good_float_ids = show_trajectories(float_ids,varargin)
 %                   don't want to plot the full trajectories of the
 %                   given floats, but only those locations that match
 %                   spatial and/or temporal constraints
+%                   (ignored if Data struct was passed in as first argument)
 %   'interp_lonlat', intp : if intp is 'yes', missing lon/lat
 %                   values (typically under ice) will be interpolated;
 %                   set intp to 'no' to suppress interpolation;
@@ -133,15 +135,31 @@ if strcmp(color, 'mode') && isempty(sensor)
     return;
 end
 
-% download Sprof files if necessary
-good_float_ids = download_multi_floats(float_ids);
+% check if alternate first argument (Data instead of float_ids) was used
+if isstruct(float_ids)
+    Data = float_ids;
+    clear float_ids;
+    % need to construct good_float_ids as a numerical array
+    str_floats = fieldnames(Data);
+    nfloats = length(str_floats);
+    good_float_ids = nan(nfloats, 1);
+    for f = 1:nfloats
+        good_float_ids(f) = str2double(str_floats{f}(2:end));
+    end
+else
+    Data = [];
+    % download Sprof files if necessary
+    good_float_ids = download_multi_floats(float_ids);
+end
 
 if isempty(good_float_ids)
     warning('no valid floats found')
 else
-    % meta data return values and observations are not needed here
-    Data = load_float_data(good_float_ids, sensor, float_profs, ...
-        'interp_lonlat', interp_lonlat);
+    if isempty(Data)
+        % meta data return values and observations are not needed here
+        Data = load_float_data(good_float_ids, sensor, float_profs, ...
+            'interp_lonlat', interp_lonlat);
+    end
     if ~isempty(pos)
         floats = fieldnames(Data);
         nfloats = length(floats);
@@ -162,6 +180,6 @@ else
             end
         end
     end
-    plot_trajectories(Data, color, title, fn_png, float_ids, lines, ...
+    plot_trajectories(Data, color, title, fn_png, good_float_ids, lines, ...
         lgnd, sz, mark_estim, sensor);
 end
