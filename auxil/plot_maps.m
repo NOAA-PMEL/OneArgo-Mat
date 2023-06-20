@@ -198,7 +198,7 @@ for v = 1:nvars
         geolimits(latlim,lonlim)
         geobasemap grayland
         if ~isempty(cax)
-            caxis(cax)
+            caxis(cax);
         end
         for f = 1:nfloats
             if ~show_var(v,f)
@@ -216,16 +216,28 @@ for v = 1:nvars
             end
             good_pts = ~isnan(Datai.(floats{f}).(variables{v})(idz,:));
             if ~isempty(good_pts)
-                geoscatter(Data.(floats{f}).LATITUDE(1,good_pts), lon{f}(good_pts), ...
-                    sz,Datai.(floats{f}).(variables{v})(idz,good_pts), '.')
-                caxis
+                if sum(good_pts) == 3
+                    % when there are exactly 3 good points, Matlab
+                    % interprets the values as an RGB triplet instead of
+                    % variable values; run a loop over them instead
+                    idx_good_pts = find(good_pts);
+                    for i = 1:3
+                        geoscatter(Data.(floats{f}).LATITUDE(1,idx_good_pts(i)), ...
+                            lon{f}(idx_good_pts(i)), ...
+                            sz,Datai.(floats{f}).(variables{v})(idz,idx_good_pts(i)), '.');
+                    end
+
+                else
+                    geoscatter(Data.(floats{f}).LATITUDE(1,good_pts), lon{f}(good_pts), ...
+                        sz,Datai.(floats{f}).(variables{v})(idz,good_pts), '.');
+                end
             end
         end
         title(sprintf('%s %s at %d dbar%s', long_name, units, ...
             depths(d), title_added{v}), 'FontSize', 14);
         colorbar
         if ~isempty(basename)
-            fn_png = sprintf('%s_%s_%ddbar.png', basename, variables{v}, depths(d))
+            fn_png = sprintf('%s_%s_%ddbar.png', basename, variables{v}, depths(d));
             print(f1, '-dpng', fn_png);
         end
     end
