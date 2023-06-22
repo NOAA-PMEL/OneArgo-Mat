@@ -259,7 +259,6 @@ else
         Prof_sel.(prof_fields{i}) = Prof.(prof_fields{i})(idx_prof);
     end
 end
-clear Sprof Prof;
 
 % select bgc and phys floats separately, then combine the results
 if strcmp(type, 'bgc') || strcmp(type, 'all')
