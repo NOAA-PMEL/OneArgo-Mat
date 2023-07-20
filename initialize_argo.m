@@ -254,8 +254,6 @@ ia2(end+1) = length(Prof.urls) + 1;
 Float.prof_idx1 = ia2(1:end-1);
 Float.prof_idx2 = ia2(2:end) - 1;
 Float.profiler = Prof.profiler(Float.prof_idx1);
-% use the update date of the last profile
-Float.update = Prof.update(Float.prof_idx2);
 Float.type = cell(Float.nfloats, 1);
 Float.type(cellfun(@isempty, Float.type)) = {'phys'};
 Float.type(is_uniq_bgc) = {'bgc'};
@@ -269,6 +267,8 @@ len_sens = cellfun(@length, Sprof.sens);
 count = 0;
 index_bgc = 0;
 is_true_bgc = ones(length(bgc_prof_idx1), 1);
+count_bgc = 0; % used for index_full_to_bgc
+index_full_to_bgc = nan(Float.nfloats, 1); % used for finding update dates
 for f = 1:Float.nfloats
     if strcmp(Float.type{f}, 'phys')
         % ar_index_global_prof.txt does not contain information about
@@ -297,6 +297,9 @@ for f = 1:Float.nfloats
             Float.type{f} = 'phys';
             count = count + 1;
             is_true_bgc(index_bgc) = 0;
+        else
+            count_bgc = count_bgc + 1;
+            index_full_to_bgc(f) = count_bgc;
         end
     end
 end
@@ -338,8 +341,19 @@ Float.file_name(strcmp(Float.type, 'bgc') | ~Float.has_prof_file) = ...
     Float.file_name(strcmp(Float.type, 'bgc') | ~Float.has_prof_file), ...
     'UniformOutput', false);
 
-% use the update date of the last profile of each float
-Float.update(strcmp(Float.type, 'bgc')) = Sprof.update(bgc_prof_idx2);
+% use the most recent update date across profiles for any given float
+for f = 1:length(Float.prof_idx1)
+    if strcmp(Float.type{f}, 'bgc')
+        flt = index_full_to_bgc(f);
+        update_dates = str2double(Sprof.update(bgc_prof_idx1(flt):bgc_prof_idx2(flt)));
+        [~,idx] = max(update_dates);
+        Float.update{f} = Sprof.update{bgc_prof_idx1(flt) + idx - 1};
+    else
+        update_dates = str2double(Prof.update(Float.prof_idx1(f):Float.prof_idx2(f)));
+        [~,idx] = max(update_dates);
+        Float.update{f} = Prof.update{Float.prof_idx1(f) + idx - 1};
+    end
+end
 
 % Download meta index file from GDAC to Index directory
 % Since it is rather small, download the uncompressed file directly
