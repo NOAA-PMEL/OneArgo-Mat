@@ -1,6 +1,6 @@
 function Data_good = qc_filter(Data, variables, qc_flags, varargin)
 % qc_filter  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   Data_good = qc_filter(Data, variables [, qc_flags], varargin)
@@ -24,9 +24,16 @@ function Data_good = qc_filter(Data, variables, qc_flags, varargin)
 %   Additional pairs of variables and qc flags can be specified, e.g.:
 %     Data_good = qc_filter(Data, 'DOXY',[1:3,8], {'NITRATE';'CHLA'},[1,2]...
 %         {'BBP532';'BBP470'},[1,2,8], 'DOWNWELLING_PAR',1);
+%   raw     : if set to 'n' (default), use only adjusted data; however,
+%             if not all floats have adjusted data for the selected
+%             variables, raw data will be used;
+%             if set to 'y', only raw data will be used;
+%             if set to 'no_strict', only adjusted data will be used;
+%             floats without adjusted data for the selected variables
+%             will be omitted from the returned struct
 %
 % OUTPUT:
-%   Data_good: struct that contains all the varaiables from the input Data
+%   Data_good: struct that contains all the variables from the input Data
 %              struct that match the given QC flags;
 %              all other values are set to NaN (the size of the arrays is
 %              unchanged)
@@ -37,7 +44,7 @@ function Data_good = qc_filter(Data, variables, qc_flags, varargin)
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -47,6 +54,7 @@ function Data_good = qc_filter(Data, variables, qc_flags, varargin)
 if nargin < 3
     qc_flags = [1,2];
 end
+raw = 'n'; % default: do not take raw values if adjusted are available
 
 if ischar(variables)
     variables = cellstr(variables);
@@ -60,7 +68,9 @@ end
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
-    if ischar(varargin{i})
+    if strcmpi(varargin{i}, 'raw')
+        raw = varargin{i+1};
+    elseif ischar(varargin{i})
         qc_by_var.(varargin{i}) = varargin{i+1};
     else
         variables = varargin{i};
@@ -97,6 +107,17 @@ for f = 1:nfloats
                 idx = ismember(Data.(floats{f}). ...
                     ([variables{v}, '_ADJUSTED_QC']),...
                     qc_by_var.(variables{v})) + 0; % convert to int
+            elseif strcmpi(raw, 'no_strict')
+                % if one variable doesn't have any good values, do not
+                % use any data for this float
+                warning('for float %s, adjusted values for %s are not available,%s',...
+                    floats{f}, variables{v}, ' this float will not be used');
+                Data_good = rmfield(Data_good, floats{f});
+                break;
+            elseif strncmpi(raw, 'n', 1)
+                warning('for float %s, adjusted values for %s are not available,%s',...
+                    floats{f}, variables{v}, ' this field will not be used');
+                continue;
             else
                 warning(['adjusted values for %s for are not available,',...
                     ' using raw values instead'], variables{v})
