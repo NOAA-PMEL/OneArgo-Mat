@@ -1,6 +1,6 @@
 function initialize_argo()
 % initialize_argo  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   initialize_argo()
@@ -113,8 +113,9 @@ Settings.pad_lat = 5;
 host_ifremer = 'https://data-argo.ifremer.fr/';
 host_godae = 'https://usgodae.org/ftp/outgoing/argo/';
 % Additional hosts could be added here
-Settings.hosts = {host_godae;host_ifremer};
-% Settings.hosts = {host_ifremer;host_godae}; % alternate order of hosts
+%Settings.hosts = {host_godae;host_ifremer};
+% downloads from IFREMER are often faster than from GODAE
+Settings.hosts = {host_ifremer;host_godae}; % alternate order of hosts
 
 % Default: do not interpolate missing lon/lat values
 Settings.interp_lonlat = 'no';
