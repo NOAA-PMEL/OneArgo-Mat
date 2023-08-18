@@ -1,6 +1,6 @@
 function Data = calc_auxil(Data,varargin)
 % calc_auxil  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float Data.
+% MATLAB toolbox for accessing Argo float Data.
 %
 % USAGE:
 %   Data = calc_auxil(Data,varargin)
@@ -28,6 +28,7 @@ function Data = calc_auxil(Data,varargin)
 %   'dens_thresh', dens_threshold : density threshold for MLD calculation
 %                                   (default: 0.03 kg/m3); ignored if
 %                                   calc_mld_dens is not set to 1
+%   'float', float_name             float_name (string), e.g.: 'F5904770'
 %   (all calc* values are 0=off by default, set them to
 %   1=on to activate the calculation)
 %
@@ -50,7 +51,7 @@ function Data = calc_auxil(Data,varargin)
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -70,6 +71,7 @@ calc_mld_temp = 0;
 calc_mld_dens = 0;
 temp_thresh = Settings.temp_thresh;
 dens_thresh = Settings.dens_thresh;
+float_name = []; % flag for "unknown"
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -85,13 +87,22 @@ for i = 1:2:length(varargin)-1
         temp_thresh = varargin{i+1};
     elseif strcmpi(varargin{i}, 'dens_thresh')
         dens_thresh = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'float_name')
+        float_name = varargin{i+1};
     end
+end
+
+if ~isempty(float_name)
+    float_str = [' for float ', float_name];
+else
+    float_str = '';
 end
 
 % Calculate in situ density:
 if calc_dens
-    if ~isfield(Data, 'PSAL')
-        warning('No salinity data found, skipping density calculation');
+    if ~isfield(Data, 'PSAL') && ~isfield(Data, 'PSAL_ADJUSTED')
+        warning('No salinity data found, skipping density calculation%s', ...
+            float_str);
     else
         try % Try with adjusted values first
             assert(strcmp(raw, 'no'));
@@ -127,8 +138,11 @@ if calc_mld_temp || calc_mld_dens
     catch % Then try with unadjusted values
         pres = Data.PRES;
     end
-    if ~isfield(Data, 'PSAL')
-        warning('No salinity data found, skipping MLD calculation');
+    if ~isfield(Data, 'PSAL') && ~isfield(Data, 'PSAL_ADJUSTED')
+        warning('No salinity data found, skipping MLD calculation%s', ...
+            float_str);
+        calc_mld_temp = 0;
+        calc_mld_dens = 0;
     else
         try % Try with adjusted values first
             assert(strcmp(raw, 'no'));
@@ -165,10 +179,10 @@ if calc_mld_temp
     end
 end
 
-if calc_mld_dens && isfield(Data, 'PSAL')
+if calc_mld_dens && (isfield(Data, 'PSAL') || isfield(Data, 'PSAL_ADJUSTED'))
     % Calculate potential density with respect to surface pressure (=0)
-    SA = gsw_SA_from_SP(salt,Data.PRES,Data.LONGITUDE,Data.LATITUDE);
-    CT = gsw_CT_from_t(SA,temp,Data.PRES);
+    SA = gsw_SA_from_SP(salt,pres,Data.LONGITUDE,Data.LATITUDE);
+    CT = gsw_CT_from_t(SA,temp,pres);
     pdensity = 1000 + gsw_sigma0(SA,CT);
     % Pre-allocate mixed layer
     Data.MLD_DENS = nan(1,size(pdensity,2));
