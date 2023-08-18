@@ -1,7 +1,7 @@
 function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
     plot_mld, time_label, depth, raw, obs, basename, varargin)
 % plot_sections  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
@@ -35,8 +35,11 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %   time_label  : either years ('y'), months ('m'), or days ('d')
 %   depth       : minimum and maximum depths to plot (an empty array
 %                 signals the plotting of all available depths)
-%   raw         : if 'no', use adjusted variables if available;
-%                 if 'yes', always use raw values
+%   raw         : if 'yes', always use raw values;
+%                 if 'no', use adjusted variables if available for
+%                 all selected floats;
+%                 if 'no_strict', plot only adjusted data, skip floats
+%                 that have only raw data available
 %   obs         : if 'on', add dots at the depths of observations
 %   basename    : if not empty, create png files of all plots;
 %                 the file names will be <basename>_<variable>.png
@@ -60,6 +63,8 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %                 https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
 %   'start',start_date : start date (in one of the following formats:
 %                 [YYYY MM DD HH MM SS] or [YYYY MM DD])
+%   'title_add',string : string will be added to the end of all titles;
+%                 default: empty string
 %
 % OUTPUT: None
 %
@@ -69,7 +74,7 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -88,6 +93,7 @@ end
 qc_flags = []; % if not changed, actual defaults will be assigned below
 start_date = [];
 end_date = [];
+title_add = [];
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -97,6 +103,8 @@ for i = 1:2:length(varargin)-1
         start_date = check_datenum(varargin{i+1});
     elseif strcmp(varargin{i}, 'end')
         end_date = check_datenum(varargin{i+1});
+    elseif strcmp(varargin{i}, 'title_add')
+        title_add = varargin{i+1};
     end
 end
 
@@ -112,12 +120,17 @@ nfloats = length(floats);
 % not requested - they will not be counted in nvars)
 nplots = nfloats * nvars;
 if nplots > Settings.max_plots
-    warning('too many plots requested - use fewer profiles and/or variables\n%s', ...
-        'or increase Settings.max_plots if possible')
+    warn_msg1 = sprintf('too many (%d) plots requested - use fewer profiles and/or variables\n', nplots);
+    warn_msg2 = sprintf('or increase Settings.max_plots (%d) if possible', ...
+        Settings.max_plots);
+    warning([warn_msg1, warn_msg2])
     return
 end
 
 calc_dens = ~isequal(plot_isopyc, 0);
+
+% default: assume adjusted values are available
+show_var = ones(nvars, nfloats);
 
 % unless 'raw' is specified, plot adjusted data
 if strncmpi(raw,'y',1)
@@ -134,6 +147,12 @@ else
             if isfield(Data.(floats{f}),[variables{v}, '_ADJUSTED']) && ...
                     sum(isfinite(Data.(floats{f}).([variables{v}, '_ADJUSTED'])(:)))
                 has_adj = has_adj + 1;
+            elseif strcmpi(raw, 'no_strict')
+                warning(['adjusted values for %s for float %s are not ',...
+                    'available;\nits profiles will not be shown'], ...
+                    variables{v}, floats{f});
+                show_var(v,f) = 0;
+                has_adj = has_adj + 1; % needed for check below
             else
                 warning(['adjusted values for %s for float %s are not available,',...
                     ' showing raw value profiles instead'], ...
@@ -158,6 +177,9 @@ for f = 1:nfloats
     Datai = depth_interp(Data.(floats{f}), qc_flags, ...
         'calc_dens', calc_dens, 'raw', raw, varargs{:});
     for v = 1:nvars
+        if ~show_var(v,f)
+            continue;
+        end
         if ~isfield(Datai, variables{v})
             warning('Sensor %s not found for float %s', ...
                 variables{v}, floats{f})
@@ -166,6 +188,12 @@ for f = 1:nfloats
         if isempty(find(isfinite(Datai.PRES) & ...
                 isfinite(Datai.(variables{v})), 1))
             warning('no valid data found for %s of float %s', ...
+                variables{v}, floats{f})
+            continue;
+        end
+        if size(Datai.PRES,2) == 1
+            disp('at least 2 profiles are needed for section plots')
+            warning('%s of float %s has only one profile', ...
                 variables{v}, floats{f})
             continue;
         end
@@ -210,9 +238,9 @@ for f = 1:nfloats
         if length(depth) == 2
             ylim(depth);
         end
-        title(sprintf('Float %d: %s %s%s', ...
+        title(sprintf('Float %d: %s %s%s%s', ...
             Mdata.(float_ids{f}).WMO_NUMBER, long_name, units, ...
-            title_added{v}), 'FontSize', 14);
+            title_added{v}, title_add), 'FontSize', 14);
         ylabel('Pressure (dbar)');
         set(gca,'Ydir','reverse');
         colorbar;

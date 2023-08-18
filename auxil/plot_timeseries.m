@@ -1,6 +1,6 @@
 function plot_timeseries(Data, Mdata, variables, depth, basename, varargin)
 % plot_timeseries  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   plot_timeseries(Data, Mdata, variables, depth, basename, varargin)
@@ -46,7 +46,9 @@ function plot_timeseries(Data, Mdata, variables, depth, basename, varargin)
 %                     https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
 %   'raw',raw       : plot raw, i.e., unadjusted data if set to 'yes';
 %                     default: 'no' (i.e., plot adjusted data if
-%                     available)
+%                     available for all selected floats);
+%                     'no_strict': plot only adjusted data, skip floats
+%                     that have only raw data available
 %   'start',start_date : start date (in one of the following formats:
 %                     [YYYY MM DD HH MM SS] or [YYYY MM DD])
 %   'time_label',label : use either years ('y'), months ('m'), or days ('d');
@@ -69,7 +71,7 @@ function plot_timeseries(Data, Mdata, variables, depth, basename, varargin)
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -148,9 +150,15 @@ if nplots > Settings.max_plots
     return
 end
 
-if ~isempty(var2_orig)
+% default: assume adjusted values are available
+show_var = ones(nvars, nfloats); 
+if isempty(var2_orig)
+    show_var2 = zeros(1, nfloats);
+else
     [var2{1:nvars}] = deal(var2_orig); % default; may change later
+    show_var2 = ones(1, nfloats);
 end
+
 [title_added{1:nvars}] = deal(''); % default; may change later
 % unless 'raw' is specified, plot adjusted data
 if strncmpi(raw,'y',1)
@@ -168,6 +176,12 @@ else
             if isfield(Data.(floats{f}),[variables{v}, '_ADJUSTED']) && ...
                     sum(isfinite(Data.(floats{f}).([variables{v}, '_ADJUSTED'])(:)))
                 has_adj = has_adj + 1;
+            elseif strcmpi(raw, 'no_strict')
+                warning(['adjusted values for %s for float %s are not available;\n',...
+                    'this timeseries will not be shown'], variables{v}, ...
+                    floats{f});
+                show_var(v,f) = 0;
+                has_adj = has_adj + 1; % needed for check below
             else
                 warning(['adjusted values for %s for float %s are not available,',...
                     ' showing raw values for all floats instead'], ...
@@ -181,6 +195,12 @@ else
                 if isfield(Data.(floats{f}),[var2_orig, '_ADJUSTED']) && ...
                         sum(isfinite(Data.(floats{f}).([var2_orig, '_ADJUSTED'])(:)))
                     has_adj = has_adj + 1;
+                elseif strcmpi(raw, 'no_strict')
+                    warning(['adjusted values for %s for float %s are not available;\n',...
+                        'this timeseries will not be shown'], var2_orig, ...
+                        floats{f});
+                    show_var2(f) = 0;
+                    has_adj = has_adj + 1; % needed for check below
                 else
                     warning(['adjusted values for %s for float %s ', ...
                         'are not available, showing raw values for ', ...
@@ -238,6 +258,11 @@ close(f1);
 n_colors = size(colors,1);
 
 for v = 1:nvars
+    if ~any(show_var(v,:)) && ~per_float
+        fprintf('None of the specified floats have %s values, skipping the plot\n', ...
+            variables{v})
+        continue
+    end
     if ~isempty(var2_orig)
         same_var_type = strncmp(variables{v}, var2{v}, ...
             length(variables{v}) - ...
@@ -253,11 +278,16 @@ for v = 1:nvars
             min_time = Inf;
             max_time = -Inf;
             for f = 1:nfloats
+                if show_var(v,f)
                 min_time = min(min_time, Datai.(floats{f}).TIME(1,1));
                 max_time = max(max_time, Datai.(floats{f}).TIME(1,end));
             end
         end
+        end
         for f = 1:nfloats
+            if ~show_var(v,f)
+                continue;
+            end
             if per_float
                 % one figure per variable for each float; make wide plot
                 f1 = figure('Position',[20 20 800 400]);
@@ -290,7 +320,7 @@ for v = 1:nvars
             end
             [long_name, units] = get_var_name_units(variables{v});
             yl1 = ylabel([long_name, ' ', units]);
-            if ~isempty(var2_orig)
+            if show_var2(f)
                 if ~same_var_type
                     yyaxis right;
                 end
@@ -335,7 +365,7 @@ for v = 1:nvars
                     Datai.(floats{f}).TIME(1,end), start_date, end_date, ...
                     time_label)
                 if isempty(title1) && ~ischar(title1) % i.e., []
-                    if strcmp(lgnd, 'no') || ~isempty(var2_orig)
+                    if strcmp(lgnd, 'no') || show_var2(f)
                         % add float number to title instead
                         title(sprintf('Depth: %d dbar (%s)%s', press{f,d}, ...
                             floats{f}, title_added{v}));
@@ -347,7 +377,7 @@ for v = 1:nvars
                     title([title1, title_added{v}]);
                 end
                 if strcmp(lgnd,'yes')
-                    if isempty(var2_orig)
+                    if ~show_var2(f)
                         legend(float_ids{f},'location','eastoutside',...
                             'AutoUpdate','off');
                     else
@@ -381,7 +411,7 @@ for v = 1:nvars
                 title([title1, title_added{v}]);
             end
             if strcmp(lgnd,'yes')
-                legend(float_ids,'location','eastoutside',...
+                legend(float_ids(show_var(v,:)==1),'location','eastoutside',...
                     'AutoUpdate','off');
             end
             if ~isempty(basename)

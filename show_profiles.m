@@ -51,7 +51,10 @@ function [good_float_ids, mean_prof, std_prof, mean_pres] = ...
 %                   See Table 7 in Bittig et al.:
 %                   https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
 %   'raw',raw     : plot raw, i.e., unadjusted data if set to 'yes';
-%                   default: 'no' (i.e., plot adjusted data if available)
+%                   default: 'no' (i.e., plot adjusted data if available
+%                   for all selected floats);
+%                   'no_strict': plot only adjusted data, skip floats
+%                   that have only raw data available
 %   'title_add',text : add the given text to the end of all titles
 %   'var2',variable: if variable is not empty, profiles of this second
 %                   variable will be plotted; if it is the same type as the

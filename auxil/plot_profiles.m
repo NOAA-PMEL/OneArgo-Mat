@@ -1,7 +1,7 @@
 function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
     variables, basename, varargin)
 % plot_profiles  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
@@ -52,7 +52,9 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %                     https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
 %   'raw',raw       : plot raw, i.e., unadjusted data if set to 'yes';
 %                     default: 'no' (i.e., plot adjusted data if
-%                     available)
+%                     available for all selected floats);
+%                     'no_strict': plot only adjusted data, skip floats
+%                     that have only raw data available
 %   'title_add',text: add the given text to the end of the title
 %   'var2',variable : if variable is not empty, profiles of this second
 %                     variable will be plotted; if it is the same type as the
@@ -76,7 +78,7 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -165,11 +167,14 @@ if nplots > Settings.max_plots
         warn_insert)
     return
 end
-
-if ~isempty(var2_orig)
+if isempty(var2_orig)
+    show_var2 = zeros(1, nfloats);
+else
     [var2{1:nvars}] = deal(var2_orig); % default; may change later
+    show_var2 = ones(1, nfloats);
 end
 % unless 'raw' is specified, plot adjusted data
+show_var = ones(nvars, nfloats); % default: assume adjusted values are available
 if strncmpi(raw,'y',1)
     [title_added{1:nvars}] = deal([title_add, ' [raw values]']);
 else
@@ -184,6 +189,12 @@ else
             if isfield(Data.(floats{f}),[variables{v}, '_ADJUSTED']) && ...
                     sum(isfinite(Data.(floats{f}).([variables{v}, '_ADJUSTED'])(:)))
                 has_adj = has_adj + 1;
+            elseif strcmpi(raw, 'no_strict')
+                warning(['adjusted values for %s for float %s are not ',...
+                    'available;\nits profiles will not be shown'], ...
+                    variables{v}, floats{f});
+                show_var(v,f) = 0;
+                has_adj = has_adj + 1; % needed for check below
             else
                 warning(['adjusted values for %s for float %s are not available,',...
                     ' showing raw values for all profiles instead'], ...
@@ -195,6 +206,12 @@ else
                 if isfield(Data.(floats{f}),[var2_orig, '_ADJUSTED']) && ...
                         sum(isfinite(Data.(floats{f}).([var2_orig, '_ADJUSTED'])(:)))
                     has_adj = has_adj + 1;
+                elseif strcmpi(raw, 'no_strict')
+                    warning(['adjusted values for %s for float %s are not ',...
+                        'available;\nits profiles will not be shown'], ...
+                        var2_orig, floats{f});
+                    show_var2(f) = 0;
+                    has_adj = has_adj + 1; % needed for check below
                 else
                     warning(['adjusted values for %s for float %s ', ...
                         'are not available, showing raw values for ', ...
@@ -254,6 +271,11 @@ for v = 1:nvars
         end
     end
     if ~per_float
+        if ~any(show_var(v,:))
+            fprintf('None of the specified floats have %s values, skipping the plot\n', ...
+                variables{v})
+            continue
+        end
         [mean_prof{v}, std_prof{v}, mean_pres] = ...
             get_multi_profile_mean(Datai, variables{v});
         this_mean_prof = mean_prof{v};
@@ -264,7 +286,7 @@ for v = 1:nvars
                 get_multi_profile_mean(Datai, var2{v});
         end
         f1 = figure; % one figure per variable for all floats
-        if ~isempty(var2_orig) && ~same_var_type
+        if any(show_var2) && ~same_var_type
             [ax1, ax2] = create_tiled_layout();
         else
             ax1 = axes(f1);
@@ -273,6 +295,9 @@ for v = 1:nvars
         hold(ax1, 'on')
     end
     for f = 1:nfloats
+        if ~show_var(v,f)
+            continue;
+        end
         try
             assert(strcmp(raw, 'no')) % use PRES if raw values are used
             PRES = Data.(floats{f}).PRES_ADJUSTED;
@@ -300,7 +325,7 @@ for v = 1:nvars
                     'omitnan');
             end
             f1 = figure; % one figure per variable for each float
-            if ~isempty(var2_orig) && ~same_var_type
+            if show_var2(f) && ~same_var_type
                 [ax1, ax2] = create_tiled_layout();
             else
                 ax1 = axes(f1);
@@ -319,7 +344,7 @@ for v = 1:nvars
                         ' QC flags found for profile %d of float %s'], ...
                         variables{v}, p, floats{f});
                 end
-                if ~isempty(var2_orig)
+                if show_var2(f)
                     if ~plot_one_profile(ax2, Data.(floats{f}).(var2{v})(:,p), ...
                             PRES(:,p), ...
                             Data.(floats{f}).([var2{v},'_QC'])(:,p), ...
@@ -332,7 +357,7 @@ for v = 1:nvars
             end
             plot(ax1,this_mean_prof,this_mean_pres,...
                 'color',Settings.color_var1_mean,'linewidth',2);
-            if ~isempty(var2_orig)
+            if show_var2(f)
                 plot(ax2,mean_prof_var2,this_mean_pres,...
                     'color',Settings.color_var2_mean,'linewidth',2);
             end
@@ -343,7 +368,7 @@ for v = 1:nvars
                 'color',Settings.color_var1_range,'linewidth',2);
             plot(ax1,this_mean_prof + this_std_prof,this_mean_pres,...
                 'color',Settings.color_var1_range,'linewidth',2);
-            if ~isempty(var2_orig)
+            if show_var2(f)
                 plot(ax2,mean_prof_var2,this_mean_pres,...
                     'color',Settings.color_var2_mean,'linewidth',2);
                 plot(ax2,mean_prof_var2 - std_prof_var2,this_mean_pres,...
@@ -359,7 +384,7 @@ for v = 1:nvars
         if ~isempty(depth)
             ylim(ax1, depth);
         end
-        if ~isempty(var2_orig) && ~same_var_type
+        if show_var2(f) && ~same_var_type
             set(ax2, 'Ydir', 'reverse');
             [long_name, units] = get_var_name_units(var2_orig);
             xlabel(ax2, [long_name, ' ', units])
@@ -376,7 +401,7 @@ for v = 1:nvars
         end
         if per_float
             hold off
-            if isempty(var2_orig) || same_var_type
+            if ~show_var2(f) || same_var_type
                 box(ax1, 'on');
             end
             title(sprintf('Float %d %s', ...
@@ -391,14 +416,16 @@ for v = 1:nvars
     end
     if ~per_float
         hold off
-        if isempty(var2_orig) || same_var_type
+        if ~show_var2(f) || same_var_type
             box(ax1, 'on')
         end
         if nfloats < 4
             ttitle = 'Floats';
             for f = 1:nfloats
-                ttitle = sprintf('%s %d', ttitle, ...
+                if show_var(v,f)
+                    ttitle = sprintf('%s %d', ttitle, ...
                     Mdata.(float_ids{f}).WMO_NUMBER);
+                end
             end
         else
             ttitle = 'All selected floats';
