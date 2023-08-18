@@ -24,7 +24,7 @@ function Data_good = qc_filter(Data, variables, qc_flags, varargin)
 %   Additional pairs of variables and qc flags can be specified, e.g.:
 %     Data_good = qc_filter(Data, 'DOXY',[1:3,8], {'NITRATE';'CHLA'},[1,2]...
 %         {'BBP532';'BBP470'},[1,2,8], 'DOWNWELLING_PAR',1);
-%   raw     : if set to 'n' (default), use only adjusted data; however,
+%   'raw',raw : if set to 'n' (default), use only adjusted data; however,
 %             if not all floats have adjusted data for the selected
 %             variables, raw data will be used;
 %             if set to 'y', only raw data will be used;
@@ -93,6 +93,7 @@ for f = 1:nfloats
         'TIME', Data.(floats{f}).TIME, ...
         'LATITUDE', Data.(floats{f}).LATITUDE,...
         'LONGITUDE', Data.(floats{f}).LONGITUDE, ...
+        'POSITION_QC', Data.(floats{f}).POSITION_QC, ...
         'JULD', Data.(floats{f}).JULD);
     
     for v = 1:nvar
@@ -100,7 +101,11 @@ for f = 1:nfloats
             warning('float %s does not contain variable %s', floats{f}, ...
                 variables{v});
         else
-            if isfield(Data.(floats{f}),[variables{v}, '_ADJUSTED']) && ...
+            if strncmpi(raw, 'y', 1)
+                field = Data.(floats{f}).(variables{v});
+                idx = ismember(Data.(floats{f}).([variables{v}, '_QC']),...
+                    qc_by_var.(variables{v})) + 0;
+            elseif isfield(Data.(floats{f}),[variables{v}, '_ADJUSTED']) && ...
                     sum(isfinite(Data.(floats{f}).([variables{v}, ...
                     '_ADJUSTED'])(:)))
                 field = Data.(floats{f}).([variables{v}, '_ADJUSTED']);
@@ -126,7 +131,16 @@ for f = 1:nfloats
                     qc_by_var.(variables{v})) + 0;
             end
             idx(~idx) = nan;
-            Data_good.(floats{f}).(variables{v}) = field .* idx;
+            if strncmpi(raw, 'y', 1)
+                Data_good.(floats{f}).(variables{v}) = field .* idx;
+                Data_good.(floats{f}).([variables{v}, '_QC']) = ...
+                    Data.(floats{f}).([variables{v}, '_QC']);
+            else % adjusted values were requested
+                Data_good.(floats{f}).([variables{v}, '_ADJUSTED']) = ...
+                    field .* idx;
+                Data_good.(floats{f}).([variables{v}, '_ADJUSTED_QC']) = ...
+                    Data.(floats{f}).([variables{v}, '_ADJUSTED_QC']);
+            end
         end
     end
 end
