@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Comp_doxy_doxy2.m
 %
-% This example script for the BGC-Argo MATLAB toolbox finds floats with
+% This example script for the OneArgo-Mat toolbox finds floats with
 % at least two oxygen sensors and creates comparison plots between them.
 %
 % AUTHORS:
@@ -10,7 +10,7 @@
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -92,3 +92,5 @@ box on;
 xlabel('Oxygen sensor 1 (\mumol kg^{-1})')
 ylabel('Oxygen sensor 2 (\mumol kg^{-1})')
 title(sprintf('Oygen sensor comparison for float %d', doxy2_floats(1)));
+
+print(f1, '-dpng', sprintf('Corr_DOXY_DOXY2_F%d.png', doxy2_floats(1)));
