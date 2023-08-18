@@ -1,6 +1,6 @@
 function success = download_float(floatid, file_type)
 % download_float  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   success = download_float(floatid [, file_type])
@@ -27,7 +27,7 @@ function success = download_float(floatid, file_type)
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -62,6 +62,9 @@ elseif strcmp(file_type, 'tech')
 elseif strcmp(file_type, 'traj')
     ind = 1:length(Traj.wmoid);
     float_idx = ind(Traj.wmoid == floatid);
+    if length(float_idx) > 1
+        float_idx = float_idx(contains(Traj.file_name(float_idx),'Dtraj'));
+    end
 else
     warning('unknown file type: %s', file_type)
     return
