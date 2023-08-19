@@ -1,7 +1,7 @@
 function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
     start_date,end_date,varargin)
 % select_profiles  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
@@ -42,6 +42,8 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           'csio'; 'csiro'; 'incois'; 'jma'; 'kma'; 'kordi'; 'meds'}
 %   'depth',depth: Select profiles that reach at least this depth
 %           (positive downwards; in db)
+%   'direction',dir: Select profiles by direction ('a' for ascending,
+%           'd' for descending, '' for both directions)
 %   'floats',floats: Select profiles only from these floats that must
 %           match all other criteria
 %   'interp_lonlat', intp : if intp is 'yes' (default), missing lon/lat
@@ -127,6 +129,7 @@ depth = [];
 min_num_prof = 0;
 interp_ll = Settings.interp_lonlat;
 type = []; % default assignment depends on sensor selection
+direction = '';
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -150,6 +153,8 @@ for i = 1:2:length(varargin)-1
         interp_ll = varargin{i+1};
     elseif strcmpi(varargin{i}, 'type')
         type = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'direction')
+        direction = varargin{i+1};
     else
         warning('unknown option: %s', varargin{i});
     end
@@ -217,6 +222,13 @@ for i = 1:length(dac)
     end
 end
 dac(bad == 1) = [];
+
+% check if specified direction is correct
+if ~isempty(direction) && ~strncmpi(direction, 'a', 1) && ...
+        ~strncmpi(direction, 'd', 1)
+    warning('no such direction: %s', direction);
+    direction = ''; % reset to "all"
+end
 
 % make sure Prof and Sprof are initialized
 if isempty(Prof) || isempty(Sprof)
@@ -421,20 +433,28 @@ for fl = 1:length(good_float_ids)
         % used for all settings of outside:
         has_sensor = zeros(size(has_sensor));
     end
+    if isempty(direction)
+        has_direct = ones(size(has_sensor));
+    else
+        has_direct = zeros(size(has_sensor));
+        float_direction = ncread(filename, 'DIRECTION');
+        is_direct = find(float_direction == upper(direction));
+        has_direct(is_direct) = 1;
+    end
     % now apply the given constraints
     all_prof = 1:length(inpoly);
     if strcmp(outside, 'none')
         float_profs{fl} = all_prof(inpoly & indate & has_sensor & ...
-            is_ocean & has_mode & has_press);
+            is_ocean & has_mode & has_press & has_direct);
     elseif strcmp(outside, 'time') % must meet space constraint
         float_profs{fl} = all_prof(inpoly & has_sensor & is_ocean & ...
-            has_mode & has_press);
+            has_mode & has_press & has_direct);
     elseif strcmp(outside, 'space') % must meet time constraint
         float_profs{fl} = all_prof(indate & has_sensor & is_ocean & ...
-            has_mode & has_press);
+            has_mode & has_press & has_direct);
     elseif strcmp(outside, 'both') % no time or space constraint
         float_profs{fl} = all_prof(has_sensor & is_ocean & ...
-            has_mode & has_press);
+            has_mode & has_press & has_direct);
     else
         warning('no such setting for "outside": %s', outside)
         float_profs{fl} = [];
