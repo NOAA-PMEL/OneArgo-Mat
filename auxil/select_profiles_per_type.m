@@ -1,7 +1,7 @@
 function float_ids = select_profiles_per_type(Profiles, ...
-    lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean)
+    lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean, profiler)
 % select_profiles_per_type  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   float_ids = select_profiles_per_type(Profiles, ...
@@ -44,6 +44,7 @@ function float_ids = select_profiles_per_type(Profiles, ...
 %   ocean : Valid choices are 'A' (Atlantic), 'P' (Pacific), and
 %           'I' (Indian). This selection is in addition to the specified
 %           longitude and latitude limits.
+%   profiler: profiler type (integer)
 %
 % OUTPUTS:
 %   float_ids : array with the WMO IDs of all matching floats
@@ -54,7 +55,7 @@ function float_ids = select_profiles_per_type(Profiles, ...
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -107,7 +108,13 @@ else
     is_ocean = strcmp(Profiles.ocean, ocean);
 end
 
+if isempty(profiler)
+    has_profiler = ones(size(indate)); % no profiler was selected
+else
+    has_profiler = Profiles.profiler == profiler;
+end
+
 % perform selection
 all_prof = 1:length(indate);
-profiles = all_prof(inpoly & indate & has_sensor & is_ocean);
+profiles = all_prof(inpoly & indate & has_sensor & is_ocean & has_profiler);
 float_ids = unique(Profiles.wmo(profiles));

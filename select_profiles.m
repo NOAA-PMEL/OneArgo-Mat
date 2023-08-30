@@ -73,6 +73,8 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           returned ('none'); specify to also maintain profiles outside
 %           the temporal constraints ('time'), spatial constraints
 %           ('space'), or both constraints ('both')
+%   'profiler',profiler: Select floats of the given profiler type (integer,
+%           e.g., 846 is an APEX BGC float)
 %   'sensor', SENSOR_TYPE: This option allows the selection by
 %           sensor type. Available are: PRES, PSAL, TEMP, DOXY, BBP,
 %           BBP470, BBP532, BBP700, TURBIDITY, CP, CP660, CHLA, CDOM,
@@ -130,6 +132,7 @@ min_num_prof = 0;
 interp_ll = Settings.interp_lonlat;
 type = []; % default assignment depends on sensor selection
 direction = '';
+profiler = [];
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -155,6 +158,8 @@ for i = 1:2:length(varargin)-1
         type = varargin{i+1};
     elseif strcmpi(varargin{i}, 'direction')
         direction = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'profiler')
+        profiler = varargin{i+1};
     else
         warning('unknown option: %s', varargin{i});
     end
@@ -275,14 +280,14 @@ end
 % select bgc and phys floats separately, then combine the results
 if strcmp(type, 'bgc') || strcmp(type, 'all')
     bgc_float_ids = select_profiles_per_type(Sprof_sel, ...
-        lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean);
+        lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean, profiler);
 else
     bgc_float_ids = [];
 end
 if strcmp(type, 'phys') || strcmp(type, 'all')
     % this will also find bgc floats; so they need to be filtered out
     phys_float_ids = select_profiles_per_type(Prof_sel, ...
-        lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean);
+        lon_lim, lat_lim, dn1, dn2, interp_ll, sensor, ocean, profiler);
     [~,phys_float_idx] = intersect(Float.wmoid, phys_float_ids);
     phys_float_ids(~strcmp(Float.type(phys_float_idx), 'phys')) = [];
     if isempty(phys_float_ids)
