@@ -1,6 +1,6 @@
 function Datai = depth_interp(Data, qc_flags, varargin)
 % depth_interp  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float Data.
+% MATLAB toolbox for accessing Argo float Data.
 %
 % USAGE:
 %   Datai = depth_interp(Data, qc_flags, varargin)
@@ -18,7 +18,9 @@ function Datai = depth_interp(Data, qc_flags, varargin)
 % OPTIONAL INPUTS:
 %   'prs_res',prs_res             : pressure resolution (default: 2 dbar)
 %   'raw',raw                     : use raw data if 'yes', adjusted data
-%                                   if no (default: 'no')
+%                                   if no (default: 'no') (this is used
+%                                   only for pressure and, if requested, 
+%                                   MLD computation)
 %   'calc_dens',calc_dens         : if set to 1, calculate potential density on
 %                                   interpolated depth levels
 %   'calc_mld_dens',calc_mld_dens : if set to 1, calculate mixed layer
@@ -40,7 +42,7 @@ function Datai = depth_interp(Data, qc_flags, varargin)
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -104,7 +106,6 @@ for k=1:numel(vars)
             ~startsWith(vars{k}, 'PRES') && ~endsWith(vars{k},'_QC')
         % DEFINE DEPENDENT VARIABLE AS 'Y'
         Y = Data.(vars{k});
-        
         % PRE-ALLOCATE INTERPOLATED DEPENDENT VARIABLE
         yi = NaN(size(xi,1),size(xi,2));
         
