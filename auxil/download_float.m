@@ -16,7 +16,7 @@ function success = download_float(floatid, file_type)
 %   floatid   : WMO ID of a float (integer)
 %
 % OPTIONAL INPUT:
-%   file_type : 'prof' (default), 'Sprof', 'meta', or 'tech'
+%   file_type : 'prof' (default), 'Sprof', 'meta', 'tech', or 'traj'
 %
 % OUTPUT:
 %   success   : 1 for success, 0 for failure
@@ -108,6 +108,10 @@ if exist(local_path, 'file') == 2
     catch
         warning('something went wrong, try downloading the file again')
     end
+elseif Settings.use_snapshots
+    warning('The selected snapshot does not contain the %s file for float %d.\n', ...
+        file_type, floatid)
+    return
 end
 
 success = try_download(url_path, local_path);
