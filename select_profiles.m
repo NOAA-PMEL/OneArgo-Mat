@@ -25,7 +25,10 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %            * Longitude can be input in either the -180 to 180 degrees
 %            format or 0 to 360 degrees format (or even in any other
 %            360 degree range that encloses all the desired longitude
-%            values, e.g., [-20 200])
+%            values, e.g., [-20 200] or [-200 20])
+%            Note that [10 350] is NOT equivalent to [-10 10]:
+%            the former results in a range of 340 degrees,
+%            the latter in a range of 20 degrees.
 %            * Either or both values can be '[]' to indicate the full range
 %   start_date : start date
 %   end_date : end date

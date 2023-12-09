@@ -1,6 +1,6 @@
 function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 % get_inpolygon  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
@@ -30,7 +30,7 @@ function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 % CITATION:
 %   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
@@ -39,13 +39,20 @@ function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 % longitude limits can be specified in -180..180 or 0..360 degree formats,
 % or any other 360 degree range that encloses all the desired longitude
 % values, e.g., [-20 200])
-% 10..350 is NOT equivalent to -10..10: the former results in a range
-% of 340 degrees, the latter in a range of 20 degrees
-if (max(lon_lim) >= min(lon_lim) + 360)
-    lon_lim = [-180, 180]; % Sprof.lon values use -180..180 range
+% [10 350] is NOT equivalent to [-10 10]: the former results in a range
+% of 340 degrees, the latter in a range of 20 degrees.
+if max(lon_lim) > min(lon_lim) + 360
+    % (S)prof.lon values use -180..180 range
+    lon_lim(lon_lim < -180) = -180;
+    lon_lim(lon_lim > 180) = 180;
 else
     floor_lon = floor(min(lon_lim));
-    lon(lon < floor_lon) = lon(lon < floor_lon) + 360;
+    if any(lon < floor_lon)
+        lon(lon < floor_lon) = lon(lon < floor_lon) + 360;
+    else
+        ceil_lon = ceil(max(lon_lim));
+        lon(lon > ceil_lon) = lon(lon > ceil_lon) - 360;
+    end
 end
 
 if numel(lon_lim) == 2 && numel(lat_lim) == 2
