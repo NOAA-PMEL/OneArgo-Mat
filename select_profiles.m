@@ -37,6 +37,9 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %            * Both values can be '[]' to indicate the full range
 %
 % OPTIONAL INPUTS (key,value pairs):
+%   'cycles',cycles: Select profiles by their CYCLE_NUMBER values. cycles can
+%           be a scalar or an array. Only floats that have at least one
+%           of the specified cycles will be returned.
 %   'dac',dac: Select by Data Assimilation Center reponsible for the floats.
 %           A single DAC can be entered as a string (e.g.: 'aoml'),
 %           multiple DACs can be entered as a cell array (e.g.:
@@ -136,6 +139,7 @@ interp_ll = Settings.interp_lonlat;
 type = []; % default assignment depends on sensor selection
 direction = '';
 profiler = [];
+cycles = [];
 
 % parse optional arguments
 for i = 1:2:length(varargin)-1
@@ -163,6 +167,8 @@ for i = 1:2:length(varargin)-1
         direction = varargin{i+1};
     elseif strcmpi(varargin{i}, 'profiler')
         profiler = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'cycles')
+        cycles = varargin{i+1};
     else
         warning('unknown option: %s', varargin{i});
     end
@@ -446,23 +452,28 @@ for fl = 1:length(good_float_ids)
     else
         has_direct = zeros(size(has_sensor));
         float_direction = ncread(filename, 'DIRECTION');
-        is_direct = find(float_direction == upper(direction));
-        has_direct(is_direct) = 1;
+        has_direct(float_direction == upper(direction)) = 1;
+    end
+    if isempty(cycles)
+        has_cycle = ones(size(has_sensor));
+    else
+        cycle_number = ncread(filename, 'CYCLE_NUMBER');
+        has_cycle = any(bsxfun(@eq, cycle_number, cycles), 2);
     end
     % now apply the given constraints
     all_prof = 1:length(inpoly);
-    if strcmp(outside, 'none')
+    if strcmp(outside, 'none') % must meet time and space constraints
         float_profs{fl} = all_prof(inpoly & indate & has_sensor & ...
-            is_ocean & has_mode & has_press & has_direct);
+            is_ocean & has_mode & has_press & has_direct & has_cycle);
     elseif strcmp(outside, 'time') % must meet space constraint
         float_profs{fl} = all_prof(inpoly & has_sensor & is_ocean & ...
-            has_mode & has_press & has_direct);
+            has_mode & has_press & has_direct & has_cycle);
     elseif strcmp(outside, 'space') % must meet time constraint
         float_profs{fl} = all_prof(indate & has_sensor & is_ocean & ...
-            has_mode & has_press & has_direct);
+            has_mode & has_press & has_direct & has_cycle);
     elseif strcmp(outside, 'both') % no time or space constraint
         float_profs{fl} = all_prof(has_sensor & is_ocean & ...
-            has_mode & has_press & has_direct);
+            has_mode & has_press & has_direct & has_cycle);
     else
         warning('no such setting for "outside": %s', outside)
         float_profs{fl} = [];
