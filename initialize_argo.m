@@ -94,7 +94,8 @@ Settings.default_type = 'all';
 % set Source Control (under Preferences: General->Source Control) to
 % None instead of "Enable MathWorks source control integration",
 % or you may encounter an Out of memory error.
-Settings.use_snapshots = 0;
+Settings.use_snapshots = 1; % use the latest snapshot
+% Settings.use_snapshots = 0; % to this setting use GDAC files instead
 % An alternate setting allows to pick a particular snapshot.
 % The format is YYYYMM (no quotes), e.g., 202309 for September 2023.
 % The snapshots are hosted at https://www.seanoe.org/data/00311/42182
@@ -182,13 +183,26 @@ traj = 'ar_index_global_traj.txt';
 
 % use snapshots or "live" data from the GDAC?
 if Settings.use_snapshots
-    download_snapshot();
+    determine_snapshot();
+    if isempty(Settings.snap_path)
+        return;
+    end
     % use all files from the snapshot, not the GDAC    
-    Settings.prof_dir = [Settings.snap_path, 'Profiles/'];
-    Settings.index_dir = [Settings.snap_path, 'Index/'];
-    Settings.meta_dir = [Settings.snap_path, 'Meta/'];
-    Settings.tech_dir = [Settings.snap_path, 'Tech/'];
-    Settings.traj_dir = [Settings.snap_path, 'Traj/'];
+    Settings.prof_dir = [Settings.snap_dir, Settings.snap_path, 'Profiles/'];
+    Settings.index_dir = [Settings.snap_dir, Settings.snap_path, 'Index/'];
+    Settings.meta_dir = [Settings.snap_dir, Settings.snap_path, 'Meta/'];
+    Settings.tech_dir = [Settings.snap_dir, Settings.snap_path, 'Tech/'];
+    Settings.traj_dir = [Settings.snap_dir, Settings.snap_path, 'Traj/'];
+    if ~exist([Settings.index_dir, sprof], 'file') || ...
+        ~exist([Settings.index_dir, prof], 'file')
+        stack = dbstack;
+        funcs = {stack.name};
+        if ~any(strcmp(funcs, 'download_snapshot'))
+            disp('You must call download_snapshot with appropriate arguments')
+            disp('before you can continue.')
+        end
+        return
+    end
 else
     % Download Sprof index file from GDAC to Index directory    
     if ~download_index([sprof, '.gz'], 'Sprof')
