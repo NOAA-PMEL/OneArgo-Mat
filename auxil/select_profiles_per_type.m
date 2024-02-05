@@ -17,6 +17,7 @@ function float_ids = select_profiles_per_type(Profiles, ...
 %   round (in select_profiles)
 %
 % INPUTS:
+%   Profiles : Prof or Sprof (struct)
 %   lon_lim : longitude limits
 %   lat_lim : latitude limits
 %            * Latitude and longitude limits can be input as either
