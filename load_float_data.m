@@ -162,7 +162,8 @@ for n = 1:length(good_float_ids)
             tmp = str2num(tmp);
             tmp = reshape(tmp, n_levels, n_prof);
         end
-        if isequal(size(tmp), [n_levels, n_prof])
+        if isequal(size(tmp), [n_levels, n_prof]) && ...
+                ~strcmp(all_vars{l}, 'DATA_MODE')
             Data.(str_floatnum).(all_vars{l}) = tmp;
         elseif isequal(size(tmp), [n_prof 1])
             if strcmp(all_vars{l}, 'DATA_MODE')
