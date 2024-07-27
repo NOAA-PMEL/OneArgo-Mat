@@ -112,8 +112,8 @@ H. C. Bittig et al., 2019. Front. Mar. Sci. https://doi.org/10.3389/fmars.2019.0
 This toolbox has been translated to R:<br/>
 [R toolbox](https://github.com/NOAA-PMEL/OneArgo-R)
 
-A similar toolbox in Python:<br/>
-[Python toolbox](https://github.com/go-bgc/workshop-python)
+A similar toolbox in Python (alpha version):<br/>
+[Python toolbox](https://github.com/NOAA-PMEL/OneArgoPy)
 
 [Video tutorials for the toolbox](https://www.go-bgc.org/getting-started-with-go-bgc-data)
 
