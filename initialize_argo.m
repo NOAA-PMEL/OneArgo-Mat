@@ -53,7 +53,7 @@ Settings.verbose = 1;
 Settings.max_plots = 20;
 
 % Profiles are stored in subdirectory 'Profiles'
-Settings.prof_dir = './Profiles/';
+Settings.prof_dir = './Profiles/'; % include trailing / for all directories here
 
 % Index files are stored in subdirectory 'Index'
 Settings.index_dir = './Index/';
@@ -67,6 +67,9 @@ Settings.tech_dir = './Tech/';
 % Traj files are stored in subdirectory 'Traj'
 Settings.traj_dir = './Traj/';
 
+% Main directory for snapshots
+Settings.snap_dir = './Snapshots/';
+
 Settings.demo_float = 5904021;
 
 % By default, don't update index files if they are less than 1 hour old
@@ -79,6 +82,24 @@ Settings.update = 3600; % time is given in seconds
 % type or BGC sensors), the default type can be set to
 % 'bgc' here. 'phys' is the third available setting.
 Settings.default_type = 'all';
+
+% Snapshots of Argo data are produced every month. These data are
+% recommended for scientific applications that require full
+% reproducibility. A setting of 1 here results in using the most
+% recent snapshot as default (instead of getting data directly from
+% the GDAC).
+% There are full-Argo and BGC-only snapshots. The value of
+% Settings.default_type determines which one is downloaded.
+% IMPORTANT NOTE: Before you start downloading a snapshot, you must
+% set Source Control (under Preferences: General->Source Control) to
+% None instead of "Enable MathWorks source control integration",
+% or you may encounter an Out of memory error.
+Settings.use_snapshots = 1; % use the latest snapshot
+% Settings.use_snapshots = 0; % to this setting use GDAC files instead
+% An alternate setting allows to pick a particular snapshot.
+% The format is YYYYMM (no quotes), e.g., 202309 for September 2023.
+% The snapshots are hosted at https://www.seanoe.org/data/00311/42182
+% Settings.use_snapshots = 202309;
 
 % default values for computation of mixed layer depth
 Settings.temp_thresh = 0.2;
@@ -134,7 +155,7 @@ addpath(genpath([filepath, '/gsw']))
 % Create subdirectories if needed
 if ~check_dir(Settings.index_dir) || ~check_dir(Settings.prof_dir) || ...
         ~check_dir(Settings.meta_dir) || ~check_dir(Settings.tech_dir) || ...
-        ~check_dir(Settings.traj_dir)
+        ~check_dir(Settings.traj_dir) || ~check_dir(Settings.snap_dir)
     error('Subdirectories could not be created')
 end 
 
@@ -151,12 +172,60 @@ Settings.avail_vars = {'PRES';'PSAL';'TEMP';'CNDC';'DOXY';'BBP';'BBP470';...
 
 % List of Data Assimilation Centers
 Settings.dacs = {'aoml'; 'bodc'; 'coriolis'; 'csio'; 'csiro'; 'incois'; ...
-    'jma'; 'kma'; 'kordi'; 'meds'};
+    'jma'; 'kma'; 'kordi'; 'meds'; 'nmdis'};
 
-% Download Sprof index file from GDAC to Index directory
-sprof = 'argo_synthetic-profile_index.txt'; % file at GDAC
-if ~download_index([sprof, '.gz'], 'Sprof')
-    error('Sprof index file could not be downloaded')
+% index files, either at the GDAC or in a snapshot
+sprof = 'argo_synthetic-profile_index.txt';
+prof = 'ar_index_global_prof.txt';
+meta = 'ar_index_global_meta.txt';
+tech = 'ar_index_global_tech.txt';
+traj = 'ar_index_global_traj.txt';
+
+% use snapshots or "live" data from the GDAC?
+if Settings.use_snapshots
+    determine_snapshot();
+    if isempty(Settings.snap_path)
+        return;
+    end
+    % use all files from the snapshot, not the GDAC    
+    Settings.prof_dir = [Settings.snap_dir, Settings.snap_path, 'Profiles/'];
+    Settings.index_dir = [Settings.snap_dir, Settings.snap_path, 'Index/'];
+    Settings.meta_dir = [Settings.snap_dir, Settings.snap_path, 'Meta/'];
+    Settings.tech_dir = [Settings.snap_dir, Settings.snap_path, 'Tech/'];
+    Settings.traj_dir = [Settings.snap_dir, Settings.snap_path, 'Traj/'];
+    if ~exist([Settings.index_dir, sprof], 'file') || ...
+        ~exist([Settings.index_dir, prof], 'file')
+        stack = dbstack;
+        funcs = {stack.name};
+        if ~any(strcmp(funcs, 'download_snapshot'))
+            disp('You must call download_snapshot with appropriate arguments')
+            disp('before you can continue.')
+        end
+        return
+    end
+else
+    % Download Sprof index file from GDAC to Index directory    
+    if ~download_index([sprof, '.gz'], 'Sprof')
+        error('Sprof index file could not be downloaded')
+    end
+    % Download prof index file from GDAC to Index directory
+    if ~download_index([prof, '.gz'], 'prof')
+        error('prof index file could not be downloaded')
+    end
+    % Download meta index file from GDAC to Index directory
+    % Since it is rather small, download the uncompressed file directly
+    if ~download_index(meta, 'meta')
+        error('meta index file could not be downloaded')
+    end
+    % Download (uncompressed) tech index file from GDAC to Index directory
+    if ~download_index(tech, 'tech')
+        error('tech index file could not be downloaded')
+    end
+    % Download (uncompressed) traj index file from GDAC to Index directory
+    if ~download_index(traj, 'traj')
+        error('traj index file could not be downloaded')
+    end
+
 end
 
 % Extract information from Sprof index file
@@ -173,12 +242,6 @@ Sprof.wmo = str2double(Sprof.wmo);
 ia(end+1) = length(Sprof.urls) + 1;
 bgc_prof_idx1 = ia(1:end-1);
 bgc_prof_idx2 = ia(2:end) - 1;
-
-% Download prof index file from GDAC to Index directory
-prof = 'ar_index_global_prof.txt'; % file at GDAC
-if ~download_index([prof, '.gz'], 'prof')
-    error('prof index file could not be downloaded')
-end
 
 % Extract information from prof index file
 % NOTE that some quantities will be kept per float (struct Float):
@@ -232,7 +295,6 @@ if ~isempty(sprof_only)
     Prof_wmo = [Prof_wmo; Sprof_wmo(idx_in_sprof)];
     [uwmo_prof,ia2] = unique(Prof_wmo,'stable');
 end
-
 
 % need to find out which floats are phys (in Prof only) and bgc (in Sprof)
 is_uniq_bgc = ismember(uwmo_prof,uwmo_sprof);
@@ -356,34 +418,9 @@ for f = 1:length(Float.prof_idx1)
     end
 end
 
-% Download meta index file from GDAC to Index directory
-% Since it is rather small, download the uncompressed file directly
-meta = 'ar_index_global_meta.txt';
-if ~download_index(meta, 'meta')
-    error('meta index file could not be downloaded')
-end
-
-% Extract information from meta index file
+% Extract information from meta, tech, and traj index files
 initialize_meta([Settings.index_dir, meta]);
-
-% Download tech index file from GDAC to Index directory
-% Since it is rather small, download the uncompressed file directly
-tech = 'ar_index_global_tech.txt';
-if ~download_index(tech, 'tech')
-    error('tech index file could not be downloaded')
-end
-
-% Extract information from tech index file
 initialize_tech([Settings.index_dir, tech]);
-
-% Download traj index file from GDAC to Index directory
-% Since it is rather small, download the uncompressed file directly
-traj = 'ar_index_global_traj.txt';
-if ~download_index(traj, 'traj')
-    error('traj index file could not be downloaded')
-end
-
-% Extract information from traj index file
 initialize_traj([Settings.index_dir, traj]);
 
 % Determine the availability of mapping functions
