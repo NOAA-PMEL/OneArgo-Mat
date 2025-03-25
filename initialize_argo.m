@@ -94,8 +94,8 @@ Settings.default_type = 'all';
 % set Source Control (under Preferences: General->Source Control) to
 % None instead of "Enable MathWorks source control integration",
 % or you may encounter an Out of memory error.
-Settings.use_snapshots = 1; % use the latest snapshot
-% Settings.use_snapshots = 0; % to this setting use GDAC files instead
+% Settings.use_snapshots = 1; % use the latest snapshot
+Settings.use_snapshots = 0; % to this setting use GDAC files instead
 % An alternate setting allows to pick a particular snapshot.
 % The format is YYYYMM (no quotes), e.g., 202309 for September 2023.
 % The snapshots are hosted at https://www.seanoe.org/data/00311/42182
