@@ -39,7 +39,8 @@ global Settings Prof Sprof Float;
 % halt the execution until the user presses ENTER.
 % Set Settings.use_pause to 0 if you want to run everything without stopping.
 use_desktop = desktop('-inuse');
-Settings.use_pause = ~use_desktop;
+%SettinSettings.use_pause = ~use_desktop;
+Settings.use_pause = 1; % best setting for Tutorial
 
 % By default, actively running commands are described with output
 % to the command window. Set this to 0 to suppress this output.

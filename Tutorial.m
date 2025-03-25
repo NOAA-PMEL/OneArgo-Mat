@@ -51,6 +51,7 @@ float_idx = (Float.wmoid == 5906439); % index for float #5906439
 % struct should be used for core and deep floats.
 prof_ids = Float.bgc_prof_idx1(float_idx):Float.bgc_prof_idx2(float_idx);
 % dates of each profile from float #5906439
+fprintf('\nA look at float 5906439 - data are available for these dates:\n')
 dates = datestr(datenum(Sprof.date(prof_ids), 'yyyymmddHHMMSS')) 
 list_sensors(5906439); % sensors available for float #5906439
 do_pause();
@@ -72,18 +73,22 @@ if ~success
 end
 
 %% Display attributes, dimensions, and variables available in the NetCDF
+fprintf('\nA look at the Sprof netcdf file of float %d:\n', WMO)
 ncdisp(['./Profiles/' num2str(WMO) '_Sprof.nc'])
 do_pause();
 
 %% Extract informational data from the NetCDF
 S = ncinfo(['./Profiles/' num2str(WMO) '_Sprof.nc']);
+fprintf('\nThese variables are available for float %d:\n', WMO)
 {S.Variables.Name}' % show the available variables
 do_pause();
 
 %% We see that NITRATE is available, so load it (along with TEMP and PSAL) from the NetCDF
 [data,mdata] = load_float_data(WMO,... % specify WMO number
     {'PSAL','TEMP','NITRATE'}); % specify variables
+fprintf('\nThese fields have been loaded into "data.F%d":\n', WMO)
 data.(['F' num2str(WMO)]) % show data that have been loaded into MATLAB
+fprintf('\nThese fields have been loaded into "mdata.F%d":\n', WMO)
 mdata.(['F' num2str(WMO)]) % show meta data that have been loaded into MATLAB
 do_pause();
 
@@ -176,6 +181,7 @@ show_profiles(OSP_floats(1), {'PSAL';'DOXY'});
 % Case #2: mean and standard deviation of all profiles from one float (1)
 show_profiles(OSP_floats(1), {'PSAL';'DOXY'},...
     'method','mean'); % this tells the function to just plot the mean profile
+% and the standard deviation
 do_pause();
 
 %% clean up the workspace
@@ -270,9 +276,8 @@ do_pause();
 
 % determine profiles that occur in September for each float separately
 for f = 1:length(HW_floats)
-    dvec = datevec(date{f});
-    month = dvec(:,2);
-    HW_float_profs_Sep{f} = HW_float_profs{f}(month == 9);
+    its_month = month(date{f});
+    HW_float_profs_Sep{f} = HW_float_profs{f}(its_month == 9);
 end
 
 show_profiles(HW_floats, {'PSAL';'DOXY'}, 'per_float', 0, ...
@@ -299,6 +304,7 @@ show_sections(HW_floats(5), {'PH_IN_SITU_TOTAL';'DOXY'}, 'mld', 1,'raw', 'no');
 % show both floats in one plot per variable, use adjusted values
 show_timeseries(HW_floats(4:5), {'PH_IN_SITU_TOTAL';'DOXY'}, 20, ...
     'per_float', 0);
+do_pause()
 
 %% clean up the workspace
 clear all;
