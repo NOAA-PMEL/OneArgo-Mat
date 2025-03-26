@@ -82,6 +82,7 @@ Settings.update = 3600; % time is given in seconds
 % (for calls to select_profiles that do not specify the
 % type or BGC sensors), the default type can be set to
 % 'bgc' here. 'phys' is the third available setting.
+% The value set here is also used for snapshots (see comment below).
 Settings.default_type = 'all';
 
 % Snapshots of Argo data are produced every month. These data are
@@ -96,7 +97,7 @@ Settings.default_type = 'all';
 % None instead of "Enable MathWorks source control integration",
 % or you may encounter an Out of memory error.
 % Settings.use_snapshots = 1; % use the latest snapshot
-Settings.use_snapshots = 0; % to this setting use GDAC files instead
+Settings.use_snapshots = 0; % use this setting to use GDAC files instead
 % An alternate setting allows to pick a particular snapshot.
 % The format is YYYYMM (no quotes), e.g., 202309 for September 2023.
 % The snapshots are hosted at https://www.seanoe.org/data/00311/42182
@@ -198,7 +199,7 @@ if Settings.use_snapshots
         ~exist([Settings.index_dir, prof], 'file')
         stack = dbstack;
         funcs = {stack.name};
-        if ~any(strcmp(funcs, 'download_snapshot'))
+        if ~any(strcmp(funcs, 'download_snapshot')) && ~check_existing_snapshot()
             disp('You must call download_snapshot with appropriate arguments')
             disp('before you can continue.')
         end

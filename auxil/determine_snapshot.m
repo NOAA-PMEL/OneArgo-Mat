@@ -57,8 +57,19 @@ end
 mth_idx = length(pattern) + 1; % first character of YYYY-MM
 
 % download the web page that contains the links to all snapshots
-page = webread('https://www.seanoe.org/data/00311/42182/');
-idx = strfind(page, pattern);
+try
+    page = webread('https://www.seanoe.org/data/00311/42182/');
+    idx = strfind(page, pattern);
+catch
+    if check_existing_snapshot()
+        disp('The page at seanoe.org could not be reached,')
+        disp('but the requested snapshot appears to exist already in:')
+        disp(Settings.snap_path)
+        return;
+    else
+        idx = [];
+    end
+end
 if isempty(idx)
     fprintf('The snapshot web page could not be read properly.\n')
     return
