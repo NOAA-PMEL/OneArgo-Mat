@@ -96,6 +96,11 @@ end
 % now check if the specified file exists locally already,
 % and if so, if it is up-to-date
 if exist(local_path, 'file') == 2
+    if Settings.use_snapshots
+        % no need to check update times
+        success = 1;
+        return;
+    end
     try
         local_file_update = ncread(local_path, 'DATE_UPDATE')';
         local_file_update = datenum(local_file_update, 'yyyymmddHHMMSS');
