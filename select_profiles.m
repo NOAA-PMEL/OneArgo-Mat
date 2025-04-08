@@ -57,6 +57,8 @@ function [float_ids, float_profs] = select_profiles(lon_lim,lat_lim,...
 %           set intp to 'no' to suppress interpolation;
 %           the default is taken from Settings.interp_lonlat (defined
 %           in initialize_argo.m)
+%   'max_depth',max_depth: Select profiles that reach at most this depth
+%           (positive downwards; in db)
 %   'min_num_prof',num_prof: Select only floats that have at least
 %           num_prof profiles that meet all other criteria
 %   'mode',mode: Valid modes are 'R' (real-time), 'A' (adjusted), and
@@ -134,6 +136,7 @@ mode = 'RAD';
 dac = [];
 floats = [];
 depth = [];
+max_depth = [];
 min_num_prof = 0;
 interp_ll = Settings.interp_lonlat;
 type = []; % default assignment depends on sensor selection
@@ -157,6 +160,8 @@ for i = 1:2:length(varargin)-1
         floats = varargin{i+1};
     elseif strcmpi(varargin{i}, 'depth')
         depth = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'max_depth')
+        max_depth = varargin{i+1};
     elseif strcmpi(varargin{i}, 'min_num_prof')
         min_num_prof = varargin{i+1};
     elseif strcmpi(varargin{i}, 'interp_lonlat')
@@ -172,6 +177,11 @@ for i = 1:2:length(varargin)-1
     else
         warning('unknown option: %s', varargin{i});
     end
+end
+
+if ~isempty(depth) && ~isempty(max_depth) && max_depth < depth
+    warning('The maximum depth must exceed the minimum depth')
+    return
 end
 
 % convert requested sensor(s) to cell array if necessary and
@@ -368,6 +378,12 @@ for fl = 1:length(good_float_ids)
         press = ncread(filename, 'PRES');
         has_press = (max(press) >= depth)';
     end
+    if isempty(max_depth)
+        has_max_press = ones(size(lon));
+    else
+        press = ncread(filename, 'PRES');
+        has_max_press = (max(press) <= max_depth)';
+    end
     float_type = Float.type{Float.wmoid == good_float_ids(fl)};
     if ~strcmp(mode, 'ADR') && ...
             (~isempty(sensor) || strcmp(float_type, 'phys'))
@@ -464,16 +480,16 @@ for fl = 1:length(good_float_ids)
     all_prof = 1:length(inpoly);
     if strcmp(outside, 'none') % must meet time and space constraints
         float_profs{fl} = all_prof(inpoly & indate & has_sensor & ...
-            is_ocean & has_mode & has_press & has_direct & has_cycle);
+            is_ocean & has_mode & has_press & has_max_press & has_direct & has_cycle);
     elseif strcmp(outside, 'time') % must meet space constraint
         float_profs{fl} = all_prof(inpoly & has_sensor & is_ocean & ...
-            has_mode & has_press & has_direct & has_cycle);
+            has_mode & has_press & has_max_press & has_direct & has_cycle);
     elseif strcmp(outside, 'space') % must meet time constraint
         float_profs{fl} = all_prof(indate & has_sensor & is_ocean & ...
-            has_mode & has_press & has_direct & has_cycle);
+            has_mode & has_press & has_max_press & has_direct & has_cycle);
     elseif strcmp(outside, 'both') % no time or space constraint
         float_profs{fl} = all_prof(has_sensor & is_ocean & ...
-            has_mode & has_press & has_direct & has_cycle);
+            has_mode & has_press & has_max_press & has_direct & has_cycle);
     else
         warning('no such setting for "outside": %s', outside)
         float_profs{fl} = [];

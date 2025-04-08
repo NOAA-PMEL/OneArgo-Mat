@@ -17,6 +17,8 @@ function Datai = depth_interp(Data, qc_flags, varargin)
 %
 % OPTIONAL INPUTS:
 %   'prs_res',prs_res             : pressure resolution (default: 2 dbar)
+%   'prs_val',prs_val             : pressure values (only one option out
+%                                   of 'prs_res' and 'prs_val' can be used)
 %   'raw',raw                     : use raw data if 'yes', adjusted data
 %                                   if no (default: 'no') (this is used
 %                                   only for pressure and, if requested, 
@@ -57,16 +59,24 @@ end
 
 % set defaults
 prs_res = 2;
+prs_val = [];
 calc_dens = 0;
 calc_mld_dens = 0;
 calc_mld_temp = 0;
 varargpass= {};
 raw = 'no';
 
+% prs_res and prs_val cannot be used at the same time
+if any(strcmp(varargin, 'prs_val')) && any(strcmp(varargin, 'prs_res'))
+    error('depth_interp: prs_val and prs_res cannot be used together')
+end
+
 % parse optional arguments
 for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'prs_res')
         prs_res = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'prs_val')
+        prs_val = varargin{i+1};
     elseif strcmpi(varargin{i}, 'raw')
         raw = varargin{i+1};
     elseif strcmpi(varargin{i}, 'calc_dens')
@@ -95,7 +105,11 @@ catch
 end
 
 % CONSTRUCT DEPTH AXIS ON WHICH TO INTERPOLATE DEPENDENT VARIABLES
-xi = (0:prs_res:prs_res*ceil(max(max(X))/prs_res))';
+if isempty(prs_val)
+    xi = (0:prs_res:prs_res*ceil(max(max(X))/prs_res))';
+else
+    xi = prs_val;
+end
 xi = repmat(xi,1,size(X,2));
 
 % START LOOP FOR EACH DEPENDENT VARIABLE
