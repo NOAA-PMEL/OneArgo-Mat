@@ -1,4 +1,4 @@
-function initialize_argo()
+function initialize_argo(root_dir)
 % initialize_argo  This function is part of the
 % MATLAB toolbox for accessing Argo float data.
 %
@@ -14,7 +14,11 @@ function initialize_argo()
 %
 % INPUT: None
 %
+% OPTIONAL INPUT:
+%   root_dir : root path for the toolbox to use (default: current directory)
+%
 % OUTPUT: None
+%   Global variables Settings, Prof, Sprof, and Float are defined.
 %
 % AUTHORS:
 %   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW)
@@ -39,7 +43,7 @@ global Settings Prof Sprof Float;
 % halt the execution until the user presses ENTER.
 % Set Settings.use_pause to 0 if you want to run everything without stopping.
 use_desktop = desktop('-inuse');
-%SettinSettings.use_pause = ~use_desktop;
+%Settings.use_pause = ~use_desktop; % best setting for standard use
 Settings.use_pause = 1; % best setting for Tutorial
 
 % By default, actively running commands are described with output
@@ -53,23 +57,24 @@ Settings.verbose = 1;
 % your system can handle it.
 Settings.max_plots = 20;
 
+if nargin < 1
+    root_dir = './';
+end
+
 % Profiles are stored in subdirectory 'Profiles'
-Settings.prof_dir = './Profiles/'; % include trailing / for all directories here
+Settings.prof_dir = [root_dir, '/Profiles/']; % include trailing / for all directories here
 
 % Index files are stored in subdirectory 'Index'
-Settings.index_dir = './Index/';
+Settings.index_dir = [root_dir, '/Index/'];
 
 % Meta files are stored in subdirectory 'Meta'
-Settings.meta_dir = './Meta/';
+Settings.meta_dir = [root_dir, '/Meta/'];
 
 % Tech files are stored in subdirectory 'Tech'
-Settings.tech_dir = './Tech/';
+Settings.tech_dir = [root_dir, '/Tech/'];
 
 % Traj files are stored in subdirectory 'Traj'
-Settings.traj_dir = './Traj/';
-
-% Main directory for snapshots
-Settings.snap_dir = './Snapshots/';
+Settings.traj_dir = [root_dir, '/Traj/'];
 
 Settings.demo_float = 5904021;
 
