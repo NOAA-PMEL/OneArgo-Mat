@@ -54,14 +54,15 @@ for f = 1:nfloats
     this_float = strrep(char(floats{f}), 'F', '');
     depths(f, 3) = str2double(this_float);
     fprintf(' %-10s ', this_float);
-    if isfield(Data.(floats{f}), 'PRES_ADJUSTED')
+    if isfield(Data.(floats{f}), 'PRES_ADJUSTED') && ...
+            any(isfinite(Data.(floats{f}).PRES_ADJUSTED(:)))
         mode = 'Adjusted';
         pres = Data.(floats{f}).PRES_ADJUSTED;
     else
         mode = 'Raw';
         pres = Data.(floats{f}).PRES;
     end
-    max_prof = max(pres); % highest pressure for all profiles
+    max_prof = max(pres, [], 'omitnan'); % highest pressure for all profiles
     depths(f, 1) = max(max_prof);
     depths(f, 2) = min(max_prof);
     fprintf('%6.1f db  ', max(max_prof));
