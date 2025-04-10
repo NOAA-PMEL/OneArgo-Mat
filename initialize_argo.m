@@ -76,6 +76,9 @@ Settings.tech_dir = [root_dir, '/Tech/'];
 % Traj files are stored in subdirectory 'Traj'
 Settings.traj_dir = [root_dir, '/Traj/'];
 
+% Main directory for snapshots
+Settings.snap_dir = './Snapshots/';
+
 Settings.demo_float = 5904021;
 
 % By default, don't update index files if they are less than 1 hour old
