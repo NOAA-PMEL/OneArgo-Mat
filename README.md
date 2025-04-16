@@ -4,7 +4,8 @@
 
 ## NOTE
 
-This is the first release of this toolbox under the OneArgo-Mat name. It is a further development of the [BGC-Argo-Mat](https://github.com/NOAA-PMEL/BGC_Argo_Mat_Toolbox) toolbox.
+This toolbox is a further development of the [BGC-Argo-Mat](https://github.com/NOAA-PMEL/BGC_Argo_Mat_Toolbox) toolbox.
+It can be used for all types of Argo floats (Core, Deep, and BGC).
 
 ## ABOUT
 
@@ -21,24 +22,30 @@ This repository can be cloned using the command line or the GitHub Desktop appli
 Before use, make sure the files from this repository are placed in a directory that is in the MATLAB search path. Or add the directory where they are located to the search path (https://www.mathworks.com/help/matlab/matlab_env/add-remove-or-reorder-folders-on-the-search-path.html). Or run it in the directory where the Tutorial.m script was placed.
 
 For an overview of how to use this toolbox, step through the Tutorial script (using the "Run and Advance" button of the MATLAB editor window), a tutorial that was developed for the [2021 GO-BGC Scientific Workshop](https://www.us-ocb.org/joint-gobgc-workshop/) (6/30/21).
+There are more scripts (listed under "Driver Scripts" below) to demonstrate particular features of this toolbox.
 
 ## FUNCTIONS
 
 ### Main functions (to be called from script or command window):
 
+calc_mld.m               : calculates mixed layer depth<br/>
+data2table.m             : converts the Data struct to a Matlab table<br/>
 download_meta_files.m    : downloads <WMOID>_meta.nc files from GDAC<br/>
+download_snapshot.m      : downloads an archived snapshot of Argo data<br/>
 download_tech_files.m    : downloads <WMOID>_tech.nc files from GDAC<br/>
 download_traj_files.m    : downloads <WMOID>_traj.nc files from GDAC<br/>
 get_lon_lat_time.m       : returns longitude, latitude, time for selected floats and profiles<br/>
 initialize_argo.m        : defines standard settings and paths and downloads synthetic profile index file<br/>
+list_dacs.m              : shows the Data Assembly Center(s) handling the specified floats<br/>
 list_sensors.m           : shows available sensors across fleet or for specified floats<br/>
 load_float_data.m        : loads data of one or more specified float(s) into memory<br/>
 qc_filter.m              : filters variables in a Data structure by QC flags<br/>
 select_profiles.m        : returns profiles and corresponding floats based on input criteria<br/>
-show_profiles.m          : downloads float data and calls plot_profiles to create plot<br/>
-show_sections.m          : downloads float data and calls plot_sections to create plot<br/>
-show_timeseries.m        : downloads float data and calls plot_timeseries to create plot<br/>
-show_trajectories.m      : downloads float data and calls plot_trajectories to create plot<br/>
+show_maps.m              : downloads float data and calls plot_profiles to create map plot(s)<br/>
+show_profiles.m          : downloads float data and calls plot_profiles to create profile plot(s)<br/>
+show_sections.m          : downloads float data and calls plot_sections to create section plot(s)<br/>
+show_timeseries.m        : downloads float data and calls plot_timeseries to create timeseries plot(s)<br/>
+show_trajectories.m      : downloads float data and calls plot_trajectories to create trajectory plot(s)<br/>
 
 Use "help function_name" in the MATLAB command window to see a full description of input and output parameters for these functions.
 
@@ -47,13 +54,18 @@ Use "help function_name" in the MATLAB command window to see a full description 
 calc_auxil.m             : calculates various auxiliary variables from Argo float data<br/>
 check_datenum.m          : checks if input matches datenum format<br/>
 check_dir.m              : determines if a directory needs to be created and does so if necessary<br/>
+check_existing_snapshot.m: checks if files for specified snapshot exist locally<br/>
 check_float_variables.m  : checks if specified variables are available for the specified floats<br/>
 check_variables.m        : checks if specified variables are available<br/>
 combine_variables.m      : creates a cell array with variables names (basic and extended sets)<br/>
 create_tiled_layout.m    : creates tiled layout in a profile plot with two different variables<br/>
-depth_interp.m           : interpolates values for BGC-Argo parameters against depth<br/>
+delete_snapshot_prof.m   : deletes individual profile files of a full snapshot file<br/>
+depth_interp.m           : interpolates values for Argo parameters against depth<br/>
 do_download.m            : determines if a file should be downloaded or not<br/>
+determine_float_dacs.m   : determines which DACs handle specified floats<br/>
+determine_snaphot.m      : determines which snapshot of Argo data will be used<br/>
 do_pause.m               : pauses execution of main_workshop (if used without desktop)<br/>
+do_download.m            : determines if a file needs to be downloaded<b/>
 download_float.m         : downloads the prof, Sprof or other NetCDF file for one float from the GDAC<br/>
 download_index.m         : downloads one index file from the GDAC<br/>
 download_multi_floats.m  : calls download_float to download NetCDF files from the GDAC for multiple floats<br/>
@@ -70,14 +82,17 @@ initialize_tech.m        : reads the tech index file and initializes the global 
 initialize_traj.m        : reads the traj index file and initializes the global Traj struct<br/>
 interp_lonlat.m          : interpolates missing positions if possible<br/>
 mod_xaxis_time.m         : sets length and labels for x axis (time) in time series and section plots<br/>
+plot_maps.m              : plots horizontal maps<br/>
 plot_one_profile.m       : plots one profile<br/>
 plot_profiles.m          : plots profiles of one or more specified float(s) for the specified variable(s)<br/>
 plot_sections.m          : plots sections of one or more specified float(s) for the specified variable(s)<br/>
 plot_timeseries.m        : plots time series of one or more specified float(s)<br/>
 plot_trajectories.m      : plots trajectories of one or more specified float(s)<br/>
+reorg_snapshot_files.m   : reorganized snapshot files into GDAC-like directory tree<br/>
 select_profiles_per_type.m : helper function of select_profiles that selects one type of floats<br/>
 set_xlim.m               : sets xlimits of current plot (if start/end dates were specified)<br/>
 try_download.m           : attempts to download a file from any of the specified GDACs<br/>
+unzip_index_files.m      : unzips index file in snapshot<br/>
 
 
 ## DRIVER SCRIPTS
@@ -87,7 +102,9 @@ Demo.mlx                 : live script version of the third example from Tutoria
 Show_deep_floats.m       : shows use of 'depth' option for select_profiles, calls list_sensors<br/>
 Show_doxy_rmode.m        : shows use of 'mode' and 'min_num_prof' options for select_profiles<br/>
 Show_missing_lonlat.m    : shows interpolation of missing locations in select_profiles and show_trajectories<br/>
+Show_oxygen_maps.m       : shows creation of map plots (example: oxygen at depth)<br/>
 Show_under_ice.m         : shows marking of estimated positions in show_trajectories<br/>
+Show_use_raw_no_strict.m : shows the use of the 'raw','no_strict' option<br/>
 
 ## REQUIREMENTS
 At least MATLAB R2016b (or any newer release) is needed to use these functions without modifications.<br/>
@@ -121,7 +138,7 @@ A similar toolbox in Python (alpha version):<br/>
 
 Please cite this toolbox as:
 
-H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat: A MATLAB toolbox for accessing and visualizing Argo data. Zenodo. https://doi.org/10.5281/zenodo.6588041
+H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2025. OneArgo-Mat: A MATLAB toolbox for accessing and visualizing Argo data. Zenodo. https://doi.org/10.5281/zenodo.6588041
 
 ## LEGAL DISCLAIMER
 
