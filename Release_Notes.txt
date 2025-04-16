@@ -1,5 +1,16 @@
 RELEASE NOTES FOR USERS OF THE OneArgo-Mat TOOLBOX
 
+Version 1.1.0 (April 2025)
+
+This version includes a variety of new features:
+Archived snapshots of Argo data can be used instead of "live" data
+from the Global Data Assembly Centers (GDACs).
+Map plots (lon/lat axes at any depth) can be created.
+Plotting routines can be called with previously loaded Data structs.
+The data2table function allows the creation of a standard Matlab
+table to hold all data from the two-level Data struct.
+Many functions have new options, and some bugs were fixed.
+
 Version 1.0.3
 
 This version includes two bug fixes:
