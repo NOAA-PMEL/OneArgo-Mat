@@ -107,9 +107,9 @@ Settings.default_type = 'all';
 % Settings.use_snapshots = 1; % use the latest snapshot
 Settings.use_snapshots = 0; % use this setting to use GDAC files instead
 % An alternate setting allows to pick a particular snapshot.
-% The format is YYYYMM (no quotes), e.g., 202309 for September 2023.
+% The format is YYYYMM (no quotes), e.g., 202504 for April 2025.
 % The snapshots are hosted at https://www.seanoe.org/data/00311/42182
-% Settings.use_snapshots = 202309;
+% Settings.use_snapshots = 202504;
 
 % default values for computation of mixed layer depth
 Settings.temp_thresh = 0.2;
@@ -193,7 +193,7 @@ traj = 'ar_index_global_traj.txt';
 
 % use snapshots or "live" data from the GDAC?
 if Settings.use_snapshots
-    determine_snapshot();
+    determine_snapshot(Settings.default_type, Settings.use_snapshots);
     if isempty(Settings.snap_path)
         return;
     end

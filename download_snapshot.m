@@ -15,6 +15,8 @@ function download_snapshot(varargin)
 % OPTIONAL INPUTS  (key,value pairs):
 %   'dac, dac: keep only files from the specified DAC(s), e.g., 'AOML'
 %         or {'jma';'coriolis'}
+%   'date', date: either 1 (the latest snapshot) or a particular snapshot,
+%         formatted as YYYYMM (no quotes), e.g. 202504 for April 2025
 %   'force', force: if 0 (default), do not download a snapshot file if
 %         at least *some* of its contents exist locally already (NOTE:
 %         the function does not check if specific files requested with
@@ -42,6 +44,7 @@ function download_snapshot(varargin)
 %         profiles will be deleted even if keep is set to 2 or 3.)
 %         If BGC snapshots are used, the only file affected by 'keep'
 %         is the snapshot tarball file itself - kept if 'keep' is 2 or 3.
+%   'type', type: either 'all', 'phys', or 'bgc'
 %   'verbose', verbose: if 1, show more information about what is being
 %         done; if 0, only show errors and warnings; default: 1
 %         if 2, show even more output about progress
@@ -80,12 +83,21 @@ verbose = 1; % the untarring is slow, keep user informed
 for i = 1:2:length(varargin)-1
     if strcmpi(varargin{i}, 'dac')
         dac = lower(varargin{i+1});
+    elseif strcmpi(varargin{i}, 'date')
+        snap_date = lower(varargin{i+1});
     elseif strcmpi(varargin{i}, 'floats')
         floats = lower(varargin{i+1});
     elseif strcmpi(varargin{i}, 'force')
         force = varargin{i+1};
     elseif strcmpi(varargin{i}, 'keep')
         keep = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'type')
+        if any(strcmpi(varargin{i+1}, {'all';'phys';'bgc'}))
+            snap_type = lower(varargin{i+1});
+        else
+            warning('No such snapshot type: %s', varargin{i+1})
+            warning('Using default type ("%s") instead.', snap_type)
+        end
     elseif strcmpi(varargin{i}, 'verbose')
         verbose = varargin{i+1};
     end
@@ -98,7 +110,7 @@ if ~snap_date
     return
 end
 
-determine_snapshot();
+determine_snapshot(snap_date, snap_type);
 if isempty(Settings.snap_path)
     return
 end
@@ -154,11 +166,9 @@ if download_snap
 end
 
 try
-    tic
     fprintf('Untarring the snapshot, this may take a few minutes... ')
     untar(Settings.snap_file, Settings.snap_dir);
     fprintf('done!\n')
-    toc
 catch
     fprintf('error! Aborting...\n')
     return

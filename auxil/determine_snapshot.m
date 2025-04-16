@@ -1,4 +1,4 @@
-function determine_snapshot()
+function determine_snapshot(snap_date, snap_type)
 % determine_snapshot  This function is part of the
 % MATLAB toolbox for accessing Argo float data.
 %
@@ -12,7 +12,10 @@ function determine_snapshot()
 %   Settings.snap_path, Settings.snap_date, Settings.snap_url, 
 %   Settings.snap_file, and Settings.snap_size will be modified.
 %
-% INPUT: None
+% INPUTS:
+%   snap_date : either 1 (the latest snapshot) or a particular snapshot,
+%         formatted as YYYYMM (no quotes), e.g. 202504 for April 2025
+%   snap_type : either 'all', 'phys', or 'bgc'
 %
 % OUTPUT: None.
 %   Global variable Settings will be modified.     
@@ -31,8 +34,6 @@ function determine_snapshot()
 
 global Settings;
 
-snap_date = Settings.use_snapshots; % shorthand names
-snap_type = Settings.default_type;
 Settings.snap_path = [];
 
 if ~snap_date
