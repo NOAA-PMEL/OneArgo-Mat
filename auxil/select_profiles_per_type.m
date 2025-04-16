@@ -85,9 +85,9 @@ indate_poly = date_inpoly >= dn1 & date_inpoly <= dn2;
 % now create an indate array of 0s/1s that has the same
 % size as inpoly so that it can be used in the & operations below
 indate = zeros(size(inpoly));
-all_floats = 1:length(inpoly);
-sel_floats_space = all_floats(inpoly);
-indate(sel_floats_space(indate_poly)) = 1;
+all_profiles = 1:length(inpoly);
+sel_profs_space = all_profiles(inpoly);
+indate(sel_profs_space(indate_poly)) = 1;
 
 % select by sensor
 has_sensor = ones(size(indate));
