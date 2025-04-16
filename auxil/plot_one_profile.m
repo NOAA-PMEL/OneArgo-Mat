@@ -1,7 +1,7 @@
 function num_good_values = plot_one_profile(axes, data, pres, data_qc, ...
     qc_flags, plot_obs, plot_color)
 % plot_one_profile  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   num_good_values = plot_one_profile(axes, data, pres, data_qc, ...
@@ -29,16 +29,16 @@ function num_good_values = plot_one_profile(axes, data, pres, data_qc, ...
 %              and whose data_qc values match specified qc_flags
 %
 % AUTHORS:
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW)
+%   H. Frenzel and J. Sharp (UW-CICOES), A. Fassbender (NOAA-PMEL), N. Buzby (UW)
 %
 % CITATION:
-%   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
+%   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2025. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
-% DATE: JUNE 1, 2022  (Version 1.0.1)
+% DATE: APRIL 16, 2025  (Version 1.1.0)
 
 if nargin < 7
     plot_color = 'k';

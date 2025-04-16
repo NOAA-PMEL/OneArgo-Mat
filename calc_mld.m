@@ -1,6 +1,6 @@
 function Data = calc_mld(Data, varargin)
 % calc_mld  This function is part of the
-% MATLAB toolbox for accessing Argo float Data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   Data = calc_mld(Data, varargin)
@@ -31,16 +31,16 @@ function Data = calc_mld(Data, varargin)
 %   Data : struct with mixed layer depth added to the variables
 %
 % AUTHORS:
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW)
+%   H. Frenzel and J. Sharp (UW-CICOES), A. Fassbender (NOAA-PMEL), N. Buzby (UW)
 %
 % CITATION:
-%   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
+%   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2025. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
-% DATE: JUNE 1, 2022  (Version 1.0.1)
+% DATE: APRIL 16, 2025  (Version 1.1.0)
 
 if nargin < 1
     warning('Usage: calc_mld(Data, [, varargin])')
@@ -69,6 +69,8 @@ end
 
 if ~calc_mld_dens && ~calc_mld_temp
     warning('Neither MLD method was selected!')
+    fprintf('Please add at least ''calc_mld_dens'',1 or ')
+    fprintf('''calc_mld_temp'',1 to the options (or both).\n')
     return
 end
 

@@ -1,7 +1,7 @@
 function [Data, Mdata] = load_float_data(float_ids, variables, ...
     float_profs, varargin)
 % load_float_data  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   [Data, Mdata] = load_float_data(float_ids [, variables] ...
@@ -33,16 +33,16 @@ function [Data, Mdata] = load_float_data(float_ids, variables, ...
 %   Mdata       : struct with meta data (WMO_NUMBER, PI_NAME, etc.)
 %
 % AUTHORS:
-%   J. Sharp, H. Frenzel, A. Fassbender (NOAA-PMEL), N. Buzby (UW)
+%   J. Sharp and H. Frenzel (UW-CICOES), A. Fassbender (NOAA-PMEL), N. Buzby (UW)
 %
 % CITATION:
-%   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
+%   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2025. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
-% DATE: JUNE 1, 2022  (Version 1.0.1)
+% DATE: APRIL 16, 2025  (Version 1.1.0)
 
 global Float Settings;
 

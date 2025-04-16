@@ -25,16 +25,16 @@ function inpoly = get_inpolygon(lon, lat, lon_lim, lat_lim)
 %   inpoly   : vector of 0s and 1s (same length as lon and lat)
 %
 % AUTHORS:
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW)
+%   H. Frenzel and J. Sharp (UW-CICOES), A. Fassbender (NOAA-PMEL), N. Buzby (UW)
 %
 % CITATION:
-%   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
+%   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2025. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
 %   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
-% DATE: JUNE 1, 2022  (Version 1.0.1)
+% DATE: APRIL 16, 2025  (Version 1.1.0)
 
 % longitude limits can be specified in -180..180 or 0..360 degree formats,
 % or any other 360 degree range that encloses all the desired longitude

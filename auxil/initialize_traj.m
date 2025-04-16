@@ -1,6 +1,6 @@
 function initialize_traj(file_name)
 % initialize_traj  This function is part of the
-% MATLAB toolbox for accessing BGC Argo float data.
+% MATLAB toolbox for accessing Argo float data.
 %
 % USAGE:
 %   initialize_traj(file_name)
@@ -15,16 +15,16 @@ function initialize_traj(file_name)
 % OUTPUTS: None. Traj is filled with fields.
 %
 % AUTHORS:
-%   H. Frenzel, J. Sharp, A. Fassbender (NOAA-PMEL), N. Buzby (UW)
+%   H. Frenzel and J. Sharp (UW-CICOES), A. Fassbender (NOAA-PMEL), N. Buzby (UW)
 %
 % CITATION:
-%   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2022. OneArgo-Mat:
+%   H. Frenzel, J. Sharp, A. Fassbender, N. Buzby, 2025. OneArgo-Mat:
 %   A MATLAB toolbox for accessing and visualizing Argo data.
-%   Zenodo. https://doi.org/10.5281/zenodo.6588042
+%   Zenodo. https://doi.org/10.5281/zenodo.6588041
 %
 % LICENSE: oneargo_mat_license.m
 %
-% DATE: JUNE 1, 2022  (Version 1.0.1)
+% DATE: APRIL 16, 2025  (Version 1.1.0)
 
 global Traj;
 
