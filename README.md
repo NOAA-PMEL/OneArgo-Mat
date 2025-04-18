@@ -65,7 +65,7 @@ do_download.m            : determines if a file should be downloaded or not<br/>
 determine_float_dacs.m   : determines which DACs handle specified floats<br/>
 determine_snaphot.m      : determines which snapshot of Argo data will be used<br/>
 do_pause.m               : pauses execution of main_workshop (if used without desktop)<br/>
-do_download.m            : determines if a file needs to be downloaded<b/>
+do_download.m            : determines if a file needs to be downloaded<br/>
 download_float.m         : downloads the prof, Sprof or other NetCDF file for one float from the GDAC<br/>
 download_index.m         : downloads one index file from the GDAC<br/>
 download_multi_floats.m  : calls download_float to download NetCDF files from the GDAC for multiple floats<br/>
