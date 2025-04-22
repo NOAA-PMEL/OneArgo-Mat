@@ -96,10 +96,11 @@ unzip_index_files.m      : unzips index file in snapshot<br/>
 
 
 ## DRIVER SCRIPTS
-Tutorial.m               : tutorial script for GO-BGC Scientific Workshop (6/30/2021)<br/>
+Tutorial.m               : tutorial script for GO-BGC Scientific Workshop (06/30/2021)<br/>
 Comp_doxy_doxy2.m        : shows use of multiple sensors in select_profiles, show_timeseries, show_profiles<br/>
 Demo.mlx                 : live script version of the third example from Tutorial.m<br/>
 Download_Snapshot_BGC_Bats.m : shows how to download a snapshot of Argo data<br/>
+FAIR_Tutorial.m          : tutorial script for FAIR Workshop (04/23/2025)<br/>
 Show_deep_floats.m       : shows use of 'depth' option for select_profiles, calls list_sensors<br/>
 Show_doxy_rmode.m        : shows use of 'mode' and 'min_num_prof' options for select_profiles<br/>
 Show_missing_lonlat.m    : shows interpolation of missing locations in select_profiles and show_trajectories<br/>
