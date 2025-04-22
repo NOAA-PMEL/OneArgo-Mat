@@ -35,11 +35,11 @@ function plot_sections(Data, Mdata, variables, nvars, plot_isopyc, ...
 %   time_label  : either years ('y'), months ('m'), or days ('d')
 %   depth       : minimum and maximum depths to plot (an empty array
 %                 signals the plotting of all available depths)
-%   raw         : if 'yes', always use raw values;
-%                 if 'no', use adjusted variables if available for
-%                 all selected floats;
-%                 if 'no_strict', plot only adjusted data, skip floats
-%                 that have only raw data available
+%   raw         : 'no_strict': plot only adjusted data, skip floats
+%                              that have only raw data available (default);
+%                 'no': plot adjusted data if available for all floats,
+%                       raw data otherwise
+%                 'yes': plot raw, i.e., unadjusted data
 %   obs         : if 'on', add dots at the depths of observations
 %   basename    : if not empty, create png files of all plots;
 %                 the file names will be <basename>_<variable>.png

@@ -91,6 +91,10 @@ for i = 1:2:length(varargin)-1
     end
 end
 
+if strncmp(raw, 'no', 2)
+    raw = 'no'; % could have been no_strict before
+end
+
 % DEFINE PRESSURE DATA AS 'X'
 try
     assert(strcmp(raw, 'no'));

@@ -45,11 +45,11 @@ function good_float_ids = show_timeseries(float_ids, variables, ...
 %                   default setting: 0:9 (all flags)
 %                   See Table 7 in Bittig et al.:
 %                   https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
-%   'raw',raw     : plot raw, i.e., unadjusted data if set to 'yes';
-%                   default: 'no' (i.e., plot adjusted data if available
-%                   for all selected floats);
-%                   'no_strict': plot only adjusted data, skip floats
-%                   that have only raw data available
+%   'raw',raw     : 'no_strict': plot only adjusted data, skip floats that
+%                                have only raw data available (default);
+%                   'no': plot adjusted data if available for all floats,
+%                         raw data otherwise
+%                   'yes': plot raw, i.e., unadjusted data
 %   'start',start_date : start date (in one of the following formats:
 %                   [YYYY MM DD HH MM SS] or [YYYY MM DD])
 %   'time_label',label : use either years ('y'), months ('m'), or days ('d');

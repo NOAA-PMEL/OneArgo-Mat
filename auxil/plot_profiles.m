@@ -50,11 +50,11 @@ function [mean_prof, std_prof, mean_pres] = plot_profiles(Data, Mdata, ...
 %                     default setting: 0:9 (all flags)
 %                     See Table 7 in Bittig et al.:
 %                     https://www.frontiersin.org/files/Articles/460352/fmars-06-00502-HTML-r1/image_m/fmars-06-00502-t007.jpg
-%   'raw',raw       : plot raw, i.e., unadjusted data if set to 'yes';
-%                     default: 'no' (i.e., plot adjusted data if
-%                     available for all selected floats);
-%                     'no_strict': plot only adjusted data, skip floats
-%                     that have only raw data available
+%   'raw',raw       : 'no_strict': plot only adjusted data, skip floats that
+%                                  have only raw data available (default);
+%                     'no': plot adjusted data if available for all floats,
+%                           raw data otherwise
+%                     'yes': plot raw, i.e., unadjusted data
 %   'title_add',text: add the given text to the end of the title
 %   'var2',variable : if variable is not empty, profiles of this second
 %                     variable will be plotted; if it is the same type as the
@@ -102,7 +102,7 @@ depth = [];
 method = 'all'; % show all profiles per variable in one plot
 per_float = 1; % show profiles for each float in a separate plot
 obs = 'off'; % don't show observation points on each profile by default
-raw = 'no'; % plot adjusted data by default
+raw = 'no_strict'; % plot only adjusted data by default
 title_add = ''; % nothing added to title
 qc_flags = 0:9; % use all data
 var2_orig = [];
@@ -299,7 +299,7 @@ for v = 1:nvars
             continue;
         end
         try
-            assert(strcmp(raw, 'no')) % use PRES if raw values are used
+            assert(strncmp(raw, 'no', 2)) % use PRES if raw values are used
             PRES = Data.(floats{f}).PRES_ADJUSTED;
             good_vals = sum(isfinite(PRES));
             % a somewhat arbitrary criterion: at least half of the profiles

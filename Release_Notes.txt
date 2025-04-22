@@ -10,6 +10,14 @@ Plotting routines can be called with previously loaded Data structs.
 The data2table function allows the creation of a standard Matlab
 table to hold all data from the two-level Data struct.
 Many functions have new options, and some bugs were fixed.
+In the maps/profiles/sections/timeseries plotting functions,
+'raw','no_strict' is now the default instead of 'no'.
+With this setting, only adjusted values are plotted. If one or
+more of the floats to be plotted do not have valid adjusted data
+for the requested variable, they will not be plotted at all.
+(With the 'raw','no' setting, if at least one float does not
+have valid adjusted data, raw data will be plotted for all floats.)
+
 
 Version 1.0.3
 
