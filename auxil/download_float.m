@@ -104,8 +104,8 @@ if exist(local_path, 'file') == 2
     try
         local_file_update = ncread(local_path, 'DATE_UPDATE')';
         local_file_update = datenum(local_file_update, 'yyyymmddHHMMSS');
-        % allow a small tolerance value for numerical imprecision
-        if local_file_update > remote_file_update
+        % allow a small tolerance value (30 minutes) for numerical imprecision
+        if local_file_update >= remote_file_update - 0.5/24
             % existing file is up-to-date, no need to download again
             success = 1;
             return;
