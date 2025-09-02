@@ -34,7 +34,7 @@ function [main_sensor, sensor_number] = get_sensor_number(sensor_name)
 % first case: main sensor does not contain numbers,
 % e.g. if sensor_name is 'DOXY' or 'DOXY2'
 match = regexp(sensor_name, ...
-    '(?<main>[A-Z]+(_[A-Z]+)?)(?<num>[2-9]?)$','names');
+    '(?<main>[A-Z]+(_[A-Z]+)?)_?(?<num>[2-9]?)$','names');
 if isempty(match)
     % second case: main sensor contains numbers, e.g., 'BBP700' or 'BBP700_2'
     match = regexp(sensor_name, ...
