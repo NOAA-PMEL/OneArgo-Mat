@@ -140,13 +140,12 @@ Settings.traj_mode_colors = {[0, 0.4470, 0.7410]; ...
 Settings.pad_lon = 5;
 Settings.pad_lat = 5;
 
-% Default: try US GDAC before French GDAC
+% French GDAC is the primary host
 host_ifremer = 'https://data-argo.ifremer.fr/';
-host_godae = 'https://usgodae.org/ftp/outgoing/argo/';
+% as of April 2026, GODAE may be offline for good
+% host_godae = 'https://usgodae.org/ftp/outgoing/argo/';
 % Additional hosts could be added here
-%Settings.hosts = {host_godae;host_ifremer};
-% downloads from IFREMER are often faster than from GODAE
-Settings.hosts = {host_ifremer;host_godae}; % alternate order of hosts
+Settings.hosts = {host_ifremer};
 
 % Default: do not interpolate missing lon/lat values
 Settings.interp_lonlat = 'no';
