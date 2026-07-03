@@ -31,15 +31,19 @@ function [main_sensor, sensor_number] = get_sensor_number(sensor_name)
 %
 % DATE: APRIL 16, 2025  (Version 1.1.0)
 
-% first case: main sensor does not contain numbers,
-% e.g. if sensor_name is 'DOXY' or 'DOXY2'
+% BSDOXY FIX: pristine v1.1.0 could not parse the underscore form 'DOXY_2'
+% (it expects 'DOXY2') and crashed on unknown sensors. Parse the base sensor
+% name + optional sensor number, handling DOXY, DOXY2, DOXY_2, BBP700, BBP700_2,
+% DOWNWELLING_PAR, PH_IN_SITU_TOTAL, ... and return empty for a genuinely
+% unrecognised name (initialize_sprof expects empty to flag it).
+%   main : [A-Z]+ , optional _LETTER groups (DOWNWELLING_PAR) , optional 3-digit
+%          wavelength (BBP700).   num : optional trailing 2..9, with or without '_'.
 match = regexp(sensor_name, ...
-    '(?<main>[A-Z]+(_[A-Z]+)?)_?(?<num>[2-9]?)$','names');
+    '^(?<main>[A-Z]+(_[A-Z]+)*(\d{3})?)(?<num>_?[2-9])?$', 'names');
 if isempty(match)
-    % second case: main sensor contains numbers, e.g., 'BBP700' or 'BBP700_2'
-    match = regexp(sensor_name, ...
-        '(?<main>[A-Z]+(_[A-Z]+)?\d{3})(?<num>_[2-9])?$','names');
-    match.num = strrep(match.num, '_', '');
+    main_sensor = '';
+    sensor_number = '';
+    return
 end
 main_sensor = match.main;
-sensor_number = match.num;
+sensor_number = strrep(match.num, '_', '');
