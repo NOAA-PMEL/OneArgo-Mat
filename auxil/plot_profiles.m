@@ -162,9 +162,9 @@ else
     warn_insert = '';
 end
 if nplots > Settings.max_plots
-    warning(['too many plots requested - use fewer %svariables', ...
+    warning(['too many (%d) plots requested - use fewer %svariables', ...
         newline, 'or increase Settings.max_plots if possible'], ...
-        warn_insert)
+        nplots, warn_insert)
     return
 end
 if isempty(var2_orig)
