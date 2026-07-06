@@ -142,10 +142,10 @@ Settings.pad_lat = 5;
 
 % French GDAC is the primary host
 host_ifremer = 'https://data-argo.ifremer.fr/';
-% as of April 2026, GODAE may be offline for good
-% host_godae = 'https://usgodae.org/ftp/outgoing/argo/';
+host_godae = 'https://nrlgodae1.nrlmry.navy.mil/pub/outgoing/argo/';
 % Additional hosts could be added here
-Settings.hosts = {host_ifremer};
+% downloads from IFREMER are often faster than from GODAE
+Settings.hosts = {host_ifremer; host_godae}; % alternate order of hosts
 
 % Default: do not interpolate missing lon/lat values
 Settings.interp_lonlat = 'no';
