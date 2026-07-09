@@ -192,7 +192,7 @@ traj = 'ar_index_global_traj.txt';
 
 % use snapshots or "live" data from the GDAC?
 if Settings.use_snapshots
-    determine_snapshot(Settings.default_type, Settings.use_snapshots);
+    determine_snapshot(Settings.use_snapshots, Settings.default_type);
     if isempty(Settings.snap_path)
         return;
     end
